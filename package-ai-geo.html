@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI ⁄ GEO 数据包 · InsightHub Data</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="assets/stub-runtime.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+<style>
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
+.breadcrumb span{cursor:pointer}
+.breadcrumb span:hover{color:var(--color-text-primary)}
+.sep{color:var(--color-border-secondary)}
+.pkg-hero{padding:36px 32px 28px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.pkg-hero-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+.pkg-icon-lg{width:52px;height:52px;border-radius:var(--border-radius-lg);background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:24px;color:#185FA5;flex-shrink:0}
+.pkg-meta{flex:1}
+.pkg-meta h1{font-size:22px;font-weight:500;margin-bottom:6px}
+.pkg-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tag{font-size:11px;padding:3px 10px;border-radius:999px}
+.tag-live{background:var(--color-brand-light);color:var(--color-text-success)}
+.tag-cat{background:#F1EFE8;color:#444441;border:0.5px solid var(--color-border-tertiary)}
+.tag-hot{background:#FAEEDA;color:#854F0B}
+.pkg-desc{font-size:14px;color:var(--color-text-secondary);line-height:1.7;max-width:580px;margin-bottom:20px}
+.pkg-stats{display:flex;gap:24px;flex-wrap:wrap}
+.pstat{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-secondary)}
+.pstat i{font-size:16px;color:#185FA5}
+.pkg-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-subscribe{font-size:13px;padding:9px 22px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;font-weight:500}
+.btn-demo{font-size:13px;padding:9px 18px;border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);cursor:pointer}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:0;border-top:0.5px solid var(--color-border-tertiary)}
+.main{padding:28px 32px;border-right:0.5px solid var(--color-border-tertiary)}
+.sidebar{padding:24px 20px}
+.section-title{font-size:15px;font-weight:500;margin-bottom:14px}
+.section-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px}
+.q-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.q-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px}
+.q-card-icon{font-size:16px;color:#185FA5;margin-bottom:8px}
+.q-card-text{font-size:13px;color:var(--color-text-secondary);line-height:1.5}
+.api-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.api-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.api-row:hover{border-color:var(--color-border-primary);background:var(--color-background-secondary)}
+.api-method{font-size:11px;font-weight:500;padding:3px 8px;border-radius:var(--border-radius-md);background:#E6F1FB;color:#185FA5;min-width:38px;text-align:center}
+.api-path{font-size:13px;font-family:var(--font-mono);color:var(--color-text-primary);flex:1}
+.api-desc{font-size:12px;color:var(--color-text-secondary)}
+.api-arrow{font-size:14px;color:var(--color-text-secondary)}
+.source-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px}
+.source-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
+.source-type{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.source-name{font-size:12px;font-weight:500}
+.source-open{background:var(--color-brand-light)}
+.source-third{background:#FAEEDA}
+.source-open .source-type{color:var(--color-brand-dark)}
+.source-third .source-type{color:#854F0B}
+.source-open .source-name{color:var(--color-text-success)}
+.source-third .source-name{color:#633806}
+.field-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px}
+.field-table th{text-align:left;padding:8px 10px;border-bottom:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);font-weight:500}
+.field-table td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.field-type{font-family:var(--font-mono);color:#185FA5;font-size:11px}
+.sb-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:14px;background:var(--color-background-primary)}
+.sb-card-title{font-size:13px;font-weight:500;margin-bottom:10px}
+.plan-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.plan-row:last-child{border-bottom:none}
+.plan-name{font-size:12px;color:var(--color-text-secondary)}
+.plan-price{font-size:13px;font-weight:500}
+.plan-price.highlight{color:var(--color-brand)}
+.update-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary);padding:4px 0}
+.update-dot{width:6px;height:6px;border-radius:50%;background:var(--color-brand);flex-shrink:0}
+.status-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 12px;border-radius:var(--border-radius-md);background:var(--color-brand-light);color:var(--color-text-success);margin-bottom:14px}
+.mcp-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;margin-bottom:8px}
+.mcp-name{font-size:12px;font-weight:500;margin-bottom:2px}
+.mcp-desc{font-size:11px;color:var(--color-text-secondary)}
+.demo-box{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:28px;background:var(--color-background-secondary)}
+.demo-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:8px;font-weight:500}
+.demo-input-row{display:flex;gap:8px;margin-bottom:14px}
+.demo-input-row input{flex:1;font-size:13px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.demo-run{font-size:12px;padding:7px 14px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;white-space:nowrap}
+.score-ring-wrap{display:flex;align-items:center;gap:20px;margin-bottom:14px}
+.score-breakdown{flex:1;display:flex;flex-direction:column;gap:8px}
+.sb-row{display:flex;align-items:center;gap:8px}
+.sb-label{font-size:11px;color:var(--color-text-secondary);width:78px;flex-shrink:0}
+.sb-track{flex:1;height:5px;background:var(--color-border-tertiary);border-radius:999px;overflow:hidden}
+.sb-fill{height:100%;border-radius:999px;background:var(--color-brand)}
+.sb-val{font-size:11px;color:var(--color-text-secondary);width:28px;text-align:right;flex-shrink:0}
+.gap-list{display:flex;flex-direction:column;gap:6px}
+.gap-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--color-text-secondary);padding:8px 10px;border-radius:var(--border-radius-md);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary)}
+.gap-row i{color:#BA7517;font-size:14px;flex-shrink:0;margin-top:1px}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:20px 0}
+</style>
+
+<div class="nav">
+  <div class="logo" onclick="location.href='index.html'"><div class="logo-dot"></div>InsightHub Data</div>
+  <div class="breadcrumb">
+    <span onclick="location.href='marketplace.html'">数据产品</span><span class="sep">/</span>
+    <span style="color:var(--color-text-primary)">AI / GEO 数据包</span>
+  </div>
+</div>
+
+<div class="pkg-hero">
+  <div class="pkg-hero-top">
+    <div class="pkg-icon-lg"><i class="ti ti-brand-google" aria-hidden="true"></i></div>
+    <div class="pkg-meta">
+      <h1>AI / GEO 数据包</h1>
+      <div class="pkg-meta-row">
+        <span class="tag tag-live"><i class="ti ti-check" style="font-size:11px" aria-hidden="true"></i> 已上线</span>
+        <span class="tag tag-cat">内容与搜索</span>
+        <span class="tag tag-hot">趋势热门</span>
+      </div>
+    </div>
+  </div>
+  <div class="pkg-desc">帮助企业官网、独立站和内容团队判断：我的网站能不能被 ChatGPT、Perplexity、Google AI Overview 理解和引用？提供 AI 可见度评分、内容结构检测、竞品内容差距分析和 GEO 优化建议。</div>
+  <div class="pkg-stats">
+    <div class="pstat"><i class="ti ti-api" aria-hidden="true"></i>6 个 API 接口</div>
+    <div class="pstat"><i class="ti ti-refresh" aria-hidden="true"></i>每日更新</div>
+    <div class="pstat"><i class="ti ti-plug" aria-hidden="true"></i>支持 MCP</div>
+    <div class="pstat"><i class="ti ti-file-text" aria-hidden="true"></i>AI 报告生成</div>
+    <div class="pstat"><i class="ti ti-database" aria-hidden="true"></i>9 个数据源</div>
+  </div>
+  <div class="pkg-actions">
+    <button class="btn-subscribe" onclick="location.href='checkout.html'">订阅此数据包 →</button>
+    <button class="btn-demo" onclick="document.getElementById('demo-section').scrollIntoView()">运行下方 Demo ↓</button>
+    <button class="btn-demo" onclick="location.href='api-docs.html'">下载 API 文档</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="main">
+
+    <div class="section-title">这个数据包能回答哪些问题</div>
+    <div class="q-grid">
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-eye" aria-hidden="true"></i></div>
+        <div class="q-card-text">我的网站能不能被 ChatGPT、Perplexity 这类 AI 搜索理解？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-users" aria-hidden="true"></i></div>
+        <div class="q-card-text">为什么竞品更容易被 AI 引用？他们做对了什么？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-file-search" aria-hidden="true"></i></div>
+        <div class="q-card-text">我的内容缺了哪些主题？应该补哪些页面？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-code" aria-hidden="true"></i></div>
+        <div class="q-card-text">我的页面结构化数据（Schema/FAQ）是否完整？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-list-check" aria-hidden="true"></i></div>
+        <div class="q-card-text">提升 AI 搜索曝光，应该先做哪几件事？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-bell" aria-hidden="true"></i></div>
+        <div class="q-card-text">我的品牌最近有没有被 AI 搜索引用过？</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title">API 接口列表</div>
+    <div class="section-sub">全部接口基于 REST，支持 JSON 返回，含 OpenAPI 文档与调用示例</div>
+    <div class="api-list">
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">POST</span>
+        <span class="api-path">/v1/geo/visibility-score</span>
+        <span class="api-desc">网站 AI 可见度评分</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">POST</span>
+        <span class="api-path">/v1/geo/structure-check</span>
+        <span class="api-desc">页面结构化数据检测</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">GET</span>
+        <span class="api-path">/v1/geo/content-coverage</span>
+        <span class="api-desc">品牌内容覆盖度分析</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">POST</span>
+        <span class="api-path">/v1/geo/competitor-gap</span>
+        <span class="api-desc">竞品内容差距分析</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">GET</span>
+        <span class="api-path">/v1/geo/citation-monitor</span>
+        <span class="api-desc">AI 搜索引用监测</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">POST</span>
+        <span class="api-path">/v1/report/geo-optimization</span>
+        <span class="api-desc">GEO 优化建议报告生成</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div class="divider" id="demo-section"></div>
+    <div class="section-title">在线 Demo — 网站 AI 可见度评分</div>
+    <div class="demo-box">
+      <div class="demo-label">输入你的网站 URL，查看 AI 可见度评分</div>
+      <div class="demo-input-row">
+        <input type="text" id="demo-url" value="https://insighthub.data" placeholder="输入网站 URL..." />
+        <button class="demo-run" onclick="runDemo()">运行 ↗</button>
+      </div>
+
+      <div class="score-ring-wrap">
+        <svg width="84" height="84" viewBox="0 0 84 84">
+          <circle cx="42" cy="42" r="36" fill="none" stroke="var(--color-border-tertiary)" stroke-width="8"></circle>
+          <circle id="score-circle" cx="42" cy="42" r="36" fill="none" stroke="var(--color-brand)" stroke-width="8" stroke-dasharray="226" stroke-dashoffset="60" stroke-linecap="round" transform="rotate(-90 42 42)"></circle>
+          <text x="42" y="47" text-anchor="middle" font-size="22" font-weight="500" fill="var(--color-text-primary)" id="score-text">74</text>
+        </svg>
+        <div class="score-breakdown">
+          <div class="sb-row"><span class="sb-label">内容结构</span><div class="sb-track"><div class="sb-fill" id="sb-1" style="width:82%"></div></div><span class="sb-val" id="sv-1">82</span></div>
+          <div class="sb-row"><span class="sb-label">FAQ/Schema</span><div class="sb-track"><div class="sb-fill" id="sb-2" style="width:58%"></div></div><span class="sb-val" id="sv-2">58</span></div>
+          <div class="sb-row"><span class="sb-label">权威信号</span><div class="sb-track"><div class="sb-fill" id="sb-3" style="width:71%"></div></div><span class="sb-val" id="sv-3">71</span></div>
+          <div class="sb-row"><span class="sb-label">可读性</span><div class="sb-track"><div class="sb-fill" id="sb-4" style="width:88%"></div></div><span class="sb-val" id="sv-4">88</span></div>
+        </div>
+      </div>
+
+      <div class="gap-list" id="gap-list">
+        <div class="gap-row"><i class="ti ti-alert-triangle" aria-hidden="true"></i>缺少 FAQ 结构化数据，AI 难以直接提取问答内容</div>
+        <div class="gap-row"><i class="ti ti-alert-triangle" aria-hidden="true"></i>定价页未使用 Schema.org 标记产品信息</div>
+        <div class="gap-row"><i class="ti ti-alert-triangle" aria-hidden="true"></i>缺少"什么是 GEO"等行业问题的独立解释页面</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title">数据来源</div>
+    <div class="source-grid">
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">目标网站 / 竞品官网</div>
+      </div>
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">Common Crawl</div>
+      </div>
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">结构化数据检测</div>
+      </div>
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">行业问答内容库</div>
+      </div>
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">搜索建议词</div>
+      </div>
+      <div class="source-card source-third">
+        <div class="source-type">第三方授权</div>
+        <div class="source-name">SEO 关键词数据</div>
+      </div>
+      <div class="source-card source-third">
+        <div class="source-type">第三方授权</div>
+        <div class="source-name">反向链接数据</div>
+      </div>
+      <div class="source-card source-third">
+        <div class="source-type">第三方授权</div>
+        <div class="source-name">流量估算数据</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title">核心返回字段</div>
+    <table class="field-table">
+      <thead>
+        <tr>
+          <th>字段名</th>
+          <th>类型</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>visibility_score</td><td class="field-type">integer</td><td>AI 可见度综合评分 0–100</td></tr>
+        <tr><td>structure_score</td><td class="field-type">integer</td><td>内容结构化程度评分</td></tr>
+        <tr><td>schema_coverage</td><td class="field-type">integer</td><td>FAQ/Schema 标记覆盖率</td></tr>
+        <tr><td>authority_signal</td><td class="field-type">integer</td><td>权威性信号强度</td></tr>
+        <tr><td>content_gaps</td><td class="field-type">array</td><td>内容缺口与具体建议</td></tr>
+        <tr><td>competitor_comparison</td><td class="field-type">object</td><td>与竞品的内容覆盖对比</td></tr>
+        <tr><td>citation_history</td><td class="field-type">array</td><td>近期被 AI 搜索引用记录</td></tr>
+        <tr><td>updated_at</td><td class="field-type">datetime</td><td>数据最近更新时间</td></tr>
+        <tr><td>report_url</td><td class="field-type">string</td><td>完整 GEO 优化报告链接</td></tr>
+      </tbody>
+    </table>
+
+    <div class="divider"></div>
+    <div class="section-title">MCP 工具支持</div>
+    <div class="mcp-card">
+      <div class="mcp-name">insighthub_geo_visibility_score</div>
+      <div class="mcp-desc">在 Claude / Cursor 中直接检测网站 AI 可见度</div>
+    </div>
+    <div class="mcp-card">
+      <div class="mcp-name">insighthub_geo_competitor_gap</div>
+      <div class="mcp-desc">对比竞品网站，找出内容覆盖差距</div>
+    </div>
+    <div class="mcp-card">
+      <div class="mcp-name">insighthub_geo_generate_report</div>
+      <div class="mcp-desc">调用 AI 报告生成接口，返回 GEO 优化计划</div>
+    </div>
+
+  </div>
+
+  <div class="sidebar">
+    <div class="status-badge"><i class="ti ti-circle-check" style="font-size:14px" aria-hidden="true"></i>服务正常运行</div>
+
+    <div class="sb-card">
+      <div class="sb-card-title">数据包定价</div>
+      <div class="plan-row">
+        <span class="plan-name">个人版</span>
+        <span class="plan-price">¥99 / 月</span>
+      </div>
+      <div class="plan-row">
+        <span class="plan-name">创业者版</span>
+        <span class="plan-price highlight">¥499 / 月</span>
+      </div>
+      <div class="plan-row">
+        <span class="plan-name">专业版</span>
+        <span class="plan-price">¥999 / 月</span>
+      </div>
+      <div class="plan-row">
+        <span class="plan-name">企业版</span>
+        <span class="plan-price">¥2999 / 月起</span>
+      </div>
+      <button class="btn-subscribe" style="width:100%;margin-top:14px;font-size:12px;padding:8px" onclick="location.href='checkout.html'">立即订阅 →</button>
+    </div>
+
+    <div class="sb-card">
+      <div class="sb-card-title">数据更新频率</div>
+      <div class="update-row"><div class="update-dot"></div>网站抓取检测 · 每日</div>
+      <div class="update-row"><div class="update-dot"></div>竞品内容对比 · 每周</div>
+      <div class="update-row"><div class="update-dot"></div>AI 引用监测 · 实时</div>
+      <div class="update-row"><div class="update-dot"></div>关键词数据 · 每月</div>
+    </div>
+
+    <div class="sb-card">
+      <div class="sb-card-title">调用限额（创业者版）</div>
+      <div class="update-row"><i class="ti ti-api" style="font-size:13px;color:var(--color-brand)" aria-hidden="true"></i>每月 3,000 次 API 调用</div>
+      <div class="update-row"><i class="ti ti-file-text" style="font-size:13px;color:var(--color-brand)" aria-hidden="true"></i>每月 30 份 AI 报告</div>
+      <div class="update-row"><i class="ti ti-world" style="font-size:13px;color:var(--color-brand)" aria-hidden="true"></i>监控 20 个网站</div>
+      <div class="update-row"><i class="ti ti-plug" style="font-size:13px;color:var(--color-brand)" aria-hidden="true"></i>MCP 无限调用</div>
+    </div>
+
+    <div class="sb-card">
+      <div class="sb-card-title">数据可信度说明</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">
+        每条数据标注：来源 · 时间戳 · 更新频率 · 是否公开授权。评分基于公开可观测信号，不代表 AI 厂商官方排名。
+      </div>
+    </div>
+
+    <button class="btn-demo" style="width:100%;font-size:12px;padding:8px;margin-bottom:8px" onclick="location.href='mcp-guide.html'">MCP 接入指南 ↗</button>
+    <button class="btn-demo" style="width:100%;font-size:12px;padding:8px" onclick="location.href='api-docs.html'">下载 OpenAPI 文档</button>
+  </div>
+</div>
+
+<script>
+var gapPool=[
+  '缺少 FAQ 结构化数据，AI 难以直接提取问答内容',
+  '定价页未使用 Schema.org 标记产品信息',
+  '缺少"什么是 GEO"等行业问题的独立解释页面',
+  '关键页面缺少明确的作者与发布日期信息',
+  '产品对比内容不足，AI 难以引用作为答案来源',
+  '缺少结构化的客户案例与数据支撑内容',
+  'H1/H2 标题层级混乱，影响内容可解析性',
+  '缺少多语言版本，限制了海外 AI 搜索覆盖'
+];
+
+function runDemo(){
+  var url=document.getElementById('demo-url').value||'https://insighthub.data';
+  var overall=Math.floor(Math.random()*20)+65;
+  var parts=[Math.floor(Math.random()*25)+65,Math.floor(Math.random()*30)+45,Math.floor(Math.random()*25)+60,Math.floor(Math.random()*15)+80];
+
+  document.getElementById('score-text').textContent=overall;
+  var circumference=226;
+  var offset=circumference-(circumference*overall/100);
+  document.getElementById('score-circle').setAttribute('stroke-dashoffset',offset);
+
+  for(var i=0;i<4;i++){
+    document.getElementById('sb-'+(i+1)).style.width=parts[i]+'%';
+    document.getElementById('sv-'+(i+1)).textContent=parts[i];
+  }
+
+  var shuffled=gapPool.slice().sort(function(){return Math.random()-0.5});
+  var picked=shuffled.slice(0,3);
+  var html=picked.map(function(g){
+    return '<div class="gap-row"><i class="ti ti-alert-triangle" aria-hidden="true"></i>'+g+'</div>';
+  }).join('');
+  document.getElementById('gap-list').innerHTML=html;
+}
+</script>
+</div>
+</body>
+</html>

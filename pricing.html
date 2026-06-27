@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>定价对比 · InsightHub Data</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="assets/stub-runtime.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+<style>
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.breadcrumb{font-size:12px;color:var(--color-text-secondary)}
+.hero{padding:32px 32px 20px;text-align:center;border-bottom:0.5px solid var(--color-border-tertiary)}
+.hero h1{font-size:22px;font-weight:500;margin-bottom:8px}
+.hero p{font-size:13px;color:var(--color-text-secondary);max-width:520px;margin:0 auto 20px}
+.billing-toggle{display:inline-flex;gap:2px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:3px}
+.bt-opt{font-size:12px;padding:6px 16px;border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary)}
+.bt-opt.active{background:var(--color-brand);color:#fff}
+.bt-save{font-size:10px;color:var(--color-brand-dark);margin-left:4px}
+.plan-row-wrap{overflow-x:auto;padding:24px 32px 8px}
+.plan-cards{display:grid;grid-template-columns:160px repeat(5,minmax(140px,1fr));gap:0;min-width:920px}
+.corner-cell{}
+.plan-head{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 14px;text-align:center;margin:0 4px;position:relative}
+.plan-head.featured{border:2px solid var(--color-brand)}
+.badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--color-brand);color:#fff;font-size:10px;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.plan-head-name{font-size:13px;font-weight:500;margin-bottom:8px}
+.plan-head-price{font-size:20px;font-weight:500}
+.plan-head-unit{font-size:11px;color:var(--color-text-secondary);margin-bottom:10px}
+.head-btn{width:100%}
+.matrix-wrap{padding:0 32px 32px;overflow-x:auto}
+.matrix-table{border-collapse:collapse;width:100%;min-width:920px}
+.matrix-table th{padding:0}
+.group-row td{padding:14px 14px 8px 0;font-size:12px;font-weight:500;color:var(--color-text-primary);border-bottom:none}
+.feat-row td{padding:9px 14px;font-size:12px;border-bottom:0.5px solid var(--color-border-tertiary);text-align:center;color:var(--color-text-secondary)}
+.feat-row td:first-child{text-align:left;color:var(--color-text-primary);padding-left:0}
+.feat-row td.col-featured{background:rgba(29,158,117,0.04)}
+.check-y{color:var(--color-brand);font-size:15px}
+.check-n{color:var(--color-border-secondary);font-size:15px}
+.col-w{width:140px}
+.faq-section{padding:28px 32px;border-top:0.5px solid var(--color-border-tertiary)}
+.faq-title{font-size:15px;font-weight:500;margin-bottom:16px}
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.faq-item-q{font-size:13px;font-weight:500;margin-bottom:5px}
+.faq-item-a{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+</style>
+
+<div class="nav">
+  <div class="logo" onclick="location.href='index.html'"><div class="logo-dot"></div>InsightHub Data</div>
+  <div class="breadcrumb">定价</div>
+</div>
+
+<div class="hero">
+  <h1>选择适合你的套餐</h1>
+  <p>从免费体验到企业定制，所有套餐均可随时升级或取消</p>
+  <div class="billing-toggle" id="billing-toggle">
+    <div class="bt-opt active" data-c="monthly" onclick="setCycle('monthly')">按月付费</div>
+    <div class="bt-opt" data-c="yearly" onclick="setCycle('yearly')">按年付费 <span class="bt-save">省 17%</span></div>
+  </div>
+</div>
+
+<div class="plan-row-wrap">
+  <div class="plan-cards">
+    <div class="corner-cell"></div>
+    <div class="plan-head">
+      <div class="plan-head-name">免费版</div>
+      <div class="plan-head-price">¥0</div>
+      <div class="plan-head-unit">永久免费</div>
+      <button class="btn btn-ghost head-btn" onclick="location.href='auth.html'">免费开始</button>
+    </div>
+    <div class="plan-head">
+      <div class="plan-head-name">个人版</div>
+      <div class="plan-head-price" data-base="99">¥99</div>
+      <div class="plan-head-unit">/ 月</div>
+      <button class="btn btn-ghost head-btn" onclick="location.href='checkout.html'">选择此套餐</button>
+    </div>
+    <div class="plan-head featured">
+      <div class="badge">最受欢迎</div>
+      <div class="plan-head-name">创业者版</div>
+      <div class="plan-head-price" data-base="299">¥299</div>
+      <div class="plan-head-unit">/ 月</div>
+      <button class="btn btn-primary head-btn" onclick="location.href='checkout.html'">选择此套餐</button>
+    </div>
+    <div class="plan-head">
+      <div class="plan-head-name">专业版</div>
+      <div class="plan-head-price" data-base="999">¥999</div>
+      <div class="plan-head-unit">/ 月</div>
+      <button class="btn btn-ghost head-btn" onclick="location.href='checkout.html'">选择此套餐</button>
+    </div>
+    <div class="plan-head">
+      <div class="plan-head-name">企业版</div>
+      <div class="plan-head-price">¥4999</div>
+      <div class="plan-head-unit">/ 月起</div>
+      <button class="btn btn-ghost head-btn">联系销售</button>
+    </div>
+  </div>
+</div>
+
+<div class="matrix-wrap">
+  <table class="matrix-table">
+    <colgroup>
+      <col class="col-w"><col class="col-w"><col class="col-w"><col class="col-w"><col class="col-w"><col class="col-w">
+    </colgroup>
+    <tbody id="matrix-body"></tbody>
+  </table>
+</div>
+
+<div class="faq-section">
+  <div class="faq-title">常见问题</div>
+  <div class="faq-grid">
+    <div><div class="faq-item-q">可以随时更换套餐吗？</div><div class="faq-item-a">可以，在工作台「订阅与账单」中随时升级或降级，按剩余天数补差价或退还。</div></div>
+    <div><div class="faq-item-q">数据包额度和套餐额度是什么关系？</div><div class="faq-item-a">套餐决定可订阅的数据包数量上限和总体调用额度，具体数据包的独立额度可在该包详情页查看。</div></div>
+    <div><div class="faq-item-q">超出调用额度会怎样？</div><div class="faq-item-a">超出后接口会返回 429 限流响应，可以购买加量包或升级套餐恢复正常调用。</div></div>
+    <div><div class="faq-item-q">企业版支持私有化部署吗？</div><div class="faq-item-a">支持，企业版可选择 SaaS 或私有化部署，具体方案由销售团队根据需求定制。</div></div>
+  </div>
+</div>
+
+<script>
+var matrix=[
+  {group:'数据包与额度'},
+  {label:'可订阅数据包数量',vals:['体验 1 个（受限）','1 个','最多 3 个','多个数据包','全部数据包']},
+  {label:'每月 API 调用次数',vals:['50','3,000','5,000 × 包数','20,000+','按需定制']},
+  {label:'每月 AI 报告生成',vals:['5（带水印）','30','50','200','无限']},
+  {label:'监控任务数量',vals:['不支持','10 个','50 个','200 个','无限']},
+  {group:'功能能力'},
+  {label:'数据看板',vals:[true,true,true,true,true]},
+  {label:'PDF / Markdown 导出',vals:[false,true,true,true,true]},
+  {label:'MCP 接入',vals:['体验版','基础','完整','完整','专属 Server']},
+  {label:'Webhook 通知',vals:[false,false,true,true,true]},
+  {label:'飞书 / 企微 / 钉钉通知',vals:[false,false,true,true,true]},
+  {label:'私有数据上传分析',vals:[false,false,false,true,true]},
+  {label:'品牌白标报告',vals:[false,false,false,true,true]},
+  {group:'团队与权限'},
+  {label:'团队成员数',vals:['1','1','3','10','无限']},
+  {label:'权限分级管理',vals:[false,false,false,true,true]},
+  {label:'自定义字段 / 报告模板',vals:[false,false,false,false,true]},
+  {group:'支持与服务'},
+  {label:'客服支持',vals:['社区','邮件','邮件 + 在线','优先支持','专属支持 + SLA']},
+  {label:'私有化部署',vals:[false,false,false,false,true]},
+  {label:'专属数据采购',vals:[false,false,false,false,true]}
+];
+
+function renderCell(v){
+  if(v===true) return '<i class="ti ti-check check-y" aria-hidden="true"></i>';
+  if(v===false) return '<i class="ti ti-minus check-n" aria-hidden="true"></i>';
+  return v;
+}
+
+function renderMatrix(){
+  var html='';
+  matrix.forEach(function(row){
+    if(row.group){
+      html+='<tr class="group-row"><td colspan="6">'+row.group+'</td></tr>';
+    } else {
+      html+='<tr class="feat-row"><td>'+row.label+'</td>';
+      row.vals.forEach(function(v,i){
+        var cls=i===2?'col-featured':'';
+        html+='<td class="'+cls+'">'+renderCell(v)+'</td>';
+      });
+      html+='</tr>';
+    }
+  });
+  document.getElementById('matrix-body').innerHTML=html;
+}
+
+function setCycle(c){
+  document.querySelectorAll('.bt-opt').forEach(function(b){b.classList.remove('active')});
+  document.querySelector('[data-c="'+c+'"]').classList.add('active');
+  document.querySelectorAll('.plan-head-price[data-base]').forEach(function(el){
+    var base=parseInt(el.dataset.base);
+    if(c==='yearly'){
+      var yearly=Math.round(base*0.83);
+      el.textContent='¥'+yearly;
+    } else {
+      el.textContent='¥'+base;
+    }
+  });
+}
+
+renderMatrix();
+</script>
+</div>
+</body>
+</html>

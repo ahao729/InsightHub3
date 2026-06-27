@@ -1,0 +1,94 @@
+# InsightHub — 生产部署编排
+# 启动: docker compose up -d
+# 停止: docker compose down
+# 查看日志: docker compose logs -f
+
+services:
+  # ── PostgreSQL 数据库 ─────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: insighthub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: insighthub
+      POSTGRES_USER: insighthub
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-insighthub}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/src/db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U insighthub -d insighthub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - insighthub-net
+
+  # ── Backend API (Express) ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: insighthub-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://insighthub:${DB_PASSWORD:-insighthub}@db:5432/insighthub
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:80}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - insighthub-net
+
+  # ── Frontend (nginx) ──────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: insighthub-web
+    restart: unless-stopped
+    ports:
+      - "${PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - insighthub-net
+
+  # ── Crawler (按需/定时运行) ──────────────────────────────────────
+  crawler:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile
+    container_name: insighthub-crawler
+    restart: "no"
+    profiles:
+      - crawler      # 仅在 docker compose --profile crawler up 时启动
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://insighthub:${DB_PASSWORD:-insighthub}@db:5432/insighthub
+      SCRAPY_SETTINGS_MODULE: crawler.settings
+    networks:
+      - insighthub-net
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  insighthub-net:
+    driver: bridge

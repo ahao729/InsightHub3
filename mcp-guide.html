@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP 接入指南 · InsightHub Data</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="assets/stub-runtime.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+<style>
+.logo-bar{display:flex;align-items:center;gap:8px;padding:14px 24px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.logo-text{font-size:14px;font-weight:500;cursor:pointer}
+.logo-sep{font-size:14px;color:var(--color-border-secondary);margin:0 4px}
+.logo-sub{font-size:13px;color:var(--color-text-secondary)}
+.hero{padding:28px 32px 24px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.hero h1{font-size:20px;font-weight:500;margin-bottom:8px}
+.hero p{font-size:13px;color:var(--color-text-secondary);line-height:1.7;max-width:560px}
+.content{padding:28px 32px}
+.section-title{font-size:15px;font-weight:500;margin-bottom:6px}
+.section-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:16px}
+.client-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:28px}
+.client-card{border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:14px 10px;text-align:center;cursor:pointer;background:var(--color-background-primary)}
+.client-card.active{border:2px solid var(--color-border-info);background:var(--color-background-info)}
+.client-icon{font-size:22px;color:var(--color-text-secondary);margin-bottom:8px}
+.client-card.active .client-icon{color:var(--color-text-info)}
+.client-name{font-size:12px;font-weight:500}
+.steps-wrap{margin-bottom:28px}
+.step-row{display:flex;gap:14px;margin-bottom:18px}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--color-brand);color:#fff;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-body{flex:1;padding-top:1px}
+.step-title{font-size:13px;font-weight:500;margin-bottom:6px}
+.step-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:8px}
+.code-block{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;font-family:var(--font-mono);font-size:12px;line-height:1.7;position:relative;overflow-x:auto;white-space:pre}
+.code-copy{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--color-text-secondary)}
+.code-copy:hover{color:var(--color-text-primary)}
+.ck{color:#185FA5}
+.cs{color:var(--color-brand-dark)}
+.cc{color:#888780}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px}
+.tool-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px}
+.tool-name{font-size:12px;font-family:var(--font-mono);color:#185FA5;margin-bottom:4px}
+.tool-desc{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.test-box{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;background:var(--color-background-secondary);margin-bottom:20px}
+.test-msg{display:flex;gap:10px;margin-bottom:12px}
+.test-avatar{width:26px;height:26px;border-radius:50%;background:var(--color-brand);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:500}
+.test-bubble{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px;line-height:1.6;flex:1}
+.status-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--border-radius-md);background:var(--color-brand-light);color:var(--color-text-success);font-size:12px;margin-bottom:20px;border-left:3px solid var(--color-brand)}
+.field-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;font-weight:500}
+.key-select-row{display:flex;gap:8px;margin-bottom:24px}
+.key-select{flex:1;font-size:13px;padding:8px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.gen-config-btn{font-size:12px;padding:8px 16px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;white-space:nowrap}
+.faq-row{border-top:0.5px solid var(--color-border-tertiary);padding:12px 0}
+.faq-q{font-size:13px;font-weight:500;margin-bottom:5px}
+.faq-a{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+</style>
+
+<div class="logo-bar">
+  <div class="logo-dot"></div>
+  <span class="logo-text" onclick="location.href='index.html'">InsightHub Data</span>
+  <span class="logo-sep">/</span>
+  <span class="logo-sub">MCP 接入指南</span>
+</div>
+
+<div class="hero">
+  <h1>把 InsightHub 数据接入你的 AI Agent</h1>
+  <p>通过 MCP（Model Context Protocol），在 Claude Desktop、Cursor、Cline 等工具中直接调用行业趋势、竞品分析、企业查询等数据能力，无需切换网页。</p>
+</div>
+
+<div class="content">
+
+  <div class="section-title">选择你的客户端</div>
+  <div class="section-sub">不同客户端配置方式略有差异，选择后下方代码会自动适配</div>
+  <div class="client-grid" id="client-grid">
+    <div class="client-card active" data-client="claude" onclick="selectClient('claude')">
+      <div class="client-icon"><i class="ti ti-message-circle-2" aria-hidden="true"></i></div>
+      <div class="client-name">Claude Desktop</div>
+    </div>
+    <div class="client-card" data-client="cursor" onclick="selectClient('cursor')">
+      <div class="client-icon"><i class="ti ti-terminal-2" aria-hidden="true"></i></div>
+      <div class="client-name">Cursor</div>
+    </div>
+    <div class="client-card" data-client="cline" onclick="selectClient('cline')">
+      <div class="client-icon"><i class="ti ti-code" aria-hidden="true"></i></div>
+      <div class="client-name">Cline</div>
+    </div>
+    <div class="client-card" data-client="windsurf" onclick="selectClient('windsurf')">
+      <div class="client-icon"><i class="ti ti-wind" aria-hidden="true"></i></div>
+      <div class="client-name">Windsurf</div>
+    </div>
+  </div>
+
+  <div class="section-title">配置你的 API Key</div>
+  <div class="section-sub">选择用于 MCP 调用的 Key，将自动生成对应配置文件</div>
+  <div class="key-select-row">
+    <select class="key-select" id="key-select">
+      <option>生产环境 Key · ihd_live_sk_••••3a9f（全部数据包权限）</option>
+      <option>开发测试 Key · ihd_test_sk_••••7c2b（仅创业情报包）</option>
+    </select>
+    <button class="gen-config-btn" onclick="regenConfig()">重新生成配置 ↗</button>
+  </div>
+
+  <div class="section-title">接入步骤</div>
+  <div class="steps-wrap" id="steps-wrap"></div>
+
+  <div class="section-title">可用 MCP 工具（创业商业情报包）</div>
+  <div class="section-sub">订阅其他数据包后会自动解锁对应工具</div>
+  <div class="tool-grid">
+    <div class="tool-card">
+      <div class="tool-name">insighthub_industry_trends</div>
+      <div class="tool-desc">查询指定行业的趋势数据与增速</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">insighthub_project_evaluate</div>
+      <div class="tool-desc">输入项目方向，返回可行性评分</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">insighthub_competitor_list</div>
+      <div class="tool-desc">生成指定领域的竞品列表</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">insighthub_generate_report</div>
+      <div class="tool-desc">调用 AI 生成完整商业分析报告</div>
+    </div>
+  </div>
+
+  <div class="section-title">测试连接</div>
+  <div class="section-sub">配置完成后重启客户端，尝试发送以下消息验证</div>
+  <div class="test-box">
+    <div class="test-msg">
+      <div class="test-avatar">我</div>
+      <div class="test-bubble">帮我用 InsightHub 查一下 AI 客服 SaaS 这个行业的趋势</div>
+    </div>
+    <div class="test-msg">
+      <div class="test-avatar" style="background:#185FA5">AI</div>
+      <div class="test-bubble">已调用 <span style="font-family:var(--font-mono);color:#185FA5">insighthub_industry_trends</span>。该行业近 3 年年均增速约 34%，市场处于高速扩张阶段……</div>
+    </div>
+  </div>
+
+  <div class="status-row">
+    <i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>
+    若 AI 能正常调用工具并返回数据，说明 MCP 接入成功
+  </div>
+
+  <div class="section-title">常见问题</div>
+  <div id="faq-wrap"></div>
+
+</div>
+
+<script>
+var configs={
+  claude:{
+    file:'claude_desktop_config.json',
+    path:'~/Library/Application Support/Claude/claude_desktop_config.json（macOS）\n%APPDATA%\\Claude\\claude_desktop_config.json（Windows）',
+    steps:[
+      {title:'安装 Node.js（如未安装）',desc:'MCP Server 通过 npx 运行，需要 Node.js 18 及以上版本。',code:null},
+      {title:'打开配置文件',desc:'在 Claude Desktop 中打开 设置 → 开发者 → 编辑配置，或直接编辑以下路径的文件：',code:'PATH'},
+      {title:'添加 InsightHub MCP Server',desc:'将以下内容粘贴到配置文件中，替换为你的 API Key：',code:'JSON'},
+      {title:'重启 Claude Desktop',desc:'保存文件后完全退出并重新打开 Claude Desktop，工具图标处会显示 InsightHub 已连接。',code:null}
+    ]
+  },
+  cursor:{
+    file:'mcp.json',
+    path:'项目根目录 .cursor/mcp.json，或全局 ~/.cursor/mcp.json',
+    steps:[
+      {title:'在项目中创建配置目录',desc:'在项目根目录下创建 .cursor 文件夹（如不存在）。',code:null},
+      {title:'创建 mcp.json 文件',desc:'在 .cursor 目录下创建配置文件：',code:'PATH'},
+      {title:'添加 InsightHub Server 配置',desc:'粘贴以下配置，替换为你的 API Key：',code:'JSON'},
+      {title:'在 Cursor 设置中启用',desc:'打开 Settings → MCP，确认 InsightHub 状态为已连接（绿色圆点）。',code:null}
+    ]
+  },
+  cline:{
+    file:'cline_mcp_settings.json',
+    path:'VS Code 扩展设置中 Cline → MCP Servers → 编辑配置',
+    steps:[
+      {title:'打开 Cline 设置面板',desc:'在 VS Code 中点击 Cline 图标，进入 MCP Servers 配置标签。',code:null},
+      {title:'编辑 MCP 配置文件',desc:'点击 Configure MCP Servers，会打开以下文件：',code:'PATH'},
+      {title:'添加 InsightHub Server',desc:'粘贴以下配置，替换为你的 API Key：',code:'JSON'},
+      {title:'刷新工具列表',desc:'保存后在 Cline 面板点击刷新图标，确认工具列表中出现 4 个 insighthub_ 开头的工具。',code:null}
+    ]
+  },
+  windsurf:{
+    file:'mcp_config.json',
+    path:'~/.codeium/windsurf/mcp_config.json',
+    steps:[
+      {title:'打开 Windsurf 设置',desc:'进入 Settings → Cascade → MCP Servers。',code:null},
+      {title:'编辑配置文件',desc:'点击 Add Server 或直接编辑配置文件：',code:'PATH'},
+      {title:'添加 InsightHub Server',desc:'粘贴以下配置，替换为你的 API Key：',code:'JSON'},
+      {title:'重新加载 Cascade',desc:'保存后重新加载窗口，确认 InsightHub 工具可用。',code:null}
+    ]
+  }
+};
+
+var faqs=[
+  {q:'MCP 调用是否计入 API 额度？',a:'是的，MCP 调用与网页端 API 调用共享同一个调用额度池，按你订阅的套餐计算。'},
+  {q:'可以同时在多个客户端使用同一个 Key 吗？',a:'可以，同一个 API Key 可在 Claude Desktop、Cursor 等多个客户端同时配置使用。'},
+  {q:'免费版可以使用 MCP 吗？',a:'免费版提供有限的体验 MCP 工具，完整工具集需要订阅个人版及以上套餐。'},
+  {q:'工具调用失败怎么办？',a:'请检查 API Key 是否正确、是否已重启客户端，以及当前套餐是否包含对应数据包权限。'}
+];
+
+function getConfigCode(client,key){
+  return '<span class="ck">{</span>\n  <span class="ck">"mcpServers"</span>: <span class="ck">{</span>\n    <span class="ck">"insighthub"</span>: <span class="ck">{</span>\n      <span class="ck">"command"</span>: <span class="cs">"npx"</span>,\n      <span class="ck">"args"</span>: [<span class="cs">"-y"</span>, <span class="cs">"@insighthub/mcp-server"</span>],\n      <span class="ck">"env"</span>: <span class="ck">{</span>\n        <span class="ck">"INSIGHTHUB_API_KEY"</span>: <span class="cs">"'+key+'"</span>\n      <span class="ck">}</span>\n    <span class="ck">}</span>\n  <span class="ck">}</span>\n<span class="ck">}</span>';
+}
+
+function renderSteps(clientKey){
+  var cfg=configs[clientKey];
+  var key=document.getElementById('key-select').value.indexOf('生产')>=0?'ihd_live_sk_Xk9mPqL2rN8vTs4w3a9f':'ihd_test_sk_Bj3nKpM5qR7xUv9w7c2b';
+  var html='';
+  cfg.steps.forEach(function(s,i){
+    html+='<div class="step-row"><div class="step-num">'+(i+1)+'</div><div class="step-body"><div class="step-title">'+s.title+'</div><div class="step-desc">'+s.desc+'</div>';
+    if(s.code==='PATH'){
+      html+='<div class="code-block">'+cfg.path.replace(/\n/g,'<br>')+'</div>';
+    } else if(s.code==='JSON'){
+      html+='<div class="code-block" id="cfg-code-'+i+'"><button class="code-copy" aria-label="复制配置" onclick="copyCode('+i+')"><i class="ti ti-copy" aria-hidden="true"></i></button>'+getConfigCode(clientKey,key)+'</div>';
+    }
+    html+='</div></div>';
+  });
+  document.getElementById('steps-wrap').innerHTML=html;
+}
+
+function selectClient(name){
+  document.querySelectorAll('.client-card').forEach(function(c){c.classList.remove('active')});
+  document.querySelector('[data-client="'+name+'"]').classList.add('active');
+  renderSteps(name);
+}
+
+function regenConfig(){
+  var active=document.querySelector('.client-card.active').dataset.client;
+  renderSteps(active);
+}
+
+function copyCode(i){
+  var el=document.getElementById('cfg-code-'+i);
+  if(!el)return;
+  var text=el.innerText.replace('复制','').trim();
+  if(navigator.clipboard) navigator.clipboard.writeText(text);
+}
+
+function renderFaq(){
+  var html='';
+  faqs.forEach(function(f){
+    html+='<div class="faq-row"><div class="faq-q">'+f.q+'</div><div class="faq-a">'+f.a+'</div></div>';
+  });
+  document.getElementById('faq-wrap').innerHTML=html;
+}
+
+renderSteps('claude');
+renderFaq();
+</script>
+</div>
+</body>
+</html>

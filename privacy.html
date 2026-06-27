@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>隐私政策 · InsightHub Data</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="assets/stub-runtime.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+<style>
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.breadcrumb{font-size:12px;color:var(--color-text-secondary)}
+.content{max-width:800px;margin:0 auto;padding:32px 24px 48px}
+.content h1{font-size:22px;font-weight:600;margin:0 0 4px}
+.content .meta{font-size:12px;color:var(--color-text-secondary);margin-bottom:32px}
+.content h2{font-size:16px;font-weight:600;margin:28px 0 10px}
+.content h3{font-size:14px;font-weight:600;margin:20px 0 8px}
+.content p{font-size:13px;line-height:1.7;color:var(--color-text-primary);margin:0 0 12px}
+.content ul{font-size:13px;line-height:1.7;color:var(--color-text-primary);padding-left:20px;margin:0 0 12px}
+.content li{margin-bottom:4px}
+.content .highlight-box{background:var(--color-background-info);border-radius:var(--border-radius-md);padding:16px;margin:16px 0;font-size:13px;line-height:1.7}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-top:0.5px solid var(--color-border-tertiary);font-size:12px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px}
+.footer-links span{cursor:pointer;color:var(--color-text-secondary)}
+.footer-links span:hover{color:var(--color-text-primary)}
+</style>
+
+<div class="nav">
+  <div class="logo" onclick="location.href='index.html'"><div class="logo-dot"></div>InsightHub Data</div>
+  <div class="breadcrumb">隐私政策</div>
+  <div></div>
+</div>
+
+<div class="content">
+  <h1>隐私政策</h1>
+  <div class="meta">最后更新：2026 年 1 月 1 日</div>
+
+  <p>InsightHub Data（以下简称"我们"）深知个人信息对您的重要性。本隐私政策旨在透明地说明我们如何收集、使用、存储和保护您的个人信息，以及您所享有的权利。</p>
+
+  <h2>1. 信息收集</h2>
+  <h3>1.1 您主动提供的信息</h3>
+  <ul>
+    <li><strong>注册信息</strong>：当您创建账号时，我们收集您的邮箱地址、用户名和加密密码。</li>
+    <li><strong>资料信息</strong>：您可以选择完善个人资料（姓名、公司名称、职位等）。</li>
+    <li><strong>支付信息</strong>：订阅付费时，支付处理由合规第三方支付机构完成，我们仅获取订阅方案和有效期，不存储完整银行卡号。</li>
+    <li><strong>联系方式</strong>：您通过客服、工单或邮件与我们联系时，我们会保存通信记录。</li>
+  </ul>
+
+  <h3>1.2 自动收集的信息</h3>
+  <ul>
+    <li><strong>使用日志</strong>：API 调用时间、端点、请求量和响应状态，用于用量统计与故障排查。</li>
+    <li><strong>设备与浏览信息</strong>：IP 地址、浏览器类型、操作系统、页面访问时间与停留时长。</li>
+    <li><strong>Cookie 与本地存储</strong>：用于维持登录会话和个性化体验。您可在浏览器设置中管理 Cookie 偏好。</li>
+  </ul>
+
+  <h2>2. 信息使用</h2>
+  <p>我们仅将收集的信息用于以下目的：</p>
+  <ul>
+    <li>提供、维护和优化平台服务（包括 API 数据交付、报告生成、用量统计）；</li>
+    <li>处理订阅、计费和账户管理事务；</li>
+    <li>发送服务通知、安全告警和产品更新（营销邮件需您单独授权）；</li>
+    <li>改善产品体验，进行数据分析与性能监控；</li>
+    <li>履行法律义务，防范欺诈与滥用行为。</li>
+  </ul>
+
+  <h2>3. 信息共享</h2>
+  <p>我们不会将您的个人信息出售给第三方。在以下情形下，我们可能共享必要信息：</p>
+  <ul>
+    <li><strong>授权第三方服务商</strong>：云基础设施（如 AWS、阿里云）、支付处理商、邮件发送服务商，这些服务商受合同约束，仅可依我们的指示处理数据；</li>
+    <li><strong>法律要求</strong>：应法律法规、传票或政府机关合法要求；</li>
+    <li><strong>业务转让</strong>：涉及合并、收购或资产出售时，我们会提前通知并确保数据保护水平不降低。</li>
+  </ul>
+
+  <h2>4. 数据存储与安全</h2>
+  <p>我们采用符合行业标准的安全措施保护您的数据：</p>
+  <ul>
+    <li>传输加密（TLS 1.3）与静态加密（AES-256）；</li>
+    <li>访问控制基于最小权限原则，所有操作记录审计日志；</li>
+    <li>数据存储于 AWS 东京和大阪区域，具备跨可用区冗余；</li>
+    <li>定期进行渗透测试与安全评估。</li>
+  </ul>
+
+  <h2>5. 数据保留</h2>
+  <p>我们仅在必要期限内保留您的数据：</p>
+  <ul>
+    <li>账户信息：保留至您注销账户后 90 天（法律另有要求除外）；</li>
+    <li>API 调用日志：保留 12 个月用于用量分析与安全审计；</li>
+    <li>支付记录：根据税务法规保留 7 年。</li>
+  </ul>
+
+  <h2>6. 您的权利</h2>
+  <ul>
+    <li><strong>访问与更正</strong>：您可随时在账户设置中查看和修改个人信息；</li>
+    <li><strong>删除</strong>：您可申请注销账户，我们将在 30 天内删除您的数据；</li>
+    <li><strong>数据可携</strong>：您有权获取您的数据的结构化副本；</li>
+    <li><strong>撤回同意</strong>：撤销授权不影响撤回前基于同意的处理合法性；</li>
+    <li><strong>投诉</strong>：如您认为我们未合规处理数据，可向所在地数据保护机构投诉。</li>
+  </ul>
+  <p>行使上述权利，请通过 <strong>privacy@insighthubdata.com</strong> 联系我们。</p>
+
+  <h2>7. 国际数据传输</h2>
+  <p>您的数据可能被传输至并存储于中华人民共和国境外。我们将依据相关法律法规（包括《个人信息保护法》）采取适当保障措施，如签署标准合同条款或获得数据保护认证。</p>
+
+  <h2>8. 儿童隐私</h2>
+  <p>我们的服务不面向 14 周岁以下儿童。如果我们发现无意中收集了儿童的个人信息，将立即删除。</p>
+
+  <h2>9. 政策更新</h2>
+  <p>本政策可能不时更新。重大变更时，我们将通过站内通知或邮件方式提前 15 天告知您。继续使用服务即表示您同意修订后的政策。</p>
+
+  <h2>10. 联系方式</h2>
+  <p>如您对本隐私政策有任何疑问，请联系：</p>
+  <div class="highlight-box">
+    <strong>数据保护负责人</strong><br>
+    邮箱：privacy@insighthubdata.com<br>
+    地址：上海市浦东新区张江高科技园区 InsightHub Data 法务部
+  </div>
+</div>
+
+<footer class="footer-inner">
+  <div class="footer-left">© 2026 InsightHub Data</div>
+  <div class="footer-links">
+    <span onclick="location.href='privacy.html'">隐私政策</span>
+    <span onclick="location.href='terms.html'">服务条款</span>
+    <span onclick="location.href='status.html'">系统状态</span>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>

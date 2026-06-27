@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>企业情报与风控数据包 · InsightHub Data 原型</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="assets/stub-runtime.js"></script>
+</head>
+<body>
+<div class="proto-shell">
+<style>
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
+.breadcrumb span{cursor:pointer}
+.breadcrumb span:hover{color:var(--color-text-primary)}
+.sep{color:var(--color-border-secondary)}
+.pkg-hero{padding:36px 32px 28px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.pkg-hero-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+.pkg-icon-lg{width:52px;height:52px;border-radius:var(--border-radius-lg);background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:24px;color:#854F0B;flex-shrink:0}
+.pkg-meta{flex:1}
+.pkg-meta h1{font-size:22px;font-weight:500;margin-bottom:6px}
+.pkg-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tag{font-size:11px;padding:3px 10px;border-radius:999px}
+.tag-live{background:var(--color-brand-light);color:var(--color-text-success)}
+.tag-cat{background:#F1EFE8;color:#444441;border:0.5px solid var(--color-border-tertiary)}
+.tag-hot{background:#FAEEDA;color:#854F0B}
+.pkg-desc{font-size:14px;color:var(--color-text-secondary);line-height:1.7;max-width:580px;margin-bottom:20px}
+.pkg-stats{display:flex;gap:24px;flex-wrap:wrap}
+.pstat{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-secondary)}
+.pstat i{font-size:16px;color:#854F0B}
+.pkg-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-subscribe{font-size:13px;padding:9px 22px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;font-weight:500}
+.btn-demo{font-size:13px;padding:9px 18px;border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);cursor:pointer}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:0;border-top:0.5px solid var(--color-border-tertiary)}
+.main{padding:28px 32px;border-right:0.5px solid var(--color-border-tertiary)}
+.sidebar{padding:24px 20px}
+.section-title{font-size:15px;font-weight:500;margin-bottom:14px}
+.section-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px}
+.q-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.q-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px}
+.q-card-icon{font-size:16px;color:#854F0B;margin-bottom:8px}
+.q-card-text{font-size:13px;color:var(--color-text-secondary);line-height:1.5}
+.api-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.api-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.api-row:hover{border-color:var(--color-border-primary);background:var(--color-background-secondary)}
+.api-method{font-size:11px;font-weight:500;padding:3px 8px;border-radius:var(--border-radius-md);background:#E6F1FB;color:#185FA5;min-width:38px;text-align:center}
+.api-path{font-size:13px;font-family:var(--font-mono);color:var(--color-text-primary);flex:1}
+.api-desc{font-size:12px;color:var(--color-text-secondary)}
+.api-arrow{font-size:14px;color:var(--color-text-secondary)}
+.source-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px}
+.source-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
+.source-type{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.source-name{font-size:12px;font-weight:500}
+.source-open{background:var(--color-brand-light)}
+.source-third{background:#FAEEDA}
+.source-open .source-type{color:var(--color-brand-dark)}
+.source-third .source-type{color:#854F0B}
+.source-open .source-name{color:var(--color-text-success)}
+.source-third .source-name{color:#633806}
+.field-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px}
+.field-table th{text-align:left;padding:8px 10px;border-bottom:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);font-weight:500}
+.field-table td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.field-type{font-family:var(--font-mono);color:#185FA5;font-size:11px}
+.sb-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:14px;background:var(--color-background-primary)}
+.sb-card-title{font-size:13px;font-weight:500;margin-bottom:10px}
+.plan-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.plan-row:last-child{border-bottom:none}
+.plan-name{font-size:12px;color:var(--color-text-secondary)}
+.plan-price{font-size:13px;font-weight:500}
+.plan-price.highlight{color:var(--color-brand)}
+.update-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary);padding:4px 0}
+.update-dot{width:6px;height:6px;border-radius:50%;background:var(--color-brand);flex-shrink:0}
+.status-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 12px;border-radius:var(--border-radius-md);background:var(--color-brand-light);color:var(--color-text-success);margin-bottom:14px}
+.mcp-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;margin-bottom:8px}
+.mcp-name{font-size:12px;font-weight:500;margin-bottom:2px}
+.mcp-desc{font-size:11px;color:var(--color-text-secondary)}
+.demo-box{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:28px;background:var(--color-background-secondary)}
+.demo-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:8px;font-weight:500}
+.demo-input-row{display:flex;gap:8px;margin-bottom:14px}
+.demo-input-row input{flex:1;font-size:13px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.demo-run{font-size:12px;padding:7px 14px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;white-space:nowrap}
+.risk-meter-wrap{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.risk-badge{font-size:20px;font-weight:500;padding:8px 18px;border-radius:var(--border-radius-md);flex-shrink:0}
+.risk-low-bg{background:var(--color-brand-light);color:var(--color-text-success)}
+.risk-mid-bg{background:#FAEEDA;color:#633806}
+.risk-high-bg{background:#FCEBEB;color:#791F1F}
+.risk-info{flex:1;font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.entity-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.entity-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
+.entity-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.entity-val{font-size:13px;font-weight:500}
+.event-list{display:flex;flex-direction:column;gap:6px}
+.event-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--color-text-secondary);padding:8px 10px;border-radius:var(--border-radius-md);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary)}
+.event-row i{font-size:14px;flex-shrink:0;margin-top:1px}
+.ev-warn i{color:#BA7517}
+.ev-info i{color:#185FA5}
+.ev-good i{color:var(--color-brand)}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:20px 0}
+</style>
+
+<div class="nav">
+  <div class="logo" onclick="location.href='index.html'"><div class="logo-dot"></div>InsightHub Data</div>
+  <div class="breadcrumb">
+    <span onclick="location.href='marketplace.html'">数据产品</span><span class="sep">/</span>
+    <span style="color:var(--color-text-primary)">企业情报与竞品监控包</span>
+  </div>
+</div>
+
+<div class="pkg-hero">
+  <div class="pkg-hero-top">
+    <div class="pkg-icon-lg"><i class="ti ti-building" aria-hidden="true"></i></div>
+    <div class="pkg-meta">
+      <h1>企业情报与竞品监控数据包</h1>
+      <div class="pkg-meta-row">
+        <span class="tag tag-live"><i class="ti ti-check" style="font-size:11px" aria-hidden="true"></i> 已上线</span>
+        <span class="tag tag-cat">企业风控</span>
+        <span class="tag tag-hot">高客单价</span>
+      </div>
+    </div>
+  </div>
+  <div class="pkg-desc">帮助销售团队、企业老板和咨询顾问回答：这家公司值得合作吗？有没有法律风险？竞品最近有什么动作？提供企业基础查询、风险评分、关系图谱、竞品动态监控和尽调报告生成能力。</div>
+  <div class="pkg-stats">
+    <div class="pstat"><i class="ti ti-api" aria-hidden="true"></i>6 个 API 接口</div>
+    <div class="pstat"><i class="ti ti-refresh" aria-hidden="true"></i>实时更新</div>
+    <div class="pstat"><i class="ti ti-plug" aria-hidden="true"></i>支持 MCP</div>
+    <div class="pstat"><i class="ti ti-file-text" aria-hidden="true"></i>AI 尽调报告</div>
+    <div class="pstat"><i class="ti ti-database" aria-hidden="true"></i>10 个数据源</div>
+  </div>
+  <div class="pkg-actions">
+    <button class="btn-subscribe" onclick="location.href='checkout.html'">订阅此数据包 →</button>
+    <button class="btn-demo" onclick="document.getElementById('demo-section').scrollIntoView()">运行下方 Demo ↓</button>
+    <button class="btn-demo" onclick="location.href='api-docs.html'">下载 API 文档</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="main">
+
+    <div class="section-title">这个数据包能回答哪些问题</div>
+    <div class="q-grid">
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-search" aria-hidden="true"></i></div>
+        <div class="q-card-text">这家公司的基本信息、股东和法人是谁？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-shield-exclamation" aria-hidden="true"></i></div>
+        <div class="q-card-text">这家公司有没有司法风险或经营异常？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-affiliate" aria-hidden="true"></i></div>
+        <div class="q-card-text">它和哪些公司存在股权或法人关联？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-bell-ringing" aria-hidden="true"></i></div>
+        <div class="q-card-text">竞品最近有没有定价、产品或招聘变动？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-clipboard-text" aria-hidden="true"></i></div>
+        <div class="q-card-text">能不能一键生成给老板看的尽调报告？</div>
+      </div>
+      <div class="q-card">
+        <div class="q-card-icon"><i class="ti ti-target-arrow" aria-hidden="true"></i></div>
+        <div class="q-card-text">这家公司适不适合作为销售线索跟进？</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title">API 接口列表</div>
+    <div class="section-sub">全部接口基于 REST，支持 JSON 返回，含 OpenAPI 文档与调用示例</div>
+    <div class="api-list">
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">GET</span>
+        <span class="api-path">/v1/company/lookup</span>
+        <span class="api-desc">企业基础信息查询</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">GET</span>
+        <span class="api-path">/v1/company/risk-score</span>
+        <span class="api-desc">企业风险评分</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">GET</span>
+        <span class="api-path">/v1/company/relation-graph</span>
+        <span class="api-desc">企业关系图谱</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">POST</span>
+        <span class="api-path">/v1/competitor/monitor</span>
+        <span class="api-desc">竞品动态监控任务</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">GET</span>
+        <span class="api-path">/v1/bid/leads</span>
+        <span class="api-desc">招投标线索查询</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+      <div class="api-row" onclick="location.href='api-docs.html'">
+        <span class="api-method">POST</span>
+        <span class="api-path">/v1/report/due-diligence</span>
+        <span class="api-desc">AI 尽调报告生成</span>
+        <i class="ti ti-chevron-right api-arrow" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div class="divider" id="demo-section"></div>
+    <div class="section-title">在线 Demo — 企业风险查询</div>
+    <div class="demo-box">
+      <div class="demo-label">输入企业名称，查看风险评分与基础信息</div>
+      <div class="demo-input-row">
+        <input type="text" id="demo-company" value="某科技有限公司" placeholder="输入企业名称..." />
+        <button class="demo-run" onclick="runDemo()">运行 ↗</button>
+      </div>
+
+      <div class="risk-meter-wrap">
+        <div class="risk-badge risk-low-bg" id="risk-badge">低风险</div>
+        <div class="risk-info" id="risk-info">综合风险评分 12/100。近 3 年无司法风险记录，经营状态正常，可作为合作或销售线索跟进。</div>
+      </div>
+
+      <div class="entity-grid" id="entity-grid">
+        <div class="entity-card"><div class="entity-label">注册资本</div><div class="entity-val">1,000 万元</div></div>
+        <div class="entity-card"><div class="entity-label">成立时间</div><div class="entity-val">2019-03-12</div></div>
+        <div class="entity-card"><div class="entity-label">参保人数</div><div class="entity-val">86 人</div></div>
+        <div class="entity-card"><div class="entity-label">关联公司</div><div class="entity-val">3 家</div></div>
+      </div>
+
+      <div class="event-list" id="event-list">
+        <div class="event-row ev-good"><i class="ti ti-circle-check" aria-hidden="true"></i>近 90 天无新增司法案件或经营异常记录</div>
+        <div class="event-row ev-info"><i class="ti ti-info-circle" aria-hidden="true"></i>近期参与 1 项政府采购招投标项目</div>
+        <div class="event-row ev-warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i>法定代表人同时担任另外 2 家公司高管</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title">数据来源</div>
+    <div class="source-grid">
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">国家企业信用信息公示系统</div>
+      </div>
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">公开裁判文书</div>
+      </div>
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">政府采购 / 招投标公告</div>
+      </div>
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">商标 / 专利公开信息</div>
+      </div>
+      <div class="source-card source-open">
+        <div class="source-type">公开来源</div>
+        <div class="source-name">企业官网 / 新闻公告</div>
+      </div>
+      <div class="source-card source-third">
+        <div class="source-type">第三方授权</div>
+        <div class="source-name">企查查 API</div>
+      </div>
+      <div class="source-card source-third">
+        <div class="source-type">第三方授权</div>
+        <div class="source-name">天眼查 API</div>
+      </div>
+      <div class="source-card source-third">
+        <div class="source-type">第三方授权</div>
+        <div class="source-name">招投标数据商</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title">核心返回字段</div>
+    <table class="field-table">
+      <thead>
+        <tr>
+          <th>字段名</th>
+          <th>类型</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>risk_score</td><td class="field-type">integer</td><td>综合风险评分 0–100（越低越安全）</td></tr>
+        <tr><td>risk_level</td><td class="field-type">string</td><td>风险等级：低 / 中 / 高</td></tr>
+        <tr><td>basic_info</td><td class="field-type">object</td><td>注册资本、成立时间、参保人数等</td></tr>
+        <tr><td>related_companies</td><td class="field-type">array</td><td>股权或法人关联公司列表</td></tr>
+        <tr><td>judicial_records</td><td class="field-type">array</td><td>司法风险与经营异常记录</td></tr>
+        <tr><td>recent_events</td><td class="field-type">array</td><td>近期招投标、新闻、变更事件</td></tr>
+        <tr><td>updated_at</td><td class="field-type">datetime</td><td>数据最近更新时间</td></tr>
+        <tr><td>report_url</td><td class="field-type">string</td><td>完整尽调报告链接（PDF/MD）</td></tr>
+      </tbody>
+    </table>
+
+    <div class="divider"></div>
+    <div class="section-title">MCP 工具支持</div>
+    <div class="mcp-card">
+      <div class="mcp-name">insighthub_company_lookup</div>
+      <div class="mcp-desc">在 Claude / Cursor 中直接查询企业基础信息</div>
+    </div>
+    <div class="mcp-card">
+      <div class="mcp-name">insighthub_company_risk_score</div>
+      <div class="mcp-desc">输入企业名称，返回风险评分与关键记录</div>
+    </div>
+    <div class="mcp-card">
+      <div class="mcp-name">insighthub_generate_due_diligence</div>
+      <div class="mcp-desc">调用 AI 报告生成接口，返回完整尽调报告</div>
+    </div>
+
+  </div>
+
+  <div class="sidebar">
+    <div class="status-badge"><i class="ti ti-circle-check" style="font-size:14px" aria-hidden="true"></i>服务正常运行</div>
+
+    <div class="sb-card">
+      <div class="sb-card-title">数据包定价</div>
+      <div class="plan-row">
+        <span class="plan-name">个人版</span>
+        <span class="plan-price" style="color:var(--color-text-tertiary)">不开放</span>
+      </div>
+      <div class="plan-row">
+        <span class="plan-name">创业者版</span>
+        <span class="plan-price highlight">¥699 / 月</span>
+      </div>
+      <div class="plan-row">
+        <span class="plan-name">专业版</span>
+        <span class="plan-price">¥1499 / 月</span>
+      </div>
+      <div class="plan-row">
+        <span class="plan-name">企业版</span>
+        <span class="plan-price">¥4999 / 月起</span>
+      </div>
+      <button class="btn-subscribe" style="width:100%;margin-top:14px;font-size:12px;padding:8px" onclick="location.href='checkout.html'">立即订阅 →</button>
+    </div>
+
+    <div class="sb-card">
+      <div class="sb-card-title">数据更新频率</div>
+      <div class="update-row"><div class="update-dot"></div>企业基础信息 · 每日</div>
+      <div class="update-row"><div class="update-dot"></div>司法风险记录 · 实时</div>
+      <div class="update-row"><div class="update-dot"></div>竞品动态监控 · 实时</div>
+      <div class="update-row"><div class="update-dot"></div>招投标公告 · 每日</div>
+    </div>
+
+    <div class="sb-card">
+      <div class="sb-card-title">调用限额（创业者版）</div>
+      <div class="update-row"><i class="ti ti-api" style="font-size:13px;color:var(--color-brand)" aria-hidden="true"></i>每月 2,000 次 API 调用</div>
+      <div class="update-row"><i class="ti ti-file-text" style="font-size:13px;color:var(--color-brand)" aria-hidden="true"></i>每月 20 份尽调报告</div>
+      <div class="update-row"><i class="ti ti-building" style="font-size:13px;color:var(--color-brand)" aria-hidden="true"></i>监控 30 家企业/竞品</div>
+      <div class="update-row"><i class="ti ti-plug" style="font-size:13px;color:var(--color-brand)" aria-hidden="true"></i>MCP 无限调用</div>
+    </div>
+
+    <div class="sb-card">
+      <div class="sb-card-title">数据可信度说明</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">
+        企业数据来源于公开登记信息及授权第三方接口，仅供商业参考，不构成法律或投资建议，关键决策请以官方渠道核实为准。
+      </div>
+    </div>
+
+    <button class="btn-demo" style="width:100%;font-size:12px;padding:8px;margin-bottom:8px" onclick="location.href='mcp-guide.html'">MCP 接入指南 ↗</button>
+    <button class="btn-demo" style="width:100%;font-size:12px;padding:8px" onclick="location.href='api-docs.html'">下载 OpenAPI 文档</button>
+  </div>
+</div>
+
+<script>
+var riskPool=[
+  {level:'低风险',cls:'risk-low-bg',score:8,info:'综合风险评分 8/100。近 3 年无司法风险记录，经营状态正常，可作为合作或销售线索跟进。',
+   entities:[['注册资本','1,000 万元'],['成立时间','2019-03-12'],['参保人数','86 人'],['关联公司','3 家']],
+   events:[
+     {cls:'ev-good',icon:'ti-circle-check',text:'近 90 天无新增司法案件或经营异常记录'},
+     {cls:'ev-info',icon:'ti-info-circle',text:'近期参与 1 项政府采购招投标项目'},
+     {cls:'ev-warn',icon:'ti-alert-triangle',text:'法定代表人同时担任另外 2 家公司高管'}
+   ]},
+  {level:'中风险',cls:'risk-mid-bg',score:46,info:'综合风险评分 46/100。存在 2 起合同纠纷诉讼记录，建议合作前进一步核实经营状况。',
+   entities:[['注册资本','500 万元'],['成立时间','2016-07-08'],['参保人数','23 人'],['关联公司','5 家']],
+   events:[
+     {cls:'ev-warn',icon:'ti-alert-triangle',text:'近 1 年新增 2 起合同纠纷诉讼记录'},
+     {cls:'ev-warn',icon:'ti-alert-triangle',text:'参保人数较去年同期下降 35%'},
+     {cls:'ev-info',icon:'ti-info-circle',text:'近期发生法定代表人变更'}
+   ]},
+  {level:'高风险',cls:'risk-high-bg',score:78,info:'综合风险评分 78/100。存在多项经营异常和被执行记录，不建议作为合作对象。',
+   entities:[['注册资本','100 万元'],['成立时间','2021-11-20'],['参保人数','4 人'],['关联公司','7 家']],
+   events:[
+     {cls:'ev-warn',icon:'ti-alert-triangle',text:'被列入经营异常名录，存在被执行记录'},
+     {cls:'ev-warn',icon:'ti-alert-triangle',text:'近 6 个月发生 3 次股权变更'},
+     {cls:'ev-warn',icon:'ti-alert-triangle',text:'多家关联公司已注销或吊销'}
+   ]}
+];
+
+function runDemo(){
+  var company=document.getElementById('demo-company').value||'某科技有限公司';
+  var pick=riskPool[Math.floor(Math.random()*riskPool.length)];
+
+  var badge=document.getElementById('risk-badge');
+  badge.className='risk-badge '+pick.cls;
+  badge.textContent=pick.level;
+  document.getElementById('risk-info').textContent=pick.info;
+
+  var entHtml=pick.entities.map(function(e){
+    return '<div class="entity-card"><div class="entity-label">'+e[0]+'</div><div class="entity-val">'+e[1]+'</div></div>';
+  }).join('');
+  document.getElementById('entity-grid').innerHTML=entHtml;
+
+  var evHtml=pick.events.map(function(ev){
+    return '<div class="event-row '+ev.cls+'"><i class="ti '+ev.icon+'" aria-hidden="true"></i>'+ev.text+'</div>';
+  }).join('');
+  document.getElementById('event-list').innerHTML=evHtml;
+}
+</script>
+</div>
+</body>
+</html>

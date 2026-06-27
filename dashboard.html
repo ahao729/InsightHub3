@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用户工作台 · InsightHub Data</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="assets/stub-runtime.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+
+<style>
+.shell{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:700px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin:24px}
+.sidebar{background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary);padding:20px 0}
+.sb-logo{display:flex;align-items:center;gap:8px;padding:0 16px 20px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:16px;cursor:pointer}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.sb-logo-text{font-size:14px;font-weight:500}
+.sb-user{padding:0 12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:12px}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--color-brand-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--color-text-success);margin-bottom:8px}
+.sb-name{font-size:13px;font-weight:500}
+.sb-plan{font-size:11px;color:var(--color-brand-dark);background:var(--color-brand-light);padding:2px 8px;border-radius:999px;display:inline-block;margin-top:3px}
+.sb-nav-label{font-size:11px;color:var(--color-text-secondary);padding:0 16px;margin-bottom:6px;font-weight:500;letter-spacing:0.04em}
+.sb-nav-section{margin-bottom:16px}
+.sb-nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;border-radius:0}
+.sb-nav-item:hover{background:var(--color-background-primary);color:var(--color-text-primary)}
+.sb-nav-item.active{background:var(--color-background-primary);color:var(--color-text-primary);border-right:2px solid var(--color-brand)}
+.sb-nav-item i{font-size:16px}
+
+.main{background:var(--color-background-primary)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.topbar-title{font-size:16px;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-btn{font-size:12px;padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans)}
+.topbar-btn-primary{background:var(--color-brand);color:#fff;border:none}
+.topbar-btn-primary:hover{background:var(--color-brand-dark)}
+
+.content{padding:20px 24px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px}
+.metric-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px}
+.metric-val{font-size:22px;font-weight:500}
+.metric-sub{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.metric-green{color:var(--color-brand)}
+.metric-amber{color:#BA7517}
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-hd-title{font-size:14px;font-weight:500}
+.section-hd-action{font-size:12px;color:var(--color-brand);cursor:pointer}
+
+.key-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:10px}
+.key-row{display:flex;align-items:center;gap:10px}
+.key-name{font-size:13px;font-weight:500;flex:1}
+.key-badge{font-size:11px;padding:2px 8px;border-radius:999px}
+.key-badge-live{background:var(--color-brand-light);color:var(--color-text-success)}
+.key-badge-dev{background:#E6F1FB;color:#185FA5}
+.key-val{font-family:var(--font-mono);font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:6px 10px;border-radius:var(--border-radius-md);flex:1;letter-spacing:0.04em}
+.key-actions{display:flex;gap:6px}
+.icon-btn{width:30px;height:30px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--color-text-secondary)}
+.icon-btn:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.key-meta{display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)}
+.key-meta-item{font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:5px}
+.key-meta-item i{font-size:13px}
+.usage-bar-wrap{margin-top:8px}
+.usage-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);margin-bottom:5px}
+.usage-bar{height:5px;background:var(--color-background-secondary);border-radius:999px;overflow:hidden}
+.usage-bar-fill{height:100%;border-radius:999px;background:var(--color-brand)}
+.usage-bar-fill-warn{background:#BA7517}
+
+.report-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.report-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.report-icon{width:36px;height:36px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ri-green{background:var(--color-brand-light);color:var(--color-brand-dark)}
+.ri-blue{background:#E6F1FB;color:#185FA5}
+.ri-amber{background:#FAEEDA;color:#854F0B}
+.report-info{flex:1}
+.report-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.report-meta{font-size:11px;color:var(--color-text-secondary);display:flex;gap:10px}
+.report-acts{display:flex;gap:6px}
+.rp-tag{font-size:11px;padding:2px 8px;border-radius:999px}
+.rp-tag-new{background:var(--color-brand-light);color:var(--color-text-success)}
+.rp-tag-old{background:#F1EFE8;color:#5F5E5A}
+
+.monitor-list{display:flex;flex-direction:column;gap:8px}
+.monitor-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 16px;display:flex;align-items:center;gap:12px}
+.monitor-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ms-active{background:var(--color-brand)}
+.ms-alert{background:#E24B4A}
+.ms-pause{background:#888780}
+.monitor-info{flex:1}
+.monitor-name{font-size:13px;font-weight:500;margin-bottom:1px}
+.monitor-meta{font-size:11px;color:var(--color-text-secondary);display:flex;gap:10px}
+.alert-pill{font-size:11px;padding:2px 8px;border-radius:999px;background:#FCEBEB;color:#A32D2D}
+
+.plan-banner{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;background:var(--color-background-secondary)}
+.plan-info-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.plan-info-sub{font-size:12px;color:var(--color-text-secondary)}
+.plan-renew{font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:6px}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:16px 0}
+
+.filter-pills{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-pills button{font-size:11px;padding:4px 12px;border-radius:999px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans)}
+.filter-pills button.active{background:var(--color-background-secondary)}
+
+.notif-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.notif-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;display:flex;align-items:center;gap:10px}
+.notif-card i{font-size:18px;color:var(--color-brand)}
+.notif-info{flex:1}
+.notif-title{font-size:13px;font-weight:500}
+.notif-sub{font-size:11px;color:var(--color-text-secondary)}
+</style>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="sb-logo" onclick="location.href='index.html'">
+      <div class="logo-dot"></div>
+      <span class="sb-logo-text">InsightHub</span>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar">张</div>
+      <div class="sb-name">张小明</div>
+      <div class="sb-plan">创业者版</div>
+    </div>
+
+    <div class="sb-nav-section">
+      <div class="sb-nav-label">工作台</div>
+      <div class="sb-nav-item active" onclick="switchTab('overview')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>总览</div>
+      <div class="sb-nav-item" onclick="switchTab('apikeys')"><i class="ti ti-key" aria-hidden="true"></i>API Keys</div>
+      <div class="sb-nav-item" onclick="switchTab('reports')"><i class="ti ti-file-text" aria-hidden="true"></i>报告中心</div>
+      <div class="sb-nav-item" onclick="switchTab('monitor')"><i class="ti ti-bell" aria-hidden="true"></i>监控任务</div>
+    </div>
+
+    <div class="sb-nav-section">
+      <div class="sb-nav-label">数据产品</div>
+      <div class="sb-nav-item" onclick="switchTab('packages')"><i class="ti ti-package" aria-hidden="true"></i>我的数据包</div>
+      <div class="sb-nav-item" onclick="location.href='mcp-guide.html'"><i class="ti ti-plug" aria-hidden="true"></i>MCP 接入</div>
+    </div>
+
+    <div class="sb-nav-section">
+      <div class="sb-nav-label">账户</div>
+      <div class="sb-nav-item"><i class="ti ti-credit-card" aria-hidden="true"></i>订阅与账单</div>
+      <div class="sb-nav-item"><i class="ti ti-users" aria-hidden="true"></i>团队成员</div>
+      <div class="sb-nav-item"><i class="ti ti-settings" aria-hidden="true"></i>账户设置</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">总览</div>
+      <div class="topbar-right">
+        <button class="topbar-btn"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i></button>
+        <button class="topbar-btn topbar-btn-primary" id="top-action-btn" onclick="handleTopAction()">生成报告 ↗</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ===== 总览 Tab ===== -->
+      <div id="tab-overview">
+        <div class="plan-banner">
+          <div>
+            <div class="plan-info-title">创业者版 · 当前套餐</div>
+            <div class="plan-info-sub">3 个数据包 · 每月 5,000 次 API 调用 · 50 份报告 · MCP 无限</div>
+          </div>
+          <div style="text-align:right">
+            <div class="plan-renew"><i class="ti ti-calendar" style="font-size:13px" aria-hidden="true"></i>2026-07-01 续费</div>
+            <button class="topbar-btn" style="margin-top:6px;font-size:11px" onclick="location.href='pricing.html'">升级套餐</button>
+          </div>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">本月 API 调用</div>
+            <div class="metric-val" id="metric-calls">3,284</div>
+            <div class="metric-sub" id="metric-calls-sub">额度 5,000 · 剩余 1,716</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">已生成报告</div>
+            <div class="metric-val">31</div>
+            <div class="metric-sub">额度 50 · 剩余 19</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">活跃监控任务</div>
+            <div class="metric-val metric-green">12</div>
+            <div class="metric-sub">上限 50 个对象</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">待查看告警</div>
+            <div class="metric-val metric-amber">3</div>
+            <div class="metric-sub">今日新增</div>
+          </div>
+        </div>
+
+        <div class="section-hd">
+          <div class="section-hd-title">本月调用量趋势</div>
+          <div class="section-hd-action" onclick="switchTab('apikeys')">查看详细日志</div>
+        </div>
+        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:20px">
+          <canvas id="usage-chart" height="90"></canvas>
+        </div>
+
+        <div class="section-hd">
+          <div class="section-hd-title">最近报告</div>
+          <div class="section-hd-action" onclick="switchTab('reports')">查看全部</div>
+        </div>
+        <div class="report-list">
+          <div class="report-row">
+            <div class="report-icon ri-green"><i class="ti ti-rocket" aria-hidden="true"></i></div>
+            <div class="report-info">
+              <div class="report-title">AI 客服 SaaS 创业分析报告</div>
+              <div class="report-meta"><span>创业商业情报包</span><span>2026-06-14 10:32</span></div>
+            </div>
+            <span class="rp-tag rp-tag-new">新</span>
+            <div class="report-acts">
+              <button class="icon-btn" title="下载"><i class="ti ti-download" aria-hidden="true"></i></button>
+              <button class="icon-btn" title="查看"><i class="ti ti-eye" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div class="report-row">
+            <div class="report-icon ri-blue"><i class="ti ti-brand-google" aria-hidden="true"></i></div>
+            <div class="report-info">
+              <div class="report-title">insighthub.data AI/GEO 可见度分析</div>
+              <div class="report-meta"><span>AI/GEO 数据包</span><span>2026-06-13 15:08</span></div>
+            </div>
+            <span class="rp-tag rp-tag-old">已读</span>
+            <div class="report-acts">
+              <button class="icon-btn"><i class="ti ti-download" aria-hidden="true"></i></button>
+              <button class="icon-btn"><i class="ti ti-eye" aria-hidden="true"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-hd">
+          <div class="section-hd-title">监控告警</div>
+          <div class="section-hd-action" onclick="switchTab('monitor')">管理任务</div>
+        </div>
+        <div class="monitor-list">
+          <div class="monitor-row">
+            <div class="monitor-status ms-alert"></div>
+            <div class="monitor-info">
+              <div class="monitor-name">竞品 Intercom — 定价页变动</div>
+              <div class="monitor-meta"><span>企业竞品监控包</span><span>2026-06-14 08:17</span></div>
+            </div>
+            <span class="alert-pill">新告警</span>
+          </div>
+          <div class="monitor-row">
+            <div class="monitor-status ms-active"></div>
+            <div class="monitor-info">
+              <div class="monitor-name">AI 客服 SaaS 行业指数</div>
+              <div class="monitor-meta"><span>创业商业情报包</span><span>昨日 09:00 检查</span></div>
+            </div>
+            <span style="font-size:11px;color:var(--color-text-secondary)">正常</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== API Keys Tab ===== -->
+      <div id="tab-apikeys" style="display:none">
+        <div class="section-hd">
+          <div class="section-hd-title">我的 API Keys</div>
+          <button class="topbar-btn topbar-btn-primary" style="font-size:12px;padding:6px 14px" onclick="alert('新建 API Key 弹窗（可继续开发）')">+ 新建 Key</button>
+        </div>
+
+        <div class="key-card">
+          <div class="key-row">
+            <div><div class="key-name">生产环境 Key</div></div>
+            <span class="key-badge key-badge-live">生产</span>
+            <div class="key-val" id="key-prod">ihd_live_sk_••••••••••••••••3a9f</div>
+            <div class="key-actions">
+              <button class="icon-btn" onclick="toggleKey('key-prod','ihd_live_sk_Xk9mPqL2rN8vTs4w3a9f')" title="显示/隐藏"><i class="ti ti-eye" aria-hidden="true"></i></button>
+              <button class="icon-btn" onclick="copyKey('ihd_live_sk_Xk9mPqL2rN8vTs4w3a9f')" title="复制"><i class="ti ti-copy" aria-hidden="true"></i></button>
+              <button class="icon-btn" title="轮换 Key"><i class="ti ti-refresh" aria-hidden="true"></i></button>
+              <button class="icon-btn" style="color:var(--color-text-danger)" title="删除"><i class="ti ti-trash" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div class="usage-bar-wrap">
+            <div class="usage-bar-label"><span>本月调用量</span><span>3,284 / 5,000</span></div>
+            <div class="usage-bar"><div class="usage-bar-fill" style="width:66%"></div></div>
+          </div>
+          <div class="key-meta">
+            <div class="key-meta-item"><i class="ti ti-calendar" aria-hidden="true"></i>创建于 2026-05-02</div>
+            <div class="key-meta-item"><i class="ti ti-clock" aria-hidden="true"></i>最后调用 2 分钟前</div>
+            <div class="key-meta-item"><i class="ti ti-package" aria-hidden="true"></i>全部数据包权限</div>
+          </div>
+        </div>
+
+        <div class="key-card">
+          <div class="key-row">
+            <div><div class="key-name">开发测试 Key</div></div>
+            <span class="key-badge key-badge-dev">测试</span>
+            <div class="key-val" id="key-dev">ihd_test_sk_••••••••••••••••7c2b</div>
+            <div class="key-actions">
+              <button class="icon-btn" onclick="toggleKey('key-dev','ihd_test_sk_Bj3nKpM5qR7xUv9w7c2b')" title="显示/隐藏"><i class="ti ti-eye" aria-hidden="true"></i></button>
+              <button class="icon-btn" onclick="copyKey('ihd_test_sk_Bj3nKpM5qR7xUv9w7c2b')" title="复制"><i class="ti ti-copy" aria-hidden="true"></i></button>
+              <button class="icon-btn" title="轮换 Key"><i class="ti ti-refresh" aria-hidden="true"></i></button>
+              <button class="icon-btn" style="color:var(--color-text-danger)" title="删除"><i class="ti ti-trash" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div class="usage-bar-wrap">
+            <div class="usage-bar-label"><span>本月调用量</span><span>142 / 500</span></div>
+            <div class="usage-bar"><div class="usage-bar-fill" style="width:28%"></div></div>
+          </div>
+          <div class="key-meta">
+            <div class="key-meta-item"><i class="ti ti-calendar" aria-hidden="true"></i>创建于 2026-06-18</div>
+            <div class="key-meta-item"><i class="ti ti-clock" aria-hidden="true"></i>最后调用 1 小时前</div>
+            <div class="key-meta-item"><i class="ti ti-package" aria-hidden="true"></i>仅创业情报包</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-hd-title" style="margin-bottom:12px">调用日志（最近 10 条）</div>
+        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+            <thead>
+              <tr style="background:var(--color-background-secondary)">
+                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:28%">接口</th>
+                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:12%">状态</th>
+                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:12%">耗时</th>
+                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:28%">时间</th>
+                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:20%">Key</th>
+              </tr>
+            </thead>
+            <tbody id="log-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== 报告中心 Tab ===== -->
+      <div id="tab-reports" style="display:none">
+        <div class="section-hd">
+          <div class="section-hd-title">我的报告（31 份）</div>
+          <button class="topbar-btn topbar-btn-primary" style="font-size:12px;padding:6px 14px" onclick="location.href='report-generator.html'">生成新报告 ↗</button>
+        </div>
+        <div class="filter-pills">
+          <button class="active">全部</button>
+          <button>创业情报</button>
+          <button>AI/GEO</button>
+          <button>竞品监控</button>
+        </div>
+        <div class="report-list" id="report-list"></div>
+      </div>
+
+      <!-- ===== 监控任务 Tab ===== -->
+      <div id="tab-monitor" style="display:none">
+        <div class="section-hd">
+          <div class="section-hd-title">监控任务（12 个活跃）</div>
+          <button class="topbar-btn topbar-btn-primary" style="font-size:12px;padding:6px 14px" onclick="alert('新建监控任务（可继续开发）')">+ 新建监控</button>
+        </div>
+
+        <div class="filter-pills">
+          <button class="active">全部</button>
+          <button>告警中</button>
+          <button>暂停</button>
+        </div>
+
+        <div class="monitor-list" id="monitor-list"></div>
+
+        <div class="divider"></div>
+        <div class="section-hd-title" style="margin-bottom:10px">通知渠道设置</div>
+        <div class="notif-grid">
+          <div class="notif-card">
+            <i class="ti ti-mail" aria-hidden="true"></i>
+            <div class="notif-info">
+              <div class="notif-title">邮件通知</div>
+              <div class="notif-sub">zhang@example.com · 已启用</div>
+            </div>
+          </div>
+          <div class="notif-card">
+            <i class="ti ti-brand-wechat" style="color:var(--color-brand)" aria-hidden="true"></i>
+            <div class="notif-info">
+              <div class="notif-title">企业微信</div>
+              <div class="notif-sub">未配置 · <span style="color:var(--color-brand);cursor:pointer">立即设置</span></div>
+            </div>
+          </div>
+          <div class="notif-card">
+            <i class="ti ti-message" style="color:var(--color-text-secondary)" aria-hidden="true"></i>
+            <div class="notif-info">
+              <div class="notif-title">飞书</div>
+              <div class="notif-sub">未配置 · <span style="color:var(--color-brand);cursor:pointer">立即设置</span></div>
+            </div>
+          </div>
+          <div class="notif-card">
+            <i class="ti ti-webhook" style="color:var(--color-text-secondary)" aria-hidden="true"></i>
+            <div class="notif-info">
+              <div class="notif-title">Webhook</div>
+              <div class="notif-sub">未配置 · <span style="color:var(--color-brand);cursor:pointer">立即设置</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 我的数据包 Tab ===== -->
+      <div id="tab-packages" style="display:none">
+        <div class="section-hd">
+          <div class="section-hd-title">已订阅数据包（3）</div>
+          <button class="topbar-btn" style="font-size:12px;padding:6px 14px" onclick="location.href='marketplace.html'">浏览市场</button>
+        </div>
+        <div class="monitor-list" id="subscribed-pkgs"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+
+// ========== 全局状态 ==========
+var __dashboardData = null;
+var __usageChart = null;
+
+// ========== Tab 切换 ==========
+function switchTab(name) {
+  var tabs = ['overview', 'apikeys', 'reports', 'monitor', 'packages'];
+  tabs.forEach(function (t) {
+    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+  });
+
+  var titles = { overview: '总览', apikeys: 'API Keys', reports: '报告中心', monitor: '监控任务', packages: '我的数据包' };
+  document.getElementById('page-title').textContent = titles[name] || '总览';
+
+  var actions = {
+    overview: function () { location.href = 'report-generator.html'; },
+    apikeys: function () { alert('新建 API Key 弹窗（可继续开发）'); },
+    reports: function () { location.href = 'report-generator.html'; },
+    monitor: function () { alert('新建监控任务（可继续开发）'); },
+    packages: function () { location.href = 'marketplace.html'; },
+  };
+  document.getElementById('top-action-btn').onclick = actions[name] || actions.overview;
+  document.getElementById('top-action-btn').textContent = name === 'apikeys' ? '+ 新建 Key' : name === 'reports' ? '生成报告 ↗' : name === 'monitor' ? '+ 新建监控' : name === 'packages' ? '浏览市场' : '生成报告 ↗';
+
+  document.querySelectorAll('.sb-nav-item').forEach(function (el) { el.classList.remove('active'); });
+  var navMap = { overview: 0, apikeys: 1, reports: 2, monitor: 3 };
+  var idx = navMap[name];
+  if (idx !== undefined) {
+    document.querySelectorAll('.sb-nav-section:first-child .sb-nav-item')[idx].classList.add('active');
+  }
+
+  if (name === 'apikeys' && __dashboardData) renderLogTable(__dashboardData.recentLogs || []);
+}
+
+// ========== API Key 显示/隐藏 ==========
+window.toggleKey = function (elemId, fullKey) {
+  var el = document.getElementById(elemId);
+  if (el.textContent.indexOf('\u2022') >= 0) {
+    el.textContent = fullKey;
+  } else {
+    el.textContent = fullKey.slice(0, 15) + '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' + fullKey.slice(-4);
+  }
+};
+
+window.copyKey = function (key) {
+  navigator.clipboard.writeText(key).then(function () {
+    showToast('已复制到剪贴板');
+  }).catch(function () {
+    var ta = document.createElement('textarea');
+    ta.value = key;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('已复制到剪贴板');
+  });
+};
+
+window.handleTopAction = function () {
+  location.href = 'report-generator.html';
+};
+
+window.switchTab = switchTab;
+
+// ========== Toast 提示 ==========
+function showToast(msg) {
+  var old = document.querySelector('.toast-msg');
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.className = 'toast-msg';
+  d.textContent = msg;
+  Object.assign(d.style, {
+    position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+    background: '#1a1a1a', color: '#fff', padding: '10px 24px', borderRadius: '8px',
+    fontSize: '13px', zIndex: '9999', fontFamily: 'var(--font-sans)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+  });
+  document.body.appendChild(d);
+  setTimeout(function () { d.style.opacity = '0'; d.style.transition = 'opacity 0.3s'; setTimeout(function () { d.remove(); }, 300); }, 2000);
+}
+
+// ========== 渲染函数 ==========
+
+function renderMetrics(m) {
+  if (!m) return;
+  document.getElementById('metric-calls').textContent = (m.apiCalls || 0).toLocaleString();
+  document.getElementById('metric-calls-sub').textContent = '\u989D\u5EA6 ' + (m.apiLimit || 0).toLocaleString() + ' \u00B7 \u5269\u4F59 ' + (Math.max(0, (m.apiLimit || 0) - (m.apiCalls || 0))).toLocaleString();
+
+  var reportEl = document.querySelector('.metric:nth-child(2) .metric-val');
+  var reportSub = document.querySelector('.metric:nth-child(2) .metric-sub');
+  if (reportEl) reportEl.textContent = (m.reports || 0).toLocaleString();
+  if (reportSub) reportSub.textContent = '\u989D\u5EA6 ' + (m.reportLimit || 0).toLocaleString() + ' \u00B7 \u5269\u4F59 ' + (Math.max(0, (m.reportLimit || 0) - (m.reports || 0))).toLocaleString();
+
+  var monitorEl = document.querySelector('.metric:nth-child(3) .metric-val');
+  var monitorSub = document.querySelector('.metric:nth-child(3) .metric-sub');
+  if (monitorEl) monitorEl.textContent = (m.activeMonitors || 0).toLocaleString();
+  if (monitorSub) monitorSub.textContent = '\u4E0A\u9650 ' + (m.monitorLimit || 0).toLocaleString() + ' \u4E2A\u5BF9\u8C61';
+
+  var alertEl = document.querySelector('.metric:nth-child(4) .metric-val');
+  var alertSub = document.querySelector('.metric:nth-child(4) .metric-sub');
+  if (alertEl) alertEl.textContent = (m.alerts || 0).toLocaleString();
+  if (alertSub) alertSub.textContent = '\u4ECA\u65E5\u65B0\u589E';
+}
+
+function renderPlan(plan) {
+  if (!plan) return;
+  var banner = document.querySelector('.plan-banner');
+  if (!banner) return;
+  var infoTitle = banner.querySelector('.plan-info-title');
+  var infoSub = banner.querySelector('.plan-info-sub');
+  var renewEl = banner.querySelector('.plan-renew');
+  if (infoTitle) infoTitle.textContent = (plan.name || '\u5F53\u524D\u5957\u9910') + ' \u00B7 \u5F53\u524D\u5957\u9910';
+  if (infoSub) infoSub.textContent = plan.description || '';
+  if (renewEl) renewEl.innerHTML = '<i class="ti ti-calendar" style="font-size:13px" aria-hidden="true"></i>' + (plan.renewDate || '');
+}
+
+function renderTrend(labels, values) {
+  if (!labels || !values) return;
+  var ctx = document.getElementById('usage-chart');
+  if (!ctx) return;
+  if (__usageChart) { __usageChart.destroy(); __usageChart = null; }
+  __usageChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '\u8C03\u7528\u6B21\u6570',
+        data: values,
+        borderColor: 'var(--color-brand)',
+        backgroundColor: 'rgba(29, 158, 117, 0.06)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#999791' } },
+        y: { grid: { color: '#F1EFE8' }, ticks: { font: { size: 11 }, color: '#999791' } }
+      }
+    }
+  });
+}
+
+function renderReports(reports) {
+  var el = document.getElementById('report-list');
+  if (!el) return;
+  if (!reports || reports.length === 0) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--color-text-secondary);font-size:13px">\u6682\u65E0\u62A5\u544A</div>';
+    return;
+  }
+  el.innerHTML = reports.map(function (r) {
+    var iconCls = r.icon || 'ri-green';
+    var iconName = r.iconName || 'ti-file-text';
+    var tagCls = r.tag === '\u65B0' ? 'rp-tag-new' : 'rp-tag-old';
+    return '<div class="report-row">' +
+      '<div class="report-icon ' + iconCls + '"><i class="ti ' + iconName + '" aria-hidden="true"></i></div>' +
+      '<div class="report-info">' +
+        '<div class="report-title">' + (r.title || '') + '</div>' +
+        '<div class="report-meta"><span>' + (r.pkg || '') + '</span><span>' + (r.date || '') + '</span></div>' +
+      '</div>' +
+      '<span class="rp-tag ' + tagCls + '">' + (r.tag || '') + '</span>' +
+      '<div class="report-acts">' +
+        '<button class="icon-btn"><i class="ti ti-download" aria-hidden="true"></i></button>' +
+        '<button class="icon-btn"><i class="ti ti-eye" aria-hidden="true"></i></button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  // 同时更新总览中的最近报告
+  var overviewReports = document.querySelector('#tab-overview .report-list');
+  if (overviewReports && overviewReports.id !== 'report-list') {
+    overviewReports.innerHTML = el.innerHTML;
+  }
+}
+
+function renderMonitors(monitors) {
+  var el = document.getElementById('monitor-list');
+  if (!el) return;
+  if (!monitors || monitors.length === 0) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--color-text-secondary);font-size:13px">\u6682\u65E0\u76D1\u63A7\u4EFB\u52A1</div>';
+    return;
+  }
+  el.innerHTML = monitors.map(function (m) {
+    var statusCls = m.status || 'ms-active';
+    var pillHtml;
+    if (m.pillCls) {
+      pillHtml = '<span class="' + m.pillCls + '">' + (m.pill || '') + '</span>';
+    } else {
+      pillHtml = '<span style="font-size:11px;color:var(--color-text-secondary)">' + (m.pill || '') + '</span>';
+    }
+    return '<div class="monitor-row">' +
+      '<div class="monitor-status ' + statusCls + '"></div>' +
+      '<div class="monitor-info">' +
+        '<div class="monitor-name">' + (m.name || '') + '</div>' +
+        '<div class="monitor-meta"><span>' + (m.pkg || '') + '</span><span>' + (m.date || '') + '</span></div>' +
+      '</div>' +
+      pillHtml +
+    '</div>';
+  }).join('');
+  // 同时更新总览中的监控列表
+  var overviewMonitors = document.querySelector('#tab-overview .monitor-list');
+  if (overviewMonitors && overviewMonitors.id !== 'monitor-list') {
+    overviewMonitors.innerHTML = el.innerHTML;
+  }
+}
+
+function renderPackages(pkgs) {
+  var el = document.getElementById('subscribed-pkgs');
+  if (!el) return;
+  if (!pkgs || pkgs.length === 0) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--color-text-secondary);font-size:13px">\u5C1A\u672A\u8BA2\u9605\u6570\u636E\u5305</div>';
+    return;
+  }
+  el.innerHTML = pkgs.map(function (p) {
+    return '<div class="monitor-row">' +
+      '<div class="report-icon ' + (p.color || 'ri-green') + '"><i class="ti ' + (p.icon || 'ti-package') + '" aria-hidden="true"></i></div>' +
+      '<div class="monitor-info">' +
+        '<div class="monitor-name">' + (p.name || '') + '</div>' +
+        '<div class="monitor-meta">' + (p.desc || '') + '</div>' +
+      '</div>' +
+      '<button class="topbar-btn" style="font-size:11px;padding:3px 10px">\u67E5\u770B\u8BE6\u60C5</button>' +
+    '</div>';
+  }).join('');
+}
+
+function renderLogTable(logs) {
+  var body = document.getElementById('log-body');
+  if (!body) return;
+  if (!logs || logs.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" style="padding:24px;text-align:center;color:var(--color-text-secondary);font-size:12px">\u6682\u65E0\u8C03\u7528\u8BB0\u5F55</td></tr>';
+    return;
+  }
+  body.innerHTML = logs.map(function (l) {
+    var statusColor = l.status === '200' ? 'color:var(--color-brand)' : l.status === '429' ? 'color:#BA7517' : 'color:var(--color-text-danger)';
+    var keyBadgeCls = l.key === '\u751F\u4EA7' ? 'key-badge-live' : 'key-badge-dev';
+    return '<tr>' +
+      '<td style="padding:7px 12px;font-family:var(--font-mono);font-size:11px">' + (l.api || '') + '</td>' +
+      '<td style="padding:7px 12px"><span style="' + statusColor + '">' + (l.status || '') + '</span></td>' +
+      '<td style="padding:7px 12px;color:var(--color-text-secondary)">' + (l.time || '') + '</td>' +
+      '<td style="padding:7px 12px;color:var(--color-text-secondary)">' + (l.ts || '') + '</td>' +
+      '<td style="padding:7px 12px"><span class="key-badge ' + keyBadgeCls + '" style="font-size:10px">' + (l.key || '') + '</span></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderApiKeys(keys) {
+  if (!keys || keys.length === 0) return;
+  // 更新 API Keys 区域的第一张卡片（生产环境 Key）
+  var prod = keys.filter(function (k) { return k.env === 'production' || k.name === '\u751F\u4EA7\u73AF\u5883 Key'; })[0];
+  var dev = keys.filter(function (k) { return k.env === 'development' || k.name === '\u5F00\u53D1\u6D4B\u8BD5 Key'; })[0];
+
+  if (prod) {
+    var prodVal = document.getElementById('key-prod');
+    if (prodVal) {
+      var masked = (prod.key || '').slice(0, 15) + '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' + (prod.key || '').slice(-4);
+      prodVal.textContent = masked;
+      // 更新 toggle/copy 按钮上的 key 引用 — 依赖 onclick 属性中的字符串
+      var toggleBtn = prodVal.parentNode.querySelector('.icon-btn[onclick*="toggleKey"]');
+      if (toggleBtn) toggleBtn.setAttribute('onclick', "toggleKey('key-prod','" + prod.key + "')");
+      var copyBtn = prodVal.parentNode.querySelector('.icon-btn[onclick*="copyKey"]');
+      if (copyBtn) copyBtn.setAttribute('onclick', "copyKey('" + prod.key + "')");
+    }
+    // 用量条
+    var usageLabel = document.querySelector('.key-card:first-child .usage-bar-label span:last-child');
+    var usageFill = document.querySelector('.key-card:first-child .usage-bar-fill');
+    if (usageLabel) usageLabel.textContent = (prod.used || 0).toLocaleString() + ' / ' + (prod.limit || 0).toLocaleString();
+    if (usageFill) {
+      var pct = prod.limit > 0 ? Math.min(100, Math.round((prod.used || 0) / prod.limit * 100)) : 0;
+      usageFill.style.width = pct + '%';
+    }
+  }
+
+  if (dev) {
+    var devVal = document.getElementById('key-dev');
+    if (devVal) {
+      var maskedDev = (dev.key || '').slice(0, 15) + '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' + (dev.key || '').slice(-4);
+      devVal.textContent = maskedDev;
+      var toggleBtn2 = devVal.parentNode.querySelector('.icon-btn[onclick*="toggleKey"]');
+      if (toggleBtn2) toggleBtn2.setAttribute('onclick', "toggleKey('key-dev','" + dev.key + "')");
+      var copyBtn2 = devVal.parentNode.querySelector('.icon-btn[onclick*="copyKey"]');
+      if (copyBtn2) copyBtn2.setAttribute('onclick', "copyKey('" + dev.key + "')");
+    }
+    var usageLabel2 = document.querySelector('.key-card:nth-child(2) .usage-bar-label span:last-child');
+    var usageFill2 = document.querySelector('.key-card:nth-child(2) .usage-bar-fill');
+    if (usageLabel2) usageLabel2.textContent = (dev.used || 0).toLocaleString() + ' / ' + (dev.limit || 0).toLocaleString();
+    if (usageFill2) {
+      var pct2 = dev.limit > 0 ? Math.min(100, Math.round((dev.used || 0) / dev.limit * 100)) : 0;
+      usageFill2.style.width = pct2 + '%';
+    }
+  }
+}
+
+// ========== 主初始化 ==========
+function initDashboard() {
+  var loadingEl = document.createElement('div');
+  loadingEl.id = 'dash-loading';
+  loadingEl.textContent = '\u52A0\u8F7D\u4E2D\u2026';
+  Object.assign(loadingEl.style, {
+    textAlign: 'center', padding: '60px 0', fontSize: '14px', color: 'var(--color-text-secondary)'
+  });
+  var contentArea = document.querySelector('.content');
+  if (contentArea) contentArea.prepend(loadingEl);
+
+  API.dashboard.stats().then(function (data) {
+    __dashboardData = data;
+    var loading = document.getElementById('dash-loading');
+    if (loading) loading.remove();
+
+    // plan
+    renderPlan(data.plan);
+
+    // metrics
+    renderMetrics(data.metrics);
+
+    // trend chart
+    if (data.trend) renderTrend(data.trend.labels, data.trend.values);
+
+    // reports (both tabs)
+    renderReports(data.recentReports);
+
+    // monitors (both tabs)
+    renderMonitors(data.monitors);
+
+    // packages
+    renderPackages(data.subscribedPackages);
+
+    // API keys + logs
+    renderApiKeys(data.apiKeys);
+    renderLogTable(data.recentLogs);
+
+    // 更新报告中心标题中的报告数
+    var reportHd = document.querySelector('#tab-reports .section-hd-title');
+    if (reportHd && data.metrics) {
+      reportHd.textContent = '\u6211\u7684\u62A5\u544A\uFF08' + (data.metrics.reports || 0) + ' \u4EFD\uFF09';
+    }
+    // 更新监控任务标题中的活跃数
+    var monitorHd = document.querySelector('#tab-monitor .section-hd-title');
+    if (monitorHd && data.metrics) {
+      monitorHd.textContent = '\u76D1\u63A7\u4EFB\u52A1\uFF08' + (data.metrics.activeMonitors || 0) + ' \u4E2A\u6D3B\u8DC3\uFF09';
+    }
+    // 更新已订阅数据包标题
+    var pkgHd = document.querySelector('#tab-packages .section-hd-title');
+    if (pkgHd && data.subscribedPackages) {
+      pkgHd.textContent = '\u5DF2\u8BA2\u9605\u6570\u636E\u5305\uFF08' + (data.subscribedPackages.length || 0) + '\uFF09';
+    }
+
+    // 检测 URL 参数中的 tab
+    var params = new URLSearchParams(window.location.search);
+    var tab = params.get('tab');
+    if (tab) switchTab(tab);
+  }).catch(function (err) {
+    var loading = document.getElementById('dash-loading');
+    if (loading) loading.remove();
+    console.error('Dashboard init error:', err);
+    showToast('\u52A0\u8F7D\u5931\u8D25\uFF0C\u8BF7\u5237\u65B0\u91CD\u8BD5');
+  });
+}
+
+// === 启动 ===
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+  initDashboard();
+}
+</script>
+</body>
+</html>

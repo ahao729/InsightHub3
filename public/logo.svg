@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="30" viewBox="0 0 120 30">
+  <rect width="24" height="24" rx="6" fill="#1E6DF2" y="3"/>
+  <text x="12" y="20" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">IH</text>
+  <text x="32" y="20" font-family="Arial,sans-serif" font-size="14" font-weight="600" fill="#1A1A1A">InsightHub</text>
+</svg>

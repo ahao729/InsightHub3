@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 报告生成器 · InsightHub Data</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="assets/stub-runtime.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+<style>
+.logo-bar{display:flex;align-items:center;gap:8px;padding:14px 24px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.logo-text{font-size:14px;font-weight:500;cursor:pointer}
+.logo-sep{font-size:14px;color:var(--color-border-secondary);margin:0 4px}
+.logo-sub{font-size:13px;color:var(--color-text-secondary)}
+.body{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:680px}
+.left{padding:20px;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.field-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:5px;font-weight:500}
+.field-wrap{margin-bottom:14px}
+.topic-input{width:100%;font-size:13px;padding:8px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);resize:none}
+.chip-group{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:4px 10px;border-radius:999px;border:0.5px solid var(--color-border-secondary);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary)}
+.chip.active{background:var(--color-brand-light);color:var(--color-text-success);border-color:var(--color-brand)}
+.chip:hover{border-color:var(--color-border-primary)}
+.select-field{width:100%;font-size:13px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.gen-btn{width:100%;padding:10px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;font-size:13px;font-weight:500;cursor:pointer;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px}
+.gen-btn:disabled{opacity:0.5;cursor:not-allowed}
+.gen-btn:hover:not(:disabled){background:var(--color-brand-dark)}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:14px 0}
+.quota-row{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.quota-bar{height:4px;background:var(--color-border-tertiary);border-radius:999px;overflow:hidden;margin-bottom:10px}
+.quota-fill{height:100%;border-radius:999px;background:var(--color-brand);width:62%}
+.example-pill{font-size:11px;padding:4px 10px;border-radius:999px;border:0.5px solid var(--color-border-tertiary);cursor:pointer;color:var(--color-text-secondary);display:inline-block;margin:2px 2px 2px 0}
+.example-pill:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.right{padding:24px}
+.state-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:460px;color:var(--color-text-secondary)}
+.state-empty-icon{font-size:36px;color:var(--color-border-secondary);margin-bottom:12px}
+.state-empty-text{font-size:14px;margin-bottom:4px;color:var(--color-text-secondary)}
+.state-empty-sub{font-size:12px;color:var(--color-text-secondary)}
+.report-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.report-title{font-size:18px;font-weight:500;margin-bottom:6px}
+.report-meta-row{display:flex;gap:10px;flex-wrap:wrap}
+.report-tag{font-size:11px;padding:2px 8px;border-radius:999px}
+.rt-green{background:var(--color-brand-light);color:var(--color-text-success)}
+.rt-gray{background:#F1EFE8;color:#444441}
+.rt-blue{background:#E6F1FB;color:#185FA5}
+.report-actions{display:flex;gap:6px;flex-shrink:0}
+.icon-btn{width:30px;height:30px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--color-text-secondary)}
+.icon-btn:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.score-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.score-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px}
+.score-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.score-val{font-size:20px;font-weight:500}
+.score-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.score-green{color:var(--color-brand)}
+.score-amber{color:#BA7517}
+.report-section{margin-bottom:18px}
+.report-section-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;display:flex;align-items:center;gap:6px;padding-bottom:6px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.report-section-title i{font-size:14px;color:var(--color-brand)}
+.report-p{font-size:13px;line-height:1.8;color:var(--color-text-secondary);margin-bottom:6px}
+.report-list-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;font-size:13px;color:var(--color-text-secondary)}
+.report-list-item::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--color-brand);flex-shrink:0;margin-top:7px}
+.comp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.comp-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px}
+.comp-name{font-size:12px;font-weight:500;margin-bottom:3px}
+.comp-detail{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.risk-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:var(--border-radius-md);margin-bottom:6px;font-size:12px}
+.risk-high{background:#FCEBEB;color:#791F1F}
+.risk-mid{background:#FAEEDA;color:#633806}
+.risk-low{background:var(--color-brand-light);color:var(--color-text-success)}
+.risk-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.rd-high{background:#E24B4A}
+.rd-mid{background:#EF9F27}
+.rd-low{background:var(--color-brand)}
+.streaming-cursor{display:inline-block;width:2px;height:14px;background:var(--color-brand);vertical-align:middle;animation:blink 0.8s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.progress-wrap{margin-bottom:20px}
+.progress-step{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px;color:var(--color-text-secondary)}
+.progress-step.done{color:var(--color-text-primary)}
+.progress-step.active{color:var(--color-brand);font-weight:500}
+.step-icon{width:18px;height:18px;border-radius:50%;border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.step-icon.done{background:var(--color-brand-light);border-color:var(--color-brand);color:var(--color-text-success)}
+.step-icon.active{background:var(--color-brand);border:none;color:#fff}
+.step-icon.wait{background:var(--color-background-secondary)}
+</style>
+
+<div class="logo-bar">
+  <div class="logo-dot"></div>
+  <span class="logo-text" onclick="location.href='index.html'">InsightHub Data</span>
+  <span class="logo-sep">/</span>
+  <span class="logo-sub">AI 报告生成器</span>
+</div>
+
+<div class="body">
+  <div class="left">
+    <div class="field-wrap">
+      <div class="field-label">创业方向或项目</div>
+      <textarea class="topic-input" id="topic-input" rows="3" placeholder="例如：面向中小企业的 AI 客服 SaaS"></textarea>
+    </div>
+
+    <div class="field-wrap">
+      <div class="field-label">快速示例</div>
+      <div>
+        <span class="example-pill" onclick="setTopic('面向中小企业的 AI 客服 SaaS')">AI 客服 SaaS</span>
+        <span class="example-pill" onclick="setTopic('独立站跨境电商工具')">跨境电商工具</span>
+        <span class="example-pill" onclick="setTopic('个人知识付费平台')">知识付费平台</span>
+        <span class="example-pill" onclick="setTopic('企业 AI 培训服务')">AI 企业培训</span>
+        <span class="example-pill" onclick="setTopic('本地生活配送 SaaS')">配送 SaaS</span>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <div class="field-label">报告模块</div>
+      <div class="chip-group">
+        <span class="chip active" data-mod="trend">行业趋势</span>
+        <span class="chip active" data-mod="competitor">竞品分析</span>
+        <span class="chip active" data-mod="model">商业模式</span>
+        <span class="chip active" data-mod="user">目标用户</span>
+        <span class="chip active" data-mod="risk">风险评估</span>
+        <span class="chip active" data-mod="mvp">MVP 建议</span>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <div class="field-label">目标用户画像</div>
+      <select class="select-field" id="user-type">
+        <option>个人创业者 / 独立开发者</option>
+        <option>小团队（3–10 人）</option>
+        <option>企业内部创业</option>
+        <option>投资人 / 分析师</option>
+      </select>
+    </div>
+
+    <div class="field-wrap">
+      <div class="field-label">报告语言</div>
+      <select class="select-field" id="lang">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+
+    <button class="gen-btn" id="gen-btn" onclick="generateReport()">
+      <i class="ti ti-sparkles" aria-hidden="true"></i>
+      生成 AI 报告
+    </button>
+
+    <div class="divider"></div>
+
+    <div class="field-label" style="margin-bottom:6px">本月报告额度</div>
+    <div class="quota-row"><span>已用 31 份</span><span>额度 50 份</span></div>
+    <div class="quota-bar"><div class="quota-fill"></div></div>
+    <div style="font-size:11px;color:var(--color-text-secondary)">剩余 19 份 · 创业者版</div>
+  </div>
+
+  <div class="right" id="right-panel">
+    <div class="state-empty" id="state-empty">
+      <div class="state-empty-icon"><i class="ti ti-file-analytics" aria-hidden="true"></i></div>
+      <div class="state-empty-text">输入创业方向，生成完整商业分析报告</div>
+      <div class="state-empty-sub">包含行业趋势 · 竞品分析 · 商业模式 · 风险评估 · MVP 建议</div>
+    </div>
+    <div id="state-loading" style="display:none">
+      <div style="margin-bottom:20px">
+        <div style="font-size:14px;font-weight:500;margin-bottom:4px" id="loading-title">正在分析<span class="streaming-cursor"></span></div>
+        <div style="font-size:12px;color:var(--color-text-secondary)" id="loading-sub">调用创业商业情报数据包</div>
+      </div>
+      <div class="progress-wrap" id="progress-steps"></div>
+    </div>
+    <div id="state-report" style="display:none"></div>
+  </div>
+</div>
+</div>
+
+<script>
+var chips=document.querySelectorAll('.chip[data-mod]');
+chips.forEach(function(c){c.addEventListener('click',function(){this.classList.toggle('active')})});
+
+function setTopic(t){document.getElementById('topic-input').value=t}
+
+var steps=[
+  {label:'查询行业趋势数据',sub:'insighthub_industry_trends'},
+  {label:'分析竞品列表与流量',sub:'insighthub_competitor_list'},
+  {label:'评估市场机会与规模',sub:'insighthub_market_score'},
+  {label:'识别用户需求与痛点',sub:'insighthub_user_insights'},
+  {label:'生成 AI 商业分析报告',sub:'claude-sonnet-4-6 · streaming'},
+];
+
+function renderSteps(doneCount,activeIdx){
+  var html='';
+  steps.forEach(function(s,i){
+    var cls=i<doneCount?'done':i===activeIdx?'active':'wait';
+    var icon=i<doneCount?'<i class="ti ti-check" aria-hidden="true"></i>':i===activeIdx?'<i class="ti ti-loader" aria-hidden="true"></i>'+(i+1):(i+1);
+    html+='<div class="progress-step '+cls+'"><div class="step-icon '+cls+'">'+icon+'</div><div><div>'+s.label+'</div><div style="font-size:10px;color:var(--color-text-secondary);font-family:var(--font-mono)">'+s.sub+'</div></div></div>';
+  });
+  document.getElementById('progress-steps').innerHTML=html;
+}
+
+function generateReport(){
+  var topic=document.getElementById('topic-input').value.trim();
+  if(!topic){document.getElementById('topic-input').focus();return;}
+  var btn=document.getElementById('gen-btn');
+  btn.disabled=true;
+  btn.innerHTML='<i class="ti ti-loader" aria-hidden="true"></i> 生成中…';
+  document.getElementById('state-empty').style.display='none';
+  document.getElementById('state-report').style.display='none';
+  document.getElementById('state-loading').style.display='block';
+  document.getElementById('loading-title').innerHTML='正在分析「'+topic+'」<span class="streaming-cursor"></span>';
+
+  var done=0,active=0;
+  renderSteps(done,active);
+
+  var iv=setInterval(function(){
+    done++;active++;
+    if(done>=steps.length){
+      clearInterval(iv);
+      showReport(topic);
+      btn.disabled=false;
+      btn.innerHTML='<i class="ti ti-sparkles" aria-hidden="true"></i> 重新生成';
+      return;
+    }
+    renderSteps(done,active);
+    document.getElementById('loading-sub').textContent='调用 '+steps[active].sub;
+  },900);
+}
+
+function showReport(topic){
+  document.getElementById('state-loading').style.display='none';
+  var panel=document.getElementById('state-report');
+  panel.style.display='block';
+
+  var score=Math.floor(Math.random()*12)+76;
+  var growth=['22%','28%','34%','38%','42%'];
+  var gr=growth[Math.floor(Math.random()*growth.length)];
+  var now=new Date();
+  var dateStr=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0');
+
+  var sections=[
+    {
+      id:'trend',icon:'ti-trending-up',title:'行业趋势',
+      content:'<div class="report-p" id="p-trend"></div>'
+    },
+    {
+      id:'competitor',icon:'ti-building',title:'竞品分析',
+      content:'<div class="comp-grid"><div class="comp-card"><div class="comp-name">竞品 A</div><div class="comp-detail">流量约 120 万/月<br>定价 $49–$299/月<br>主打企业中大客户</div></div><div class="comp-card"><div class="comp-name">竞品 B</div><div class="comp-detail">流量约 65 万/月<br>定价 $19–$99/月<br>主打中小团队</div></div><div class="comp-card"><div class="comp-name">竞品 C</div><div class="comp-detail">流量约 30 万/月<br>定价 免费+增值<br>开源社区为主</div></div></div>'
+    },
+    {
+      id:'model',icon:'ti-coin',title:'推荐商业模式',
+      content:'<div class="report-p" id="p-model"></div>'
+    },
+    {
+      id:'user',icon:'ti-users',title:'目标用户',
+      content:'<div id="p-user"></div>'
+    },
+    {
+      id:'risk',icon:'ti-shield',title:'风险评估',
+      content:'<div class="risk-row risk-high"><div class="risk-dot rd-high"></div><div><strong>高</strong> · 大厂自研替代风险：头部云厂商可能低价复制核心功能，压缩利润空间</div></div><div class="risk-row risk-mid"><div class="risk-dot rd-mid"></div><div><strong>中</strong> · 客户教育成本高：中小企业 AI 接受程度参差不齐，销售周期较长</div></div><div class="risk-row risk-low"><div class="risk-dot rd-low"></div><div><strong>低</strong> · 政策合规风险：目前国内 AI 相关法规趋于明朗，合规路径较清晰</div></div>'
+    },
+    {
+      id:'mvp',icon:'ti-rocket',title:'MVP 建议',
+      content:'<div id="p-mvp"></div>'
+    }
+  ];
+
+  var activeChips=Array.from(document.querySelectorAll('.chip.active')).map(function(c){return c.dataset.mod});
+  var filtered=sections.filter(function(s){return activeChips.indexOf(s.id)>=0});
+
+  var sectionsHtml=filtered.map(function(s){
+    return '<div class="report-section"><div class="report-section-title"><i class="ti '+s.icon+'" aria-hidden="true"></i>'+s.title+'</div>'+s.content+'</div>';
+  }).join('');
+
+  panel.innerHTML=
+    '<div class="report-header">'+
+      '<div class="report-title-block">'+
+        '<div class="report-title">'+topic+' — 商业分析报告</div>'+
+        '<div class="report-meta-row">'+
+          '<span class="report-tag rt-green">创业商业情报包</span>'+
+          '<span class="report-tag rt-gray">'+dateStr+'</span>'+
+          '<span class="report-tag rt-blue">AI 生成</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="report-actions">'+
+        '<button class="icon-btn" title="复制 Markdown"><i class="ti ti-copy" aria-hidden="true"></i></button>'+
+        '<button class="icon-btn" title="下载 PDF"><i class="ti ti-download" aria-hidden="true"></i></button>'+
+        '<button class="icon-btn" title="分享"><i class="ti ti-share" aria-hidden="true"></i></button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="score-row">'+
+      '<div class="score-card"><div class="score-label">市场机会评分</div><div class="score-val score-green">'+score+' / 100</div><div class="score-sub">高潜力赛道</div></div>'+
+      '<div class="score-card"><div class="score-label">行业年增速</div><div class="score-val score-green">'+gr+'</div><div class="score-sub">近 3 年均值</div></div>'+
+      '<div class="score-card"><div class="score-label">竞争激烈度</div><div class="score-val score-amber">中高</div><div class="score-sub">头部 3–5 家</div></div>'+
+    '</div>'+
+    '<div class="report-body" id="report-body">'+sectionsHtml+'</div>';
+
+  var trendEl=document.getElementById('p-trend');
+  var modelEl=document.getElementById('p-model');
+  var userEl=document.getElementById('p-user');
+  var mvpEl=document.getElementById('p-mvp');
+
+  var trendText='「'+topic+'」所在赛道近年来呈现高速扩张态势，年均增速约 '+gr+'。主要驱动力来自中小企业数字化转型加速、AI 基础设施成本持续下降，以及用户对效率工具付费意愿的提升。根据 InsightHub 汇聚的公开数据与第三方行业报告，该赛道全球市场规模预计在 2026 年突破 120 亿美元，国内市场约占 18–22%。';
+  var modelText='推荐采用「SaaS 按座位订阅 + API 用量计费」双轨模型。基础套餐覆盖中小企业核心需求，高级功能按使用量弹性计费，降低客户首次购买门槛。冷启动阶段可提供免费试用 14 天，配合飞书/企微生态快速触达目标用户。';
+  var userItems=['中小企业主（10–200 人规模），痛点在于客服人力成本高、响应慢','SaaS 产品团队，需要快速集成智能客服能力，不想自研','电商独立站团队，需要多语言、多渠道统一客服入口'];
+  var mvpItems=['核心功能：接入企微/钉钉/网页，基于知识库回答常见问题','冷启动策略：先找 10 个种子用户免费试用，迭代知识库训练流程','第一个付费功能：人工接管 + 会话记录分析，企业愿意为数据洞察付费'];
+
+  function streamText(el,text,cb){
+    if(!el)return cb&&cb();
+    var i=0;
+    el.textContent='';
+    var t=setInterval(function(){
+      el.textContent+=text[i]||'';
+      i++;
+      if(i>=text.length){clearInterval(t);if(cb)cb();}
+    },18);
+  }
+
+  function streamList(el,items,cb){
+    if(!el)return cb&&cb();
+    el.innerHTML='';
+    var idx=0;
+    function next(){
+      if(idx>=items.length){if(cb)cb();return;}
+      var div=document.createElement('div');
+      div.className='report-list-item';
+      el.appendChild(div);
+      var i=0,txt=items[idx];
+      var t=setInterval(function(){
+        div.textContent+=txt[i]||'';
+        i++;
+        if(i>=txt.length){clearInterval(t);idx++;setTimeout(next,120);}
+      },14);
+    }
+    next();
+  }
+
+  streamText(trendEl,trendText,function(){
+    streamText(modelEl,modelText,function(){
+      streamList(userEl,userItems,function(){
+        streamList(mvpEl,mvpItems);
+      });
+    });
+  });
+}
+</script>
+</body>
+</html>

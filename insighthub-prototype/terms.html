@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>服务条款 · InsightHub Data</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="assets/stub-runtime.js"></script>
+</head>
+<body>
+<div class="page-shell">
+<style>
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.breadcrumb{font-size:12px;color:var(--color-text-secondary)}
+.content{max-width:800px;margin:0 auto;padding:32px 24px 48px}
+.content h1{font-size:22px;font-weight:600;margin:0 0 4px}
+.content .meta{font-size:12px;color:var(--color-text-secondary);margin-bottom:32px}
+.content h2{font-size:16px;font-weight:600;margin:28px 0 10px}
+.content h3{font-size:14px;font-weight:600;margin:20px 0 8px}
+.content p{font-size:13px;line-height:1.7;color:var(--color-text-primary);margin:0 0 12px}
+.content ul{font-size:13px;line-height:1.7;color:var(--color-text-primary);padding-left:20px;margin:0 0 12px}
+.content li{margin-bottom:4px}
+.content .highlight-box{background:var(--color-background-info);border-radius:var(--border-radius-md);padding:16px;margin:16px 0;font-size:13px;line-height:1.7}
+.content .toc{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px 20px;margin:16px 0 24px;font-size:13px;line-height:1.9}
+.content .toc a{color:var(--color-brand);cursor:pointer}
+.content .toc a:hover{text-decoration:underline}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-top:0.5px solid var(--color-border-tertiary);font-size:12px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px}
+.footer-links span{cursor:pointer;color:var(--color-text-secondary)}
+.footer-links span:hover{color:var(--color-text-primary)}
+</style>
+
+<div class="nav">
+  <div class="logo" onclick="location.href='index.html'"><div class="logo-dot"></div>InsightHub Data</div>
+  <div class="breadcrumb">服务条款</div>
+  <div></div>
+</div>
+
+<div class="content">
+  <h1>服务条款</h1>
+  <div class="meta">最后更新：2026 年 1 月 1 日 | 生效日期：2026 年 1 月 15 日</div>
+
+  <div class="toc">
+    <strong>目录</strong><br>
+    <a onclick="document.getElementById('sec1').scrollIntoView({behavior:'smooth'})">1. 服务概述</a> · 
+    <a onclick="document.getElementById('sec2').scrollIntoView({behavior:'smooth'})">2. 账户与注册</a> · 
+    <a onclick="document.getElementById('sec3').scrollIntoView({behavior:'smooth'})">3. 订阅与付费</a> · 
+    <a onclick="document.getElementById('sec4').scrollIntoView({behavior:'smooth'})">4. 数据包许可</a> · 
+    <a onclick="document.getElementById('sec5').scrollIntoView({behavior:'smooth'})">5. 使用限制</a> · 
+    <a onclick="document.getElementById('sec6').scrollIntoView({behavior:'smooth'})">6. 服务等级</a> · 
+    <a onclick="document.getElementById('sec7').scrollIntoView({behavior:'smooth'})">7. 知识产权</a> · 
+    <a onclick="document.getElementById('sec8').scrollIntoView({behavior:'smooth'})">8. 免责声明</a> · 
+    <a onclick="document.getElementById('sec9').scrollIntoView({behavior:'smooth'})">9. 终止</a> · 
+    <a onclick="document.getElementById('sec10').scrollIntoView({behavior:'smooth'})">10. 争议解决</a> · 
+    <a onclick="document.getElementById('sec11').scrollIntoView({behavior:'smooth'})">11. 其他</a>
+  </div>
+
+  <p>欢迎使用 InsightHub Data 平台。以下条款（"本条款"）构成您（"用户"）与 InsightHub Data（"我们"）之间关于访问和使用本平台服务的完整协议。使用即表示您同意受本条款约束。</p>
+
+  <h2 id="sec1">1. 服务概述</h2>
+  <p>InsightHub Data 是一个数据 API 聚合与分发平台。我们汇集来自多个来源的商业情报、金融数据、AI 分析等数据，以标准化 API 数据包的形式向用户提供。具体可用数据包及其规格以 <a href="marketplace.html">市场页面</a> 公示为准。</p>
+  <ul>
+    <li>平台提供 RESTful API 接口，用户通过 API Key 鉴权调用；</li>
+    <li>部分服务支持 MCP (Model Context Protocol) 协议接入；</li>
+    <li>平台提供 Webhook 推送和报告生成等附加功能。</li>
+  </ul>
+
+  <h2 id="sec2">2. 账户与注册</h2>
+  <p>2.1 您必须提供真实、准确、完整的注册信息，并保持信息的及时更新。</p>
+  <p>2.2 您对账户下的所有活动负责。请妥善保管登录凭证和 API Key，不得分享给未经授权的第三方。</p>
+  <p>2.3 如发现账户异常或安全漏洞，您须立即通知我们。对于因账户信息泄露导致的损失，我们概不承担责任。</p>
+  <p>2.4 每个个人或实体仅限注册一个免费试用账户。滥用试用机制（包括但不限于注册多个账户以获取额外免费额度）将导致所有关联账户被终止。</p>
+
+  <h2 id="sec3">3. 订阅与付费</h2>
+  <p>3.1 数据包提供月度订阅制，费用以人民币 (CNY) 计价，含适用税费。</p>
+  <p>3.2 付费订阅自动续费，除非您在续费日之前取消。取消后，当前计费周期内的服务继续有效至周期结束。</p>
+  <p>3.3 我们可能在提前 30 天通知的情况下调整订阅价格。价格调整不影响已付款的当前周期。</p>
+  <p>3.4 所有费用均不予退款，除非法律另有规定或我们书面同意。7 天内取消的新订阅可申请全额退款。</p>
+  <p>3.5 逾期未支付可能导致服务暂停，暂停 30 天后仍未支付的，我们有权终止账户。</p>
+
+  <h2 id="sec4">4. 数据包许可</h2>
+  <p>4.1 订阅数据包后，您获得一项非独占、不可转让、不可再许可的全球范围内有限许可，可在订阅期内通过 API 调用获取和使用数据。</p>
+  <p>4.2 您可以将数据结果用于内部商业分析、产品开发和 AI 模型训练，前提是：</p>
+  <ul>
+    <li>不得将原始数据或实质性衍生数据以原始形式再分发、转售或提供给第三方；</li>
+    <li>不得用于构建直接与 InsightHub Data 竞争的数据聚合产品；</li>
+    <li>如数据包含第三方来源信息，须遵守该来源的附加使用限制。</li>
+  </ul>
+  <p>4.3 不同数据包的 API 调用频率限制（Rate Limit）和并发限制在 <a href="api-docs.html">API 文档</a> 中列明，超出限制的调用将被拒绝。</p>
+
+  <h2 id="sec5">5. 使用限制</h2>
+  <p>5.1 您同意不会将平台用于以下目的：</p>
+  <ul>
+    <li>违反法律法规或侵犯第三方权利；</li>
+    <li>传播恶意软件、进行网络攻击或干扰平台正常运行；</li>
+    <li>绕过或破坏平台的访问控制、计费机制或安全措施；</li>
+    <li>对平台进行压力测试、爬取或反向工程（明确授权的安全测试除外）。</li>
+  </ul>
+  <p>5.2 我们保留在不另行通知的情况下暂停违反使用限制的账户的权利。</p>
+
+  <h2 id="sec6">6. 服务等级</h2>
+  <p>6.1 我们承诺付费订阅用户月度可用性不低于 99.5%（"SLA"）。可用性以每月 API 成功请求数占总请求数的百分比计算。</p>
+  <p>6.2 若可用性低于 99.5%，您可申请月度费用的 5% 作为服务额度补偿；低于 99.0% 时补偿提升至 10%。</p>
+  <p>6.3 以下情形不计入 SLA：计划内维护（提前 48 小时通知）、第三方数据源故障、不可抗力、以及用户自身原因导致的故障。</p>
+  <p>6.4 实时系统状态请参阅 <a href="status.html">系统状态页面</a>。</p>
+
+  <h2 id="sec7">7. 知识产权</h2>
+  <p>7.1 InsightHub Data 平台（包括但不限于网站、API、品牌标识、UI 设计）的所有权利归我们所有。</p>
+  <p>7.2 各数据包中涉及的第三方数据来源的知识产权归相应来源方所有。我们依法获得分发授权。</p>
+  <p>7.3 您使用平台生成的报告和分析成果，其知识产权归您所有，但您授予我们为提供服务所需的必要使用权限。</p>
+
+  <h2 id="sec8">8. 免责声明</h2>
+  <p>8.1 平台按"现状"提供，我们不对数据的准确性、完整性或时效性做任何明示或暗示的保证。</p>
+  <p>8.2 在法律允许的最大范围内，我们不对因使用或无法使用平台导致的间接、附带、特殊或后果性损害承担责任。</p>
+  <p>8.3 我们的累计赔偿责任不超过您在索赔前 12 个月内向我们支付的费用总额。</p>
+
+  <h2 id="sec9">9. 终止</h2>
+  <p>9.1 任何一方可随时终止本条款。您的终止需停止使用平台并注销账户。</p>
+  <p>9.2 如果您严重违反本条款，我们可在通知后立即终止您的账户。</p>
+  <p>9.3 终止后，您访问平台和 API 的权利立即终止。我们将在 30 天内根据隐私政策处理您的数据。</p>
+
+  <h2 id="sec10">10. 争议解决</h2>
+  <p>10.1 本条款受中华人民共和国法律管辖。</p>
+  <p>10.2 因本条款引起的争议，双方应首先友好协商解决；协商不成的，提交上海国际经济贸易仲裁委员会（SHIAC）按照其届时有效的仲裁规则仲裁。仲裁地为上海，仲裁语言为中文。</p>
+
+  <h2 id="sec11">11. 其他</h2>
+  <p>11.1 本条款构成双方之间的完整协议，取代先前的任何口头或书面约定。</p>
+  <p>11.2 如果本条款的任何部分被认定为无效或不可执行，其余条款继续有效。</p>
+  <p>11.3 我们未执行某项权利不构成对该权利的放弃。</p>
+  <p>11.4 如有疑问或需要进一步了解条款内容，请联系 <strong>legal@insighthubdata.com</strong>。</p>
+
+  <div class="highlight-box">
+    <strong>法律联系信息</strong><br>
+    InsightHub Data 法务部<br>
+    邮箱：legal@insighthubdata.com<br>
+    地址：上海市浦东新区张江高科技园区
+  </div>
+</div>
+
+<footer class="footer-inner">
+  <div class="footer-left">© 2026 InsightHub Data</div>
+  <div class="footer-links">
+    <span onclick="location.href='privacy.html'">隐私政策</span>
+    <span onclick="location.href='terms.html'">服务条款</span>
+    <span onclick="location.href='status.html'">系统状态</span>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>

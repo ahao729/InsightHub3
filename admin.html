@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台 · InsightHub</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="assets/api-client.js"></script>
+<script src="assets/stub-runtime.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+
+<div class="page-shell">
+
+<style>
+/* ===== shell & sidebar ===== */
+.shell{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:700px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin:24px}
+.sidebar{background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary);padding:20px 0}
+.sb-logo{display:flex;align-items:center;gap:8px;padding:0 16px 20px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:16px;cursor:pointer;text-decoration:none;color:inherit}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.sb-logo-text{font-size:14px;font-weight:500}
+.sb-user{padding:0 12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:12px}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--color-brand-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--color-text-success);margin-bottom:8px}
+.sb-name{font-size:13px;font-weight:500}
+.sb-plan{font-size:11px;color:#C53B3B;background:#FCEBEB;padding:2px 8px;border-radius:999px;display:inline-block;margin-top:3px}
+.sb-nav-label{font-size:11px;color:var(--color-text-secondary);padding:0 16px;margin-bottom:6px;font-weight:500;letter-spacing:0.04em}
+.sb-nav-section{margin-bottom:16px}
+.sb-nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;border-radius:0;transition:all .15s}
+.sb-nav-item:hover{background:var(--color-background-primary);color:var(--color-text-primary)}
+.sb-nav-item.active{background:var(--color-background-primary);color:var(--color-text-primary);border-right:2px solid var(--color-brand)}
+.sb-nav-item i{font-size:16px}
+.sb-nav-badge{margin-left:auto;font-size:10px;background:var(--color-background-primary);padding:1px 6px;border-radius:999px;color:var(--color-text-secondary)}
+
+/* ===== main area ===== */
+.main{background:var(--color-background-primary)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.topbar-title{font-size:16px;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-btn{font-size:12px;padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans)}
+.topbar-btn-primary{background:var(--color-brand);color:#fff;border:none}
+.topbar-btn-primary:hover{background:var(--color-brand-dark)}
+.topbar-btn-danger{background:#E24B4A;color:#fff;border:none}
+.topbar-btn-danger:hover{background:#C53B3B}
+
+.content{padding:20px 24px}
+
+/* ===== metrics ===== */
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px;transition:all .15s}
+.metric:hover{box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.metric-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.metric-val{font-size:22px;font-weight:500}
+.metric-sub{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.metric-green{color:var(--color-brand)}
+.metric-red{color:#E24B4A}
+.metric-amber{color:#BA7517}
+
+/* ===== tables ===== */
+.table-wrap{overflow-x:auto;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:20px}
+table.admin-tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.admin-tbl th{text-align:left;padding:10px 14px;font-weight:500;font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap}
+table.admin-tbl td{padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle}
+table.admin-tbl tr:last-child td{border-bottom:none}
+table.admin-tbl tr:hover td{background:var(--color-background-secondary)}
+.tbl-empty{padding:32px;text-align:center;color:var(--color-text-secondary);font-size:13px}
+
+/* ===== pills / badges ===== */
+.pill{font-size:11px;padding:2px 8px;border-radius:999px;display:inline-block;white-space:nowrap}
+.pill-green{background:var(--color-brand-light);color:var(--color-text-success)}
+.pill-red{background:#FCEBEB;color:#A32D2D}
+.pill-amber{background:#FAEEDA;color:#854F0B}
+.pill-blue{background:#E6F1FB;color:#185FA5}
+.pill-gray{background:#F1EFE8;color:#5F5E5A}
+
+/* ===== filters ===== */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{font-size:13px;padding:6px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)}
+.filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--color-brand)}
+.filter-bar .filter-label{font-size:12px;color:var(--color-text-secondary)}
+.search-input{min-width:200px}
+
+/* ===== pagination ===== */
+.pagination{display:flex;align-items:center;gap:8px;justify-content:center;padding:12px 0}
+.pag-btn{font-size:12px;padding:4px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-primary)}
+.pag-btn:hover{background:var(--color-background-secondary)}
+.pag-btn:disabled{opacity:.4;cursor:default}
+.pag-info{font-size:12px;color:var(--color-text-secondary)}
+
+/* ===== health ===== */
+.health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:20px}
+.health-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px}
+.health-name{font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.health-dot{width:8px;height:8px;border-radius:50%}
+.health-dot-up{background:var(--color-brand)}
+.health-dot-down{background:#E24B4A}
+.health-dot-degraded{background:#BA7517}
+.health-stat{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.health-detail{font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:8px 10px;border-radius:var(--border-radius-md);margin-top:6px;font-family:var(--font-mono);word-break:break-all}
+
+/* ===== action buttons in tables ===== */
+.action-btn{font-size:12px;padding:4px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans);transition:all .15s}
+.action-btn:hover{background:var(--color-background-secondary)}
+.action-btn-primary{background:var(--color-brand);color:#fff;border:none}
+.action-btn-primary:hover{background:var(--color-brand-dark)}
+.action-btn-danger{color:#E24B4A;border-color:#E24B4A}
+.action-btn-danger:hover{background:#FCEBEB}
+.action-btn-sm{padding:2px 8px;font-size:11px}
+.tb-btn{font-size:12px;padding:4px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans);transition:all .15s}
+.tb-btn:hover{background:var(--color-background-secondary)}
+.tb-btn-danger{color:#E24B4A;border-color:#E24B4A}
+.tb-btn-danger:hover{background:#FCEBEB}
+
+/* ===== modals ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal-box{background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:24px;min-width:420px;max-width:520px;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+.modal-title{font-size:15px;font-weight:500;margin-bottom:16px}
+.modal-body{font-size:13px}
+.modal-body label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;margin-top:12px}
+.modal-body input,.modal-body select{width:100%;padding:8px 10px;font-size:13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);box-sizing:border-box}
+.modal-body input:focus,.modal-body select:focus{outline:none;border-color:var(--color-brand)}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.modal-footer .topbar-btn{padding:8px 20px}
+
+/* ===== sections toggle ===== */
+.section{display:none}
+.section.active{display:block}
+
+/* ===== misc ===== */
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:16px 0}
+.text-mono{font-family:var(--font-mono);font-size:12px}
+.truncate{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mb-8{margin-bottom:8px}
+.mt-8{margin-top:8px}
+.ml-auto{margin-left:auto}
+.flex{display:flex;align-items:center;gap:8px}
+.flex-wrap{flex-wrap:wrap}
+.gap-4{gap:4px}
+.w-full{width:100%}
+.text-center{text-align:center}
+.text-secondary{color:var(--color-text-secondary)}
+.cursor-pointer{cursor:pointer}
+/* ===== responsive tweaks ===== */
+@media(max-width:768px){
+  .shell{grid-template-columns:1fr;margin:12px}
+  .sidebar{display:none}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .health-grid{grid-template-columns:1fr}
+}
+</style>
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+  <a href="/" class="sb-logo">
+    <span class="logo-dot"></span>
+    <span class="sb-logo-text">InsightHub</span>
+  </a>
+
+  <div class="sb-user">
+    <div class="sb-avatar" id="admin-avatar">A</div>
+    <div class="sb-name" id="admin-name">管理员</div>
+    <div class="sb-plan">管理后台</div>
+  </div>
+
+  <div class="sb-nav-section">
+    <div class="sb-nav-label">概览</div>
+    <div class="sb-nav-item active" data-section="overview">
+      <i class="ti ti-dashboard"></i> 系统概览
+    </div>
+  </div>
+
+  <div class="sb-nav-section">
+    <div class="sb-nav-label">管理</div>
+    <div class="sb-nav-item" data-section="users">
+      <i class="ti ti-users"></i> 用户管理
+    </div>
+    <div class="sb-nav-item" data-section="apikeys">
+      <i class="ti ti-key"></i> API 密钥
+    </div>
+    <div class="sb-nav-item" data-section="subscriptions">
+      <i class="ti ti-credit-card"></i> 订阅管理
+    </div>
+  </div>
+
+  <div class="sb-nav-section">
+    <div class="sb-nav-label">运维</div>
+    <div class="sb-nav-item" data-section="logs">
+      <i class="ti ti-notes"></i> 操作日志
+    </div>
+    <div class="sb-nav-item" data-section="health">
+      <i class="ti ti-heartbeat"></i> 健康状态
+    </div>
+  </div>
+
+  <div class="sb-nav-section" style="margin-top:auto;padding-top:12px;border-top:0.5px solid var(--color-border-tertiary)">
+    <div class="sb-nav-item" onclick="location.href='dashboard.html'">
+      <i class="ti ti-arrow-left"></i> 返回工作台
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">系统概览</div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="refreshCurrent()"><i class="ti ti-refresh" style="font-size:14px"></i> 刷新</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ==================== SECTION: OVERVIEW ==================== -->
+    <div class="section active" id="sec-overview">
+      <div class="metrics" id="overview-metrics">
+        <div class="metric"><div class="metric-label"><i class="ti ti-users"></i> 总用户</div><div class="metric-val" id="ov-total-users">—</div><div class="metric-sub">注册用户总数</div></div>
+        <div class="metric"><div class="metric-label"><i class="ti ti-key"></i> API 密钥</div><div class="metric-val" id="ov-total-keys">—</div><div class="metric-sub">全部密钥</div></div>
+        <div class="metric"><div class="metric-label"><i class="ti ti-credit-card"></i> 订阅数</div><div class="metric-val" id="ov-total-subs">—</div><div class="metric-sub">活跃订阅</div></div>
+        <div class="metric"><div class="metric-label"><i class="ti ti-activity"></i> 本月注册</div><div class="metric-val metric-green" id="ov-monthly-new">—</div><div class="metric-sub"><span id="ov-active-users">—</span> 个活跃用户</div></div>
+      </div>
+    </div>
+
+    <!-- ==================== SECTION: USERS ==================== -->
+    <div class="section" id="sec-users">
+      <div class="filter-bar">
+        <input class="search-input" id="user-search" placeholder="搜索用户名 / 邮箱..." oninput="debounceSearch('users')">
+        <select id="user-role-filter" onchange="loadUsers()">
+          <option value="">全部角色</option>
+          <option value="admin">admin</option>
+          <option value="user">user</option>
+        </select>
+        <select id="user-status-filter" onchange="loadUsers()">
+          <option value="">全部状态</option>
+          <option value="active">active</option>
+          <option value="inactive">inactive</option>
+          <option value="suspended">suspended</option>
+        </select>
+        <span class="filter-label ml-auto" id="user-count-label">共 0 条</span>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-tbl">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>用户名</th>
+              <th>邮箱</th>
+              <th>角色</th>
+              <th>状态</th>
+              <th>额度</th>
+              <th>注册时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="8" class="tbl-empty">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="users-pagination">
+        <button class="pag-btn" id="users-prev" onclick="pageUsers('prev')">上一页</button>
+        <span class="pag-info" id="users-page-info">1 / 1</span>
+        <button class="pag-btn" id="users-next" onclick="pageUsers('next')">下一页</button>
+      </div>
+    </div>
+
+    <!-- ==================== SECTION: API KEYS ==================== -->
+    <div class="section" id="sec-apikeys">
+      <div class="table-wrap">
+        <table class="admin-tbl">
+          <thead>
+            <tr>
+              <th>密钥</th>
+              <th>名称</th>
+              <th>用户</th>
+              <th>环境</th>
+              <th>状态</th>
+              <th>已用 / 限额</th>
+              <th>创建时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="apikeys-tbody">
+            <tr><td colspan="8" class="tbl-empty">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== SECTION: SUBSCRIPTIONS ==================== -->
+    <div class="section" id="sec-subscriptions">
+      <div class="table-wrap">
+        <table class="admin-tbl">
+          <thead>
+            <tr>
+              <th>用户</th>
+              <th>计划</th>
+              <th>状态</th>
+              <th>当前周期开始</th>
+              <th>当前周期结束</th>
+              <th>取消时间</th>
+            </tr>
+          </thead>
+          <tbody id="subs-tbody">
+            <tr><td colspan="6" class="tbl-empty">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== SECTION: LOGS ==================== -->
+    <div class="section" id="sec-logs">
+      <div class="filter-bar">
+        <input class="search-input" id="log-search" placeholder="搜索内容..." oninput="debounceSearch('logs')">
+        <select id="log-type-filter" onchange="loadLogs()">
+          <option value="">全部类型</option>
+          <option value="user_login">登录</option>
+          <option value="user_logout">登出</option>
+          <option value="api_key_create">创建密钥</option>
+          <option value="api_key_revoke">吊销密钥</option>
+          <option value="subscription_create">创建订阅</option>
+          <option value="subscription_cancel">取消订阅</option>
+          <option value="report_generate">生成报告</option>
+          <option value="admin_action">管理操作</option>
+        </select>
+        <input type="date" id="log-date-from" onchange="loadLogs()" placeholder="开始日期">
+        <input type="date" id="log-date-to" onchange="loadLogs()" placeholder="结束日期">
+        <span class="filter-label ml-auto" id="log-count-label">共 0 条</span>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-tbl">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>用户</th>
+              <th>类型</th>
+              <th>内容</th>
+            </tr>
+          </thead>
+          <tbody id="logs-tbody">
+            <tr><td colspan="4" class="tbl-empty">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="logs-pagination">
+        <button class="pag-btn" id="logs-prev" onclick="pageLogs('prev')">上一页</button>
+        <span class="pag-info" id="logs-page-info">1 / 1</span>
+        <button class="pag-btn" id="logs-next" onclick="pageLogs('next')">下一页</button>
+      </div>
+    </div>
+
+    <!-- ==================== SECTION: HEALTH ==================== -->
+    <div class="section" id="sec-health">
+      <div class="health-grid" id="health-grid">
+        <div class="health-card"><div class="health-name"><span class="health-dot health-dot-down"></span>加载中...</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+</div><!-- /page-shell -->
+
+<!-- ===== MODAL: EDIT USER ===== -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal-box">
+    <div class="modal-title">编辑用户</div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-user-id">
+      <label>用户名</label>
+      <input id="edit-username" readonly style="background:var(--color-background-secondary)">
+      <label>邮箱</label>
+      <input id="edit-email" readonly style="background:var(--color-background-secondary)">
+      <label>角色</label>
+      <select id="edit-role">
+        <option value="user">user</option>
+        <option value="admin">admin</option>
+      </select>
+      <label>状态</label>
+      <select id="edit-status">
+        <option value="active">active</option>
+        <option value="inactive">inactive</option>
+        <option value="suspended">suspended</option>
+      </select>
+      <label>月额度上限</label>
+      <input id="edit-quota" type="number" min="0" placeholder="月度 API 调用限额">
+    </div>
+    <div class="modal-footer">
+      <button class="topbar-btn" onclick="closeModal('user-modal')">取消</button>
+      <button class="topbar-btn topbar-btn-primary" onclick="saveUser()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCRIPT ===== -->
+<script>
+// ========== state ==========
+var state = {
+  users: { page: 1, totalPages: 1, search: '', role: '', status: '' },
+  logs:  { page: 1, totalPages: 1, search: '', type: '', dateFrom: '', dateTo: '' },
+};
+var debounceTimers = {};
+
+// ========== navigation ==========
+document.querySelectorAll('.sb-nav-item[data-section]').forEach(function(el){
+  el.addEventListener('click', function(e){
+    var sec = el.getAttribute('data-section');
+    document.querySelectorAll('.sb-nav-item[data-section]').forEach(function(x){ x.classList.remove('active'); });
+    el.classList.add('active');
+    document.querySelectorAll('.section').forEach(function(x){ x.classList.remove('active'); });
+    var target = document.getElementById('sec-' + sec);
+    if (target) target.classList.add('active');
+    var titles = { overview:'系统概览', users:'用户管理', apikeys:'API 密钥', subscriptions:'订阅管理', logs:'操作日志', health:'健康状态' };
+    document.getElementById('page-title').textContent = titles[sec] || sec;
+    // load on first visit
+    if (sec === 'users') loadUsers();
+    else if (sec === 'apikeys') loadApiKeys();
+    else if (sec === 'subscriptions') loadSubscriptions();
+    else if (sec === 'logs') loadLogs();
+    else if (sec === 'health') loadHealth();
+    else if (sec === 'overview') loadOverviewStats();
+  });
+});
+
+// ========== overview ==========
+function loadOverviewStats() {
+  API.admin.getStats().then(function(d){
+    document.getElementById('ov-total-users').textContent = d.totalUsers ?? '—';
+    document.getElementById('ov-total-keys').textContent = d.totalApiKeys ?? '—';
+    document.getElementById('ov-total-subs').textContent = (d.totalSubscriptions ?? 0) + ' / ' + (d.activeSubscriptions ?? 0);
+    document.getElementById('ov-monthly-new').textContent = d.monthlyNewUsers ?? '—';
+    document.getElementById('ov-active-users').textContent = (d.activeUsers ?? '—') + ' 个活跃用户';
+  }).catch(function(e){
+    console.error('Failed to load stats', e);
+  });
+}
+
+// ========== users ==========
+function loadUsers() {
+  var s = state.users;
+  s.search = document.getElementById('user-search').value;
+  s.role = document.getElementById('user-role-filter').value;
+  s.status = document.getElementById('user-status-filter').value;
+  API.admin.getUsers({ page: s.page, limit: 20, search: s.search, role: s.role, status: s.status }).then(function(res){
+    var data = res.data || [];
+    var total = res.total || 0;
+    s.totalPages = Math.max(1, Math.ceil(total / 20));
+    document.getElementById('user-count-label').textContent = '共 ' + total + ' 条';
+    document.getElementById('users-page-info').textContent = s.page + ' / ' + s.totalPages;
+    document.getElementById('users-prev').disabled = s.page <= 1;
+    document.getElementById('users-next').disabled = s.page >= s.totalPages;
+
+    var tbody = document.getElementById('users-tbody');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="tbl-empty">无数据</td></tr>';
+      return;
+    }
+    var html = '';
+    data.forEach(function(u){
+      var rolePill = u.role === 'admin' ? '<span class="pill pill-red">admin</span>' : '<span class="pill pill-blue">user</span>';
+      var statusPill = '';
+      if (u.status === 'active') statusPill = '<span class="pill pill-green">active</span>';
+      else if (u.status === 'inactive') statusPill = '<span class="pill pill-gray">inactive</span>';
+      else if (u.status === 'suspended') statusPill = '<span class="pill pill-red">suspended</span>';
+      else statusPill = '<span class="pill pill-gray">' + (u.status || '—') + '</span>';
+      var quota = u.quotaMonthly !== undefined && u.quotaMonthly !== null ? u.quotaMonthly : '—';
+      var registered = u.createdAt ? new Date(u.createdAt).toLocaleDateString('zh-CN') : '—';
+      html += '<tr>'
+        + '<td class="text-mono">' + (u._id || u.id || '').slice(-6) + '</td>'
+        + '<td><strong>' + escapeHtml(u.username || '') + '</strong></td>'
+        + '<td class="text-secondary">' + escapeHtml(u.email || '') + '</td>'
+        + '<td>' + rolePill + '</td>'
+        + '<td>' + statusPill + '</td>'
+        + '<td>' + quota + '</td>'
+        + '<td class="text-secondary">' + registered + '</td>'
+        + '<td><button class="action-btn action-btn-sm" onclick="editUser(\'' + (u._id || u.id) + '\')">编辑</button></td>'
+        + '</tr>';
+    });
+    tbody.innerHTML = html;
+  }).catch(function(e){
+    document.getElementById('users-tbody').innerHTML = '<tr><td colspan="8" class="tbl-empty">加载失败: ' + escapeHtml(e.message || e) + '</td></tr>';
+  });
+}
+
+function pageUsers(dir) {
+  var s = state.users;
+  if (dir === 'prev' && s.page > 1) s.page--;
+  if (dir === 'next' && s.page < s.totalPages) s.page++;
+  loadUsers();
+}
+
+function editUser(id) {
+  API.admin.getUserDetail(id).then(function(u){
+    document.getElementById('edit-user-id').value = u._id || u.id;
+    document.getElementById('edit-username').value = u.username || '';
+    document.getElementById('edit-email').value = u.email || '';
+    document.getElementById('edit-role').value = u.role || 'user';
+    document.getElementById('edit-status').value = u.status || 'active';
+    document.getElementById('edit-quota').value = u.quotaMonthly || '';
+    document.getElementById('user-modal').classList.add('active');
+  }).catch(function(e){
+    alert('获取用户详情失败: ' + (e.message || e));
+  });
+}
+
+function saveUser() {
+  var id = document.getElementById('edit-user-id').value;
+  if (!id) return;
+  var body = {
+    role: document.getElementById('edit-role').value,
+    status: document.getElementById('edit-status').value,
+    quotaMonthly: parseInt(document.getElementById('edit-quota').value) || 0,
+  };
+  API.admin.updateUser(id, body).then(function(){
+    closeModal('user-modal');
+    loadUsers();
+  }).catch(function(e){
+    alert('更新失败: ' + (e.message || e));
+  });
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+// ========== API keys ==========
+function loadApiKeys() {
+  var tbody = document.getElementById('apikeys-tbody');
+  API.admin.getApiKeys().then(function(res){
+    var data = res.data || [];
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="tbl-empty">无数据</td></tr>';
+      return;
+    }
+    var html = '';
+    data.forEach(function(k){
+      var envPill = k.env === 'production' ? '<span class="pill pill-green">production</span>' : '<span class="pill pill-blue">development</span>';
+      var statusPill = k.status === 'revoked' ? '<span class="pill pill-red">已吊销</span>' : '<span class="pill pill-green">有效</span>';
+      var usage = (k.usageCount || 0) + ' / ' + (k.usageLimit || '∞');
+      var created = k.createdAt ? new Date(k.createdAt).toLocaleDateString('zh-CN') : '—';
+      var keyDisplay = (k.key || '').substring(0, 12) + '••••';
+      var userName = k.user ? (k.user.username || k.user.email || k.user) : '—';
+      html += '<tr>'
+        + '<td class="text-mono truncate" title="' + escapeHtml(k.key || '') + '">' + escapeHtml(keyDisplay) + '</td>'
+        + '<td>' + escapeHtml(k.name || '—') + '</td>'
+        + '<td>' + escapeHtml(userName) + '</td>'
+        + '<td>' + envPill + '</td>'
+        + '<td>' + statusPill + '</td>'
+        + '<td>' + usage + '</td>'
+        + '<td class="text-secondary">' + created + '</td>'
+        + '<td>'
+        + (k.status === 'revoked'
+          ? '<button class="tb-btn" onclick="revokeApiKey(\'' + k.id + '\', false)" title="恢复密钥">恢复</button>'
+          : '<button class="tb-btn tb-btn-danger" onclick="revokeApiKey(\'' + k.id + '\', true)" title="吊销密钥">吊销</button>')
+        + '</td>'
+        + '</tr>';
+    });
+    tbody.innerHTML = html;
+  }).catch(function(e){
+    tbody.innerHTML = '<tr><td colspan="8" class="tbl-empty">加载失败: ' + escapeHtml(e.message || e) + '</td></tr>';
+  });
+}
+
+function revokeApiKey(id, revoke) {
+  var action = revoke ? '吊销' : '恢复';
+  if (!confirm('确定要' + action + '此 API 密钥吗？')) return;
+  API.admin.updateApiKey(id, { revoked: revoke }).then(function(){
+    loadApiKeys();
+  }).catch(function(e){
+    alert(action + '失败: ' + (e.message || e));
+  });
+}
+
+// ========== subscriptions ==========
+function loadSubscriptions() {
+  var tbody = document.getElementById('subs-tbody');
+  API.admin.getSubscriptions().then(function(res){
+    var data = res.data || [];
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="tbl-empty">无数据</td></tr>';
+      return;
+    }
+    var html = '';
+    data.forEach(function(s){
+      var statusPill = '';
+      if (s.status === 'active') statusPill = '<span class="pill pill-green">active</span>';
+      else if (s.status === 'canceled') statusPill = '<span class="pill pill-red">canceled</span>';
+      else if (s.status === 'incomplete') statusPill = '<span class="pill pill-amber">incomplete</span>';
+      else statusPill = '<span class="pill pill-gray">' + (s.status || '—') + '</span>';
+      var userName = s.user ? (s.user.username || s.user.email || s.user) : '—';
+      var periodStart = s.currentPeriodStart ? new Date(s.currentPeriodStart).toLocaleDateString('zh-CN') : '—';
+      var periodEnd = s.currentPeriodEnd ? new Date(s.currentPeriodEnd).toLocaleDateString('zh-CN') : '—';
+      var canceledAt = s.canceledAt ? new Date(s.canceledAt).toLocaleDateString('zh-CN') : '—';
+      html += '<tr>'
+        + '<td>' + escapeHtml(userName) + '</td>'
+        + '<td>' + escapeHtml(s.planId || s.plan || '—') + '</td>'
+        + '<td>' + statusPill + '</td>'
+        + '<td class="text-secondary">' + periodStart + '</td>'
+        + '<td class="text-secondary">' + periodEnd + '</td>'
+        + '<td class="text-secondary">' + canceledAt + '</td>'
+        + '</tr>';
+    });
+    tbody.innerHTML = html;
+  }).catch(function(e){
+    tbody.innerHTML = '<tr><td colspan="6" class="tbl-empty">加载失败: ' + escapeHtml(e.message || e) + '</td></tr>';
+  });
+}
+
+// ========== logs ==========
+function loadLogs() {
+  var s = state.logs;
+  s.search = document.getElementById('log-search').value;
+  s.type = document.getElementById('log-type-filter').value;
+  s.dateFrom = document.getElementById('log-date-from').value;
+  s.dateTo = document.getElementById('log-date-to').value;
+  API.admin.getLogs({ page: s.page, limit: 30, search: s.search, type: s.type, dateFrom: s.dateFrom, dateTo: s.dateTo }).then(function(res){
+    var data = res.data || [];
+    var total = res.total || 0;
+    s.totalPages = Math.max(1, Math.ceil(total / 30));
+    document.getElementById('log-count-label').textContent = '共 ' + total + ' 条';
+    document.getElementById('logs-page-info').textContent = s.page + ' / ' + s.totalPages;
+    document.getElementById('logs-prev').disabled = s.page <= 1;
+    document.getElementById('logs-next').disabled = s.page >= s.totalPages;
+
+    var tbody = document.getElementById('logs-tbody');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="tbl-empty">无数据</td></tr>';
+      return;
+    }
+    var html = '';
+    data.forEach(function(l){
+      var time = l.createdAt ? new Date(l.createdAt).toLocaleString('zh-CN') : '—';
+      var userName = l.user ? (l.user.username || l.user.email || l.user) : '—';
+      var typePill = '<span class="pill pill-blue">' + escapeHtml(l.type || '—') + '</span>';
+      html += '<tr>'
+        + '<td class="text-mono text-secondary">' + time + '</td>'
+        + '<td>' + escapeHtml(userName) + '</td>'
+        + '<td>' + typePill + '</td>'
+        + '<td class="text-secondary">' + escapeHtml(l.message || l.description || '') + '</td>'
+        + '</tr>';
+    });
+    tbody.innerHTML = html;
+  }).catch(function(e){
+    document.getElementById('logs-tbody').innerHTML = '<tr><td colspan="4" class="tbl-empty">加载失败: ' + escapeHtml(e.message || e) + '</td></tr>';
+  });
+}
+
+function pageLogs(dir) {
+  var s = state.logs;
+  if (dir === 'prev' && s.page > 1) s.page--;
+  if (dir === 'next' && s.page < s.totalPages) s.page++;
+  loadLogs();
+}
+
+// ========== health ==========
+function loadHealth() {
+  var grid = document.getElementById('health-grid');
+  API.admin.getHealth().then(function(d){
+    var services = d.services || d || {};
+    var html = '';
+    var names = { database:'数据库', mcpServer:'MCP Server', crawler:'Crawler 服务' };
+    Object.keys(services).forEach(function(key){
+      var svc = services[key];
+      if (typeof svc === 'object') {
+        var status = svc.status || 'unknown';
+        var dotClass = 'health-dot-down';
+        var statusText = '异常';
+        if (status === 'up' || status === 'ok' || status === true) {
+          dotClass = 'health-dot-up';
+          statusText = '正常';
+        } else if (status === 'degraded') {
+          dotClass = 'health-dot-degraded';
+          statusText = '降级';
+        }
+        var detail = svc.detail || svc.message || svc.error || '';
+        var uptime = svc.uptime !== undefined ? '<div class="health-stat">运行时长: ' + svc.uptime + 's</div>' : '';
+        html += '<div class="health-card">'
+          + '<div class="health-name"><span class="health-dot ' + dotClass + '"></span>' + (names[key] || key) + ' <span class="text-secondary" style="font-weight:400;font-size:12px">(' + statusText + ')</span></div>'
+          + uptime
+          + (detail ? '<div class="health-detail">' + escapeHtml(detail) + '</div>' : '')
+          + '</div>';
+      } else {
+        // simple string status
+        var ok = svc === 'up' || svc === 'ok' || svc === true;
+        html += '<div class="health-card">'
+          + '<div class="health-name"><span class="health-dot ' + (ok ? 'health-dot-up' : 'health-dot-down') + '"></span>' + (names[key] || key) + ' <span class="text-secondary" style="font-weight:400;font-size:12px">(' + svc + ')</span></div>'
+          + '</div>';
+      }
+    });
+    if (!html) html = '<div class="health-card"><div class="health-name">无健康数据</div></div>';
+    grid.innerHTML = html;
+  }).catch(function(e){
+    grid.innerHTML = '<div class="health-card"><div class="health-name"><span class="health-dot health-dot-down"></span>健康检查失败: ' + escapeHtml(e.message || e) + '</div></div>';
+  });
+}
+
+// ========== helpers ==========
+function debounceSearch(type) {
+  if (debounceTimers[type]) clearTimeout(debounceTimers[type]);
+  debounceTimers[type] = setTimeout(function(){
+    if (type === 'users') { state.users.page = 1; loadUsers(); }
+    if (type === 'logs')  { state.logs.page = 1; loadLogs(); }
+  }, 300);
+}
+
+function refreshCurrent() {
+  var active = document.querySelector('.section.active');
+  if (!active) return;
+  var id = active.id;
+  if (id === 'sec-overview') loadOverviewStats();
+  else if (id === 'sec-users') loadUsers();
+  else if (id === 'sec-apikeys') loadApiKeys();
+  else if (id === 'sec-subscriptions') loadSubscriptions();
+  else if (id === 'sec-logs') loadLogs();
+  else if (id === 'sec-health') loadHealth();
+}
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return String(str || '');
+  var map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+  return str.replace(/[&<>"']/g, function(m){ return map[m]; });
+}
+
+// close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(function(m){
+  m.addEventListener('click', function(e){
+    if (e.target === m) m.classList.remove('active');
+  });
+});
+
+// ========== init ==========
+loadOverviewStats();
+</script>
+
+</body>
+</html>

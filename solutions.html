@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>行业解决方案 · InsightHub Data</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="assets/stub-runtime.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+<style>
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.breadcrumb{font-size:12px;color:var(--color-text-secondary)}
+.hero{padding:32px 32px 24px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.hero h1{font-size:22px;font-weight:500;margin-bottom:8px}
+.hero p{font-size:13px;color:var(--color-text-secondary);line-height:1.7;max-width:600px}
+.persona-tabs{display:flex;gap:8px;padding:16px 32px;border-bottom:0.5px solid var(--color-border-tertiary);flex-wrap:wrap}
+.ptab{display:flex;align-items:center;gap:6px;font-size:13px;padding:8px 16px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);cursor:pointer;color:var(--color-text-secondary);background:var(--color-background-primary)}
+.ptab.active{background:var(--color-brand);color:#fff;border-color:var(--color-brand)}
+.ptab i{font-size:15px}
+.content{padding:28px 32px}
+.solution-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+.solution-title{font-size:18px;font-weight:500;margin-bottom:6px}
+.solution-sub{font-size:13px;color:var(--color-text-secondary);line-height:1.6;max-width:520px}
+.bundle-price-box{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 20px;text-align:center;min-width:180px}
+.bundle-price-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.bundle-price-val{font-size:22px;font-weight:500;color:var(--color-brand)}
+.bundle-price-orig{font-size:11px;color:var(--color-text-tertiary);text-decoration:line-through;margin-left:6px}
+.bundle-price-unit{font-size:11px;color:var(--color-text-secondary)}
+.bundle-save{font-size:10px;background:var(--color-brand-light);color:var(--color-text-success);padding:2px 8px;border-radius:999px;display:inline-block;margin-top:6px}
+.flow-row{display:flex;align-items:center;gap:0;margin-bottom:28px;overflow-x:auto;padding-bottom:4px}
+.flow-card{flex-shrink:0;width:160px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;cursor:pointer;background:var(--color-background-primary)}
+.flow-card:hover{border-color:var(--color-border-primary)}
+.flow-icon{width:32px;height:32px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px}
+.flow-name{font-size:12px;font-weight:500;margin-bottom:4px}
+.flow-desc{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.flow-arrow{flex-shrink:0;width:28px;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);font-size:16px}
+.ic-green{background:var(--color-brand-light);color:var(--color-brand-dark)}
+.ic-blue{background:#E6F1FB;color:#185FA5}
+.ic-amber{background:#FAEEDA;color:#854F0B}
+.ic-purple{background:#EEEDFE;color:#534AB7}
+.ic-coral{background:#FAECE7;color:#993C1D}
+.ic-teal{background:var(--color-brand-light);color:var(--color-text-success)}
+.ic-gray{background:#F1EFE8;color:#5F5E5A}
+.ic-pink{background:#FBEAF0;color:#993556}
+.section-title{font-size:14px;font-weight:500;margin-bottom:12px}
+.usecase-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.usecase-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px}
+.usecase-q{font-size:12px;color:var(--color-text-secondary);line-height:1.5;display:flex;gap:8px}
+.usecase-q i{color:var(--color-brand);font-size:14px;flex-shrink:0;margin-top:1px}
+.workflow-box{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:18px;background:var(--color-background-secondary);margin-bottom:28px}
+.workflow-step{display:flex;gap:12px;margin-bottom:14px}
+.workflow-step:last-child{margin-bottom:0}
+.wf-num{width:22px;height:22px;border-radius:50%;background:var(--color-brand);color:#fff;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wf-text{font-size:12px;color:var(--color-text-secondary);line-height:1.6;padding-top:2px}
+.wf-text strong{color:var(--color-text-primary);font-weight:500}
+.cta-row{display:flex;gap:10px}
+.btn-subscribe{font-size:13px;padding:10px 24px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;font-weight:500}
+.btn-secondary{font-size:13px;padding:10px 18px;border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);cursor:pointer}
+</style>
+
+<div class="nav">
+  <div class="logo" onclick="location.href='index.html'"><div class="logo-dot"></div>InsightHub Data</div>
+  <div class="breadcrumb">解决方案</div>
+</div>
+
+<div class="hero">
+  <h1>按场景打包的数据解决方案</h1>
+  <p>你不是在买零散接口，而是买一套能直接帮你做判断的数据能力组合。选择最贴近你场景的方案，一次订阅获得对应数据包、API、看板和 AI 报告能力。</p>
+</div>
+
+<div class="persona-tabs" id="persona-tabs">
+  <div class="ptab active" data-p="founder" onclick="selectPersona('founder')"><i class="ti ti-rocket" aria-hidden="true"></i>面向创业者</div>
+  <div class="ptab" data-p="sales" onclick="selectPersona('sales')"><i class="ti ti-building" aria-hidden="true"></i>面向企业销售</div>
+  <div class="ptab" data-p="invest" onclick="selectPersona('invest')"><i class="ti ti-chart-line" aria-hidden="true"></i>面向投资研究</div>
+  <div class="ptab" data-p="edu" onclick="selectPersona('edu')"><i class="ti ti-school" aria-hidden="true"></i>面向教育咨询</div>
+</div>
+
+<div class="content" id="content"></div>
+
+<script>
+var pkgLinkMap={
+  '创业商业情报':'package-startup-intel.html',
+  'AI / GEO 分析':'package-ai-geo.html',
+  '技术专利趋势':'package-patent-tech.html',
+  '企业竞品监控':'package-enterprise-risk.html',
+  '政策与招投标':'package-policy-bidding.html',
+  '金融宏观数据':'package-finance-macro.html',
+  'Web3 / Crypto':'package-web3-crypto.html',
+  '教育与选校':'package-education.html'
+};
+
+var solutions={
+  founder:{
+    title:'创业者全景方案',
+    sub:'从判断方向到监控竞品，覆盖创业全流程的数据组合。适合独立开发者、小团队和早期创业者。',
+    price:599,orig:797,save:'省 25%',
+    pkgs:[
+      {name:'创业商业情报',icon:'ti-rocket',cls:'ic-green',desc:'行业趋势、竞品分析、项目评估'},
+      {name:'AI / GEO 分析',icon:'ti-brand-google',cls:'ic-blue',desc:'网站 AI 可见度、内容优化建议'},
+      {name:'技术专利趋势',icon:'ti-microscope',cls:'ic-gray',desc:'技术壁垒判断、专利布局查询'},
+      {name:'企业竞品监控',icon:'ti-building',cls:'ic-amber',desc:'竞品动态、企业背调'}
+    ],
+    usecases:[
+      '评估一个新方向：市场规模、竞品格局、技术壁垒一次看清',
+      '官网上线前先做 AI/GEO 检测，避免内容结构拖累获客',
+      '监控核心竞品的定价、产品和招聘变化，及时调整策略',
+      '判断技术方向是否已被大厂或同行专利覆盖'
+    ],
+    workflow:[
+      '输入创业方向，调用<strong>创业商业情报包</strong>生成项目评估报告',
+      '官网上线后用<strong>AI/GEO 包</strong>检测可见度，按建议优化内容结构',
+      '用<strong>技术专利包</strong>确认核心技术方向无重大专利风险',
+      '设置<strong>企业竞品监控</strong>任务，持续跟踪 3-5 家核心竞品动态'
+    ]
+  },
+  sales:{
+    title:'企业销售与商机方案',
+    sub:'帮销售团队找客户、查风险、抓商机。适合 ToB 销售团队、咨询公司和地方服务商。',
+    price:1499,orig:1898,save:'省 21%',
+    pkgs:[
+      {name:'企业竞品监控',icon:'ti-building',cls:'ic-amber',desc:'企业查询、风险评分、关系图谱'},
+      {name:'政策与招投标',icon:'ti-file-text',cls:'ic-teal',desc:'招投标线索、政策补贴匹配'},
+      {name:'AI / GEO 分析',icon:'ti-brand-google',cls:'ic-blue',desc:'客户官网内容诊断，辅助拜访话术'}
+    ],
+    usecases:[
+      '拜访客户前先查企业风险评分，避免合作踩坑',
+      '监控目标客户和竞品的招投标参与情况，提前布局',
+      '匹配本地区可申报的政策补贴，作为切入话题',
+      '生成尽调报告直接发给老板，提升汇报效率'
+    ],
+    workflow:[
+      '用<strong>企业竞品监控包</strong>批量查询销售线索的风险评分',
+      '通过<strong>政策招投标包</strong>找到客户可能感兴趣的补贴与商机',
+      '生成一份 AI 尽调报告，作为拜访前的背调材料',
+      '设置监控任务，企业一有新动态立即收到飞书/企微提醒'
+    ]
+  },
+  invest:{
+    title:'投资研究方案',
+    sub:'宏观、企业、技术、Web3 四个维度交叉验证，适合投研团队和独立研究者，仅供研究参考。',
+    price:899,orig:1196,save:'省 25%',
+    pkgs:[
+      {name:'金融宏观数据',icon:'ti-chart-line',cls:'ic-purple',desc:'宏观指标、财报、市场事件'},
+      {name:'企业竞品监控',icon:'ti-building',cls:'ic-amber',desc:'企业基础信息与风险评分'},
+      {name:'技术专利趋势',icon:'ti-microscope',cls:'ic-gray',desc:'技术硬实力与专利布局'},
+      {name:'Web3 / Crypto',icon:'ti-currency-bitcoin',cls:'ic-coral',desc:'加密资产基础数据与项目风险'}
+    ],
+    usecases:[
+      '研究一个赛道时同时看宏观环境、企业财务和技术壁垒',
+      '评估标的公司的专利布局，判断技术护城河强弱',
+      '跟踪关注的加密项目 TVL 和风险标签变化',
+      '一键生成多维度交叉验证的研究简报'
+    ],
+    workflow:[
+      '用<strong>金融宏观包</strong>了解行业所处的宏观周期位置',
+      '用<strong>企业风控包</strong>核实标的公司基础面是否健康',
+      '用<strong>技术专利包</strong>判断公司技术壁垒的真实强度',
+      '汇总生成跨数据包的研究简报，不构成投资建议'
+    ]
+  },
+  edu:{
+    title:'教育咨询方案',
+    sub:'帮教育咨询师和留学机构做选校建议与职业路径规划，仅使用公开学校与就业数据。',
+    price:399,orig:548,save:'省 27%',
+    pkgs:[
+      {name:'教育与选校',icon:'ti-school',cls:'ic-pink',desc:'大学数据库、专业对比、选校报告'},
+      {name:'技术专利趋势',icon:'ti-microscope',cls:'ic-gray',desc:'科研实力与学术热点参考'}
+    ],
+    usecases:[
+      '为学生对比 3-5 所目标院校的同一专业实力',
+      '结合就业趋势数据，帮助学生选择更有前景的专业方向',
+      '查看院校在某学术领域的科研论文产出与热点',
+      '批量为多个学生生成个性化选校分析报告'
+    ],
+    workflow:[
+      '输入学生意向专业和地区，用<strong>教育选校包</strong>生成候选院校列表',
+      '用<strong>专业对比 API</strong>横向比较学费、录取率与就业率',
+      '参考<strong>技术专利包</strong>的学术热点数据，判断专业前沿程度',
+      '一键生成 PDF 选校报告，发给学生和家长'
+    ]
+  }
+};
+
+function render(key){
+  var s=solutions[key];
+  var pkgHtml=s.pkgs.map(function(p){
+    var link=pkgLinkMap[p.name]||'marketplace.html';
+    return '<div class="flow-card" onclick="location.href=\''+link+'\'"><div class="flow-icon '+p.cls+'"><i class="ti '+p.icon+'" aria-hidden="true"></i></div><div class="flow-name">'+p.name+'</div><div class="flow-desc">'+p.desc+'</div></div>';
+  }).join('<div class="flow-arrow"><i class="ti ti-arrow-right" aria-hidden="true"></i></div>');
+
+  var usecaseHtml=s.usecases.map(function(u){
+    return '<div class="usecase-card"><div class="usecase-q"><i class="ti ti-circle-check" aria-hidden="true"></i>'+u+'</div></div>';
+  }).join('');
+
+  var workflowHtml=s.workflow.map(function(w,i){
+    return '<div class="workflow-step"><div class="wf-num">'+(i+1)+'</div><div class="wf-text">'+w+'</div></div>';
+  }).join('');
+
+  document.getElementById('content').innerHTML=
+    '<div class="solution-head">'+
+      '<div><div class="solution-title">'+s.title+'</div><div class="solution-sub">'+s.sub+'</div></div>'+
+      '<div class="bundle-price-box">'+
+        '<div class="bundle-price-label">组合套餐价格</div>'+
+        '<div><span class="bundle-price-val">¥'+s.price+'</span><span class="bundle-price-orig">¥'+s.orig+'</span></div>'+
+        '<div class="bundle-price-unit">/ 月起</div>'+
+        '<div class="bundle-save">'+s.save+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="section-title">包含数据包</div>'+
+    '<div class="flow-row">'+pkgHtml+'</div>'+
+    '<div class="section-title">典型使用场景</div>'+
+    '<div class="usecase-grid">'+usecaseHtml+'</div>'+
+    '<div class="section-title">推荐使用流程</div>'+
+    '<div class="workflow-box">'+workflowHtml+'</div>'+
+    '<div class="cta-row">'+
+      '<button class="btn-subscribe" onclick="location.href=\'checkout.html\'">订阅这套方案 →</button>'+
+      '<button class="btn-secondary" onclick="location.href=\'marketplace.html\'">查看全部数据包</button>'+
+    '</div>';
+}
+
+function selectPersona(key){
+  document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('active')});
+  document.querySelector('[data-p="'+key+'"]').classList.add('active');
+  render(key);
+}
+
+render('founder');
+</script>
+</div>
+</body>
+</html>
