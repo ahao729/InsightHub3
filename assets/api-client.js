@@ -106,6 +106,8 @@
         clearToken();
       },
       getToken: getToken,
+      setToken: setToken,
+      clearToken: clearToken,
       isAuthenticated: isAuthenticated,
     },
 
@@ -169,6 +171,29 @@
 
     // === 管理后台 ===
     admin: {
+      // ---- 管理员认证 ----
+      login: function (email, password) {
+        return request('POST', '/admin/login', { email: email, password: password }).then(function (res) {
+          if (res.success && res.data && res.data.token) {
+            setToken(res.data.token);
+          }
+          return res;
+        });
+      },
+      register: function (email, password, name, invite) {
+        var body = { email: email, password: password, name: name };
+        if (invite) body.inviteCode = invite;
+        return request('POST', '/admin/register', body).then(function (res) {
+          if (res.success && res.data && res.data.token) {
+            setToken(res.data.token);
+          }
+          return res;
+        });
+      },
+      logout: function () {
+        clearToken();
+      },
+      // ---- 管理数据 ----
       getStats: function () {
         return request('GET', '/admin/stats').then(function (res) { return res.data; });
       },

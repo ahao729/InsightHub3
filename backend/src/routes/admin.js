@@ -1,8 +1,32 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 const { query } = require('../db/pool');
 const { authenticate } = require('../middleware/auth');
+const config = require('../config');
 
 const router = express.Router();
+
+// ──────────────────────────────────────────────
+// In-memory admin store (fallback when no DB)
+// ──────────────────────────────────────────────
+const adminStore = [];
+
+async function seedDefaultAdmin() {
+  if (adminStore.find(a => a.email === 'admin@insighthub.data')) return;
+  const hashed = await bcrypt.hash('admin123456', 10);
+  adminStore.push({
+    id: 'admin-' + uuidv4().slice(0, 8),
+    email: 'admin@insighthub.data',
+    password: hashed,
+    name: '管理员',
+    role: 'admin',
+    createdAt: new Date().toISOString(),
+  });
+  console.log('[Admin] Default admin seeded: admin@insighthub.data / admin123456');
+}
+seedDefaultAdmin();
 
 // ──────────────────────────────────────────────
 // In-memory fallback data
@@ -73,10 +97,132 @@ const fallbackAuditLogs = [
 ];
 
 // ──────────────────────────────────────────────
+// Admin Authentication Routes
+// ──────────────────────────────────────────────
+
+/**
+ * POST /api/v1/admin/login
+ * Authenticate with email + password, returns JWT
+ */
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_INPUT', message: '请提供邮箱和密码。' }
+      });
+    }
+
+    const admin = adminStore.find(a => a.email === email);
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_CREDENTIALS', message: '邮箱或密码错误。' }
+      });
+    }
+
+    const valid = await bcrypt.compare(password, admin.password);
+    if (!valid) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_CREDENTIALS', message: '邮箱或密码错误。' }
+      });
+    }
+
+    const token = jwt.sign(
+      { sub: admin.id, email: admin.email, name: admin.name, role: 'admin' },
+      config.jwtSecret,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      success: true,
+      data: {
+        token,
+        admin: { id: admin.id, email: admin.email, name: admin.name }
+      }
+    });
+  } catch (err) {
+    console.error('[Admin] Login error:', err);
+    res.status(500).json({
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: '登录失败，请稍后重试。' }
+    });
+  }
+});
+
+/**
+ * POST /api/v1/admin/register
+ * Create a new admin account
+ */
+router.post('/register', async (req, res) => {
+  try {
+    const { email, password, name, inviteCode } = req.body;
+    if (!email || !password || !name) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_INPUT', message: '请提供邮箱、密码和管理员名称。' }
+      });
+    }
+
+    // 校验管理员邀请码
+    if (!inviteCode || inviteCode !== config.adminInviteCode) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'INVALID_INVITE_CODE', message: '管理员邀请码无效，请确认后重试。' }
+      });
+    }
+
+    if (adminStore.find(a => a.email === email)) {
+      return res.status(409).json({
+        success: false,
+        error: { code: 'ALREADY_EXISTS', message: '该邮箱已被注册。' }
+      });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+    const admin = {
+      id: 'admin-' + uuidv4().slice(0, 8),
+      email,
+      password: hashed,
+      name,
+      role: 'admin',
+      createdAt: new Date().toISOString(),
+    };
+    adminStore.push(admin);
+
+    const token = jwt.sign(
+      { sub: admin.id, email: admin.email, name: admin.name, role: 'admin' },
+      config.jwtSecret,
+      { expiresIn: '24h' }
+    );
+
+    res.status(201).json({
+      success: true,
+      data: {
+        token,
+        admin: { id: admin.id, email: admin.email, name: admin.name }
+      }
+    });
+  } catch (err) {
+    console.error('[Admin] Register error:', err);
+    res.status(500).json({
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: '注册失败，请稍后重试。' }
+    });
+  }
+});
+
+// ──────────────────────────────────────────────
 // Simple admin auth gate
 // ──────────────────────────────────────────────
 
 function requireAdmin(req, res, next) {
+  // Admin role from JWT (set by admin login)
+  if (req.user && req.user.role === 'admin') {
+    return next();
+  }
   // In development, allow any authenticated user with specific emails
   const adminEmails = ['admin@insighthub.data', 'admin@example.com'];
   if (req.user && (adminEmails.includes(req.user.email) || req.user.id === 'dev-admin-id')) {

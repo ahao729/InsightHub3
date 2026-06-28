@@ -15,6 +15,90 @@
 </head>
 <body>
 
+<!-- ===== LOGIN OVERLAY ===== -->
+<div class="login-overlay active" id="login-overlay">
+  <div class="login-card">
+    <h2>管理员登录</h2>
+    <div class="login-sub">InsightHub 管理后台</div>
+
+    <!-- login form -->
+    <div id="login-form">
+      <div style="position:relative">
+        <label>邮箱</label>
+        <div class="pwd-wrap">
+          <input id="login-email" type="email" placeholder="管理员邮箱" autocomplete="email">
+        </div>
+      </div>
+      <div style="position:relative">
+        <label>密码</label>
+        <div class="pwd-wrap">
+          <input id="login-password" type="password" placeholder="输入密码" autocomplete="current-password">
+          <span class="toggle-pwd" tabindex="0" role="button" aria-label="切换密码可见性">
+            <i class="ti ti-eye"></i>
+          </span>
+        </div>
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <button class="login-btn" id="login-btn">登录</button>
+      <div class="login-divider">或</div>
+      <a href="#" id="switch-to-register" class="register-btn">注册管理员账号</a>
+      <div class="forgot-link"><a href="#" id="forgot-password" onclick="showForgotPassword()">忘记密码？</a></div>
+    </div>
+
+    <!-- register form -->
+    <div id="register-form" style="display:none">
+      <div style="position:relative">
+        <label>邮箱</label>
+        <div class="pwd-wrap">
+          <input id="reg-email" type="email" placeholder="管理员邮箱" autocomplete="email">
+        </div>
+      </div>
+      <div style="position:relative">
+        <label>管理员名称</label>
+        <div class="pwd-wrap">
+          <input id="reg-name" type="text" placeholder="显示名称" autocomplete="name">
+        </div>
+      </div>
+      <div style="position:relative">
+        <label>密码</label>
+        <div class="pwd-wrap">
+          <input id="reg-password" type="password" placeholder="密码（至少 6 位）" autocomplete="new-password">
+          <span class="toggle-pwd" tabindex="0" role="button" aria-label="切换密码可见性">
+            <i class="ti ti-eye"></i>
+          </span>
+        </div>
+      </div>
+      <div style="position:relative">
+        <label>确认密码</label>
+        <div class="pwd-wrap">
+          <input id="reg-confirm" type="password" placeholder="再次输入密码" autocomplete="new-password">
+          <span class="toggle-pwd" tabindex="0" role="button" aria-label="切换密码可见性">
+            <i class="ti ti-eye"></i>
+          </span>
+        </div>
+      </div>
+      <div style="position:relative">
+        <label>邀请码 <span style="font-size:11px;color:var(--color-text-secondary)">（必填）</span></label>
+        <div class="pwd-wrap">
+          <input id="reg-invite" type="text" placeholder="管理员邀请码" autocomplete="off">
+        </div>
+      </div>
+      <div class="login-error" id="reg-error"></div>
+      <button class="login-btn" id="reg-btn">注册</button>
+      <div class="back-link"><a href="#" id="switch-to-login">← 返回登录</a></div>
+    </div>
+    <div class="login-footer">
+      <span>InsightHub v2.0</span>
+      <span class="login-footer-sep">·</span>
+      <a href="#">服务条款</a>
+      <span class="login-footer-sep">·</span>
+      <a href="#">隐私政策</a>
+      <span class="login-footer-sep">·</span>
+      <span>&copy; 2026 InsightHub</span>
+    </div>
+  </div>
+</div>
+
 <div class="page-shell">
 
 <style>
@@ -145,13 +229,72 @@ table.admin-tbl tr:hover td{background:var(--color-background-secondary)}
 .text-center{text-align:center}
 .text-secondary{color:var(--color-text-secondary)}
 .cursor-pointer{cursor:pointer}
+/* ===== login overlay ===== */
+.login-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center}
+.login-overlay.active{display:flex}
+.login-card{background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:32px;width:380px;max-width:90vw;box-shadow:0 16px 48px rgba(0,0,0,.15)}
+.login-card h2{font-size:18px;font-weight:500;margin:0 0 4px}
+.login-card .login-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:20px}
+.login-card label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;margin-top:14px}
+.login-card input{width:100%;padding:9px 12px;font-size:14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);box-sizing:border-box}
+.login-card input:focus{outline:none;border-color:var(--color-brand)}
+.login-card .login-btn{width:100%;padding:10px;margin-top:20px;font-size:14px;font-weight:500;border-radius:var(--border-radius-md);border:none;background:var(--color-brand);color:#fff;cursor:pointer;font-family:var(--font-sans)}
+.login-card .login-btn:hover{background:var(--color-brand-dark)}
+.login-card .login-btn:disabled{opacity:.6;cursor:default}
+.login-card .login-error{font-size:12px;color:#E24B4A;margin-top:8px;display:none}
+.login-card .login-divider{text-align:center;font-size:12px;color:var(--color-text-secondary);margin:14px 0;position:relative}
+.login-card .login-divider::before,.login-card .login-divider::after{content:'';position:absolute;top:50%;width:42%;height:0.5px;background:var(--color-border-tertiary)}
+.login-card .login-divider::before{left:0}
+.login-card .login-divider::after{right:0}
+.login-card .register-btn{display:block;width:100%;padding:10px;font-size:14px;font-weight:500;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-primary);cursor:pointer;font-family:var(--font-sans);text-align:center;text-decoration:none;box-sizing:border-box}
+.login-card .register-btn:hover{background:var(--color-background-secondary)}
+.login-card .back-link{text-align:center;margin-top:12px}
+.login-card .back-link a{font-size:12px;color:var(--color-text-secondary);cursor:pointer;text-decoration:none}
+.login-card .back-link a:hover{color:var(--color-text-primary)}
+.login-card .forgot-link{text-align:center;margin-top:10px}
+.login-card .forgot-link a{font-size:12px;color:var(--color-text-secondary);cursor:pointer;text-decoration:none}
+.login-card .forgot-link a:hover{color:var(--color-text-primary)}
+.login-card .login-footer{text-align:center;font-size:11px;color:var(--color-text-tertiary);margin-top:20px;padding-top:16px;border-top:0.5px solid var(--color-border-tertiary)}
+.login-card .login-footer a{color:var(--color-text-tertiary);text-decoration:none}
+.login-card .login-footer a:hover{color:var(--color-text-secondary)}
+.login-card .login-footer-sep{margin:0 6px}
+.pwd-wrap{position:relative}
+.pwd-wrap input{padding-right:36px!important}
+.toggle-pwd{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--color-text-secondary);font-size:16px;line-height:1;z-index:2;padding:4px;user-select:none}
+.toggle-pwd:hover{color:var(--color-text-primary)}
+.toggle-pwd.visible{color:var(--color-brand)}
+
 /* ===== responsive tweaks ===== */
 @media(max-width:768px){
   .shell{grid-template-columns:1fr;margin:12px}
-  .sidebar{display:none}
+  .sb-nav-section,.sb-user .sb-name,.sb-user .sb-plan{display:none}
+  .sidebar{display:flex;flex-direction:row;align-items:center;gap:12px;padding:8px 16px;border-right:none;border-bottom:0.5px solid var(--color-border-tertiary);position:sticky;top:0;z-index:100}
+  .hamburger{display:flex}
+  .sb-logo{margin-right:4px}
+  .sb-avatar{width:32px;height:32px;font-size:13px}
   .metrics{grid-template-columns:repeat(2,1fr)}
   .health-grid{grid-template-columns:1fr}
 }
+
+/* ===== hamburger + mobile drawer ===== */
+.hamburger{display:none;flex-direction:column;justify-content:center;align-items:center;width:36px;height:36px;border:none;background:transparent;cursor:pointer;padding:6px;border-radius:var(--border-radius-sm,8px);gap:4px;z-index:1100}
+.hamburger:hover{background:var(--color-background-secondary)}
+.hamburger span{display:block;width:20px;height:2px;background:var(--color-text-primary);border-radius:2px;transition:all .2s}
+.hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.mobile-drawer{display:none;position:fixed;top:0;right:-280px;width:280px;max-width:80vw;height:100vh;background:var(--color-background-primary);border-left:0.5px solid var(--color-border-tertiary);z-index:1050;flex-direction:column;padding:20px 8px 8px;transition:right .3s;box-shadow:0 4px 24px rgba(0,0,0,0.12);overflow-y:auto}
+.mobile-drawer.open{right:0}
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1040;opacity:0;transition:opacity .3s}
+.drawer-backdrop.open{display:block;opacity:1}
+.drawer-user{display:flex;align-items:center;gap:12px;padding:0 4px 16px}
+.drawer-avatar{width:40px;height:40px;border-radius:50%;background:var(--color-brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;flex-shrink:0}
+.drawer-name{font-weight:600;font-size:15px;color:var(--color-text-primary)}
+.drawer-plan{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.drawer-divider{height:1px;background:var(--color-border-tertiary);margin:8px 0}
+.drawer-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--color-text-primary);text-decoration:none;font-size:14px;cursor:pointer;border:none;background:none;width:100%;font-family:inherit}
+.drawer-link:hover{background:var(--color-background-secondary)}
+.drawer-link i{font-size:18px;width:20px;text-align:center;color:var(--color-text-secondary)}
 </style>
 
 <!-- ===== SIDEBAR ===== -->
@@ -160,6 +303,9 @@ table.admin-tbl tr:hover td{background:var(--color-background-secondary)}
     <span class="logo-dot"></span>
     <span class="sb-logo-text">InsightHub</span>
   </a>
+  <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
 
   <div class="sb-user">
     <div class="sb-avatar" id="admin-avatar">A</div>
@@ -200,6 +346,9 @@ table.admin-tbl tr:hover td{background:var(--color-background-secondary)}
   <div class="sb-nav-section" style="margin-top:auto;padding-top:12px;border-top:0.5px solid var(--color-border-tertiary)">
     <div class="sb-nav-item" onclick="location.href='dashboard.html'">
       <i class="ti ti-arrow-left"></i> 返回工作台
+    </div>
+    <div class="sb-nav-item" id="logout-btn-sidebar" style="color:var(--color-text-secondary);">
+      <i class="ti ti-logout"></i> 退出登录
     </div>
   </div>
 </div>
@@ -362,6 +511,40 @@ table.admin-tbl tr:hover td{background:var(--color-background-secondary)}
 
   </div><!-- /content -->
 </div><!-- /main -->
+
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-user">
+    <div class="drawer-avatar">A</div>
+    <div>
+      <div class="drawer-name">管理员</div>
+      <div class="drawer-plan">系统管理面板</div>
+    </div>
+  </div>
+  <div class="drawer-divider"></div>
+  <button class="drawer-link" onclick="document.querySelector('.sb-nav-item[data-section=overview]').click()">
+    <i class="ti ti-dashboard"></i> 系统概览
+  </button>
+  <button class="drawer-link" onclick="document.querySelector('.sb-nav-item[data-section=users]').click()">
+    <i class="ti ti-users"></i> 用户管理
+  </button>
+  <button class="drawer-link" onclick="document.querySelector('.sb-nav-item[data-section=apikeys]').click()">
+    <i class="ti ti-key"></i> API 密钥
+  </button>
+  <button class="drawer-link" onclick="document.querySelector('.sb-nav-item[data-section=subscriptions]').click()">
+    <i class="ti ti-credit-card"></i> 订阅管理
+  </button>
+  <button class="drawer-link" onclick="document.querySelector('.sb-nav-item[data-section=logs]').click()">
+    <i class="ti ti-clipboard-list"></i> 操作日志
+  </button>
+  <button class="drawer-link" onclick="document.querySelector('.sb-nav-item[data-section=health]').click()">
+    <i class="ti ti-activity"></i> 健康状态
+  </button>
+  <div class="drawer-divider"></div>
+  <button class="drawer-link" onclick="handleLogout()">
+    <i class="ti ti-logout"></i> 退出登录
+  </button>
+</div>
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
 
 </div><!-- /page-shell -->
 
@@ -732,8 +915,230 @@ document.querySelectorAll('.modal-overlay').forEach(function(m){
   });
 });
 
+// ========== auth api wrapper ==========
+var authApi = {
+  login: function(email, password) {
+    return API.admin.login(email, password).then(function(res) {
+      if (!res.success) throw new Error(res.error && res.error.message || '登录失败');
+      return res.data;
+    });
+  },
+  register: function(email, password, name, invite) {
+    return API.admin.register(email, password, name, invite).then(function(res) {
+      if (!res.success) throw new Error(res.error && res.error.message || '注册失败');
+      return res.data;
+    });
+  },
+  checkAuth: function() {
+    var t = localStorage.getItem('admin_token') || localStorage.getItem('ih_token');
+    if (!t) return Promise.resolve({ authenticated: false });
+    // try to call a protected endpoint to verify token is still valid
+    return API.admin.getStats().then(function() {
+      return { authenticated: true };
+    }).catch(function() {
+      return { authenticated: false };
+    });
+  },
+  logout: function() {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('ih_token');
+    try { API.admin.logout(); } catch(e) { /* ignore */ }
+    return Promise.resolve();
+  }
+};
+
+// ========== auth ==========
+
+function checkAuth() {
+  var token = localStorage.getItem('admin_token') || localStorage.getItem('ih_token');
+  if (token) {
+    authApi.checkAuth()
+      .then(function(res){
+        if (res.authenticated) {
+          document.getElementById('login-overlay').classList.remove('active');
+          loadOverviewStats();
+        } else {
+          localStorage.removeItem('admin_token');
+          localStorage.removeItem('ih_token');
+          showLogin();
+        }
+      })
+      .catch(function(){
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('ih_token');
+        showLogin();
+      });
+  } else {
+    showLogin();
+  }
+}
+
+function handleLogin() {
+  var email = document.getElementById('login-email').value.trim();
+  var password = document.getElementById('login-password').value.trim();
+  var errorEl = document.getElementById('login-error');
+  if (!email || !password) {
+    errorEl.textContent = '请输入邮箱和密码';
+    errorEl.style.display = 'block';
+    return;
+  }
+  errorEl.style.display = 'none';
+  var btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = '登录中...';
+  authApi.login(email, password)
+    .then(function(res){
+      localStorage.setItem('admin_token', res.token);
+      document.getElementById('login-overlay').classList.remove('active');
+      loadOverviewStats();
+    })
+    .catch(function(err){
+      errorEl.textContent = err.message || '登录失败';
+      errorEl.style.display = 'block';
+    })
+    .finally(function(){
+      btn.disabled = false;
+      btn.textContent = '登录';
+    });
+}
+
+function handleRegister() {
+  var email = document.getElementById('reg-email').value.trim();
+  var password = document.getElementById('reg-password').value.trim();
+  var confirmPwd = document.getElementById('reg-confirm').value.trim();
+  var name = document.getElementById('reg-name').value.trim() || email.split('@')[0];
+  var invite = document.getElementById('reg-invite').value.trim();
+  var errorEl = document.getElementById('reg-error');
+  if (!email || !password || !confirmPwd || !invite) {
+    errorEl.textContent = '请填写所有必填字段';
+    errorEl.style.display = 'block';
+    return;
+  }
+  if (password !== confirmPwd) {
+    errorEl.textContent = '两次密码输入不一致';
+    errorEl.style.display = 'block';
+    return;
+  }
+  if (password.length < 6) {
+    errorEl.textContent = '密码长度至少 6 位';
+    errorEl.style.display = 'block';
+    return;
+  }
+  errorEl.style.display = 'none';
+  var btn = document.getElementById('reg-btn');
+  btn.disabled = true;
+  btn.textContent = '注册中...';
+  authApi.register(email, password, name, invite || undefined)
+    .then(function(res){
+      // auto-login after register
+      localStorage.setItem('admin_token', res.token);
+      document.getElementById('login-overlay').classList.remove('active');
+      loadOverviewStats();
+    })
+    .catch(function(err){
+      errorEl.textContent = err.message || '注册失败';
+      errorEl.style.display = 'block';
+    })
+    .finally(function(){
+      btn.disabled = false;
+      btn.textContent = '注册';
+    });
+}
+
+function handleLogout() {
+  authApi.logout().catch(function(){ /* ignore */ });
+  localStorage.removeItem('admin_token');
+  location.reload();
+}
+
+function showRegister() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'block';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('reg-error').style.display = 'none';
+}
+
+function showLogin() {
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('reg-error').style.display = 'none';
+}
+
+function showForgotPassword() {
+  // 预留：忘记密码功能
+}
+
+// toggle password visibility
+document.querySelectorAll('.toggle-pwd').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var input = this.parentElement.querySelector('input');
+    if (input.type === 'password') {
+      input.type = 'text';
+      this.classList.add('visible');
+    } else {
+      input.type = 'password';
+      this.classList.remove('visible');
+    }
+  });
+});
+
+// switch between login / register
+document.getElementById('switch-to-register').addEventListener('click', function(e){
+  e.preventDefault();
+  showRegister();
+});
+document.getElementById('switch-to-login').addEventListener('click', function(e){
+  e.preventDefault();
+  showLogin();
+});
+
+// enter key support
+document.getElementById('login-password').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') handleLogin();
+});
+document.getElementById('reg-confirm').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') handleRegister();
+});
+
+// sidebar logout
+document.getElementById('logout-btn-sidebar').addEventListener('click', handleLogout);
+
+// ========== 移动端汉堡菜单 ==========
+(function() {
+  var btn = document.getElementById('hamburger-btn');
+  var drawer = document.getElementById('mobile-drawer');
+  var backdrop = document.getElementById('drawer-backdrop');
+  if (!btn || !drawer || !backdrop) return;
+  function openDrawer() {
+    btn.classList.add('active');
+    btn.setAttribute('aria-expanded', 'true');
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    btn.classList.remove('active');
+    btn.setAttribute('aria-expanded', 'false');
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  btn.addEventListener('click', function() {
+    if (drawer.classList.contains('open')) {
+      closeDrawer();
+    } else {
+      openDrawer();
+    }
+  });
+  backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer();
+  });
+})();
+
 // ========== init ==========
-loadOverviewStats();
+checkAuth();
 </script>
 
 </body>

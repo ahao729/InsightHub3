@@ -536,8 +536,196 @@ h4, .h4 {
 }
 
 /* ═══════════════════════════════════════════
-   响应式
-   ═══════════════════════════════════════════ */
+    响应式: 断点定义
+    ═══════════════════════════════════════════ */
+/* 移动端: 0-639px / 平板: 640-1023px / 桌面: 1024px+ */
+@media (max-width: 639px)   { .mq-mobile-only  { display: revert; } .mq-tablet-up, .mq-desktop-up { display: none; } }
+@media (min-width: 640px)   { .mq-tablet-up    { display: revert; } }
+@media (min-width: 1024px)  { .mq-desktop-up   { display: revert; } }
+
+/* ═══════════════════════════════════════════
+    响应式: 常用工具类
+    ═══════════════════════════════════════════ */
+
+/* 移动端隐藏 / 仅移动端显示 */
+.hide-mobile { display: revert; }
+.show-mobile { display: none; }
+
+@media (max-width: 639px) {
+  .hide-mobile { display: none; }
+  .show-mobile { display: revert; }
+}
+
+/* 响应式 padding 简化 */
+@media (max-width: 639px) {
+  .nav-inner,
+  .footer-inner,
+  .hero,
+  .toolbar,
+  .grid-wrap,
+  .matrix-wrap,
+  .faq-section,
+  .section-wrap,
+  .content-wrap {
+    padding-left: var(--space-8)  !important;
+    padding-right: var(--space-8) !important;
+  }
+  .hero { padding-top: var(--space-10); padding-bottom: var(--space-8); }
+  .footer-inner { flex-direction: column; text-align: center; }
+}
+
+/* 响应式网格辅助 */
+.grid-2, .grid-3, .grid-4 { display: grid; gap: var(--space-5); }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (max-width: 639px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pkg-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* 移动端 flex 垂直堆叠 */
+@media (max-width: 639px) {
+  .stack-mobile {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+}
+
+/* ═══════════════════════════════════════════
+    响应式: 汉堡菜单导航
+    ═══════════════════════════════════════════ */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--border-radius-sm);
+  gap: 4px;
+  z-index: 1100;
+}
+.hamburger:hover { background: var(--color-background-secondary); }
+.hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--color-text-primary);
+  border-radius: 2px;
+  transition: all var(--transition-fast);
+}
+.hamburger.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* 移动端抽屉导航 */
+.mobile-drawer {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: -280px;
+  width: 280px;
+  height: 100vh;
+  background: var(--color-background-primary);
+  border-left: 0.5px solid var(--color-border-tertiary);
+  z-index: 1050;
+  flex-direction: column;
+  padding: var(--space-20) var(--space-8) var(--space-8);
+  transition: right var(--transition-normal);
+  box-shadow: var(--shadow-xl);
+  overflow-y: auto;
+}
+.mobile-drawer.open { right: 0; }
+.drawer-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 1040;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+.drawer-backdrop.open { display: block; opacity: 1; }
+
+.mobile-drawer .drawer-link {
+  display: block;
+  padding: var(--space-6) 0;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  text-decoration: none;
+}
+.mobile-drawer .drawer-link:hover { color: var(--color-brand); }
+.mobile-drawer .drawer-link.active { color: var(--color-brand); font-weight: var(--font-weight-medium); }
+
+@media (max-width: 639px) {
+  .hamburger { display: flex; }
+  .nav-links { display: none; }
+  .nav-right .hide-mobile { display: none; }
+}
+
+/* ═══════════════════════════════════════════
+    响应式: 页面特定覆盖
+    ═══════════════════════════════════════════ */
+
+/* Dashboard 指标卡片 */
+@media (max-width: 1023px) {
+  .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 639px) {
+  .metrics-grid { grid-template-columns: 1fr; }
+  .metric-val { font-size: var(--font-size-3xl); }
+}
+
+/* 数据包页面 — 特性表格 */
+@media (max-width: 639px) {
+  .specs-grid { grid-template-columns: 1fr !important; }
+  .sample-table-wrap { overflow-x: auto; }
+}
+
+/* 定价页 — 移动端改用堆叠卡片 */
+@media (max-width: 639px) {
+  .plan-row-wrap { display: none; }
+  .matrix-wrap { display: none; }
+  .pricing-mobile-cards { display: flex !important; }
+}
+.pricing-mobile-cards { display: none; }
+.pricing-mobile-card {
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-8);
+  margin-bottom: var(--space-6);
+  background: var(--color-background-primary);
+}
+.pricing-mobile-card.featured {
+  border: 2px solid var(--color-brand);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 可滚动表格包裹器 */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll::-webkit-scrollbar { height: 4px; }
+.table-scroll::-webkit-scrollbar-thumb { background: var(--color-border-secondary); border-radius: 4px; }
+
+/* 通用隐藏滚动条 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ═══════════════════════════════════════════
+    响应式: 旧版兼容
+    ═══════════════════════════════════════════ */
 @media (max-width: 900px) {
   .page-shell { box-shadow: none; }
 }

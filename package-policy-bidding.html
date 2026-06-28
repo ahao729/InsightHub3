@@ -92,7 +92,19 @@
 <div class="nav">
   <div class="logo" onclick="location.href='index.html'"><div class="logo-dot"></div>InsightHub Data</div>
   <div class="breadcrumb"><span onclick="location.href='marketplace.html'">数据产品</span><span class="sep">/</span><span style="color:var(--color-text-primary)">政策与招投标数据包</span></div>
+  <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
 </div>
+
+<div class="mobile-drawer" id="mobile-drawer">
+  <a class="drawer-link" href="marketplace.html">数据产品</a>
+  <a class="drawer-link" href="api-docs.html">API 文档</a>
+  <a class="drawer-link" href="pricing.html">定价</a>
+  <a class="drawer-link" href="solutions.html">解决方案</a>
+  <a class="drawer-link" href="auth.html">登录 / 注册</a>
+</div>
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
 
 <div class="pkg-hero">
   <div class="pkg-hero-top">

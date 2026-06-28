@@ -101,8 +101,19 @@
       <button class="btn btn-ghost" onclick="location.href='auth.html'">登录</button>
       <button class="btn btn-primary" onclick="location.href='auth.html'">免费开始</button>
     </div>
+    <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
+<div class="mobile-drawer" id="mobile-drawer">
+  <a class="drawer-link" href="marketplace.html">数据产品</a>
+  <a class="drawer-link" href="api-docs.html">API 文档</a>
+  <a class="drawer-link" href="pricing.html">定价</a>
+  <a class="drawer-link" href="solutions.html">解决方案</a>
+  <a class="drawer-link" href="auth.html">登录 / 注册</a>
+</div>
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
 
   <div class="hero">
     <div class="badge badge-white hero-badge"><span class="badge-dot badge-dot-green"></span>现已支持 MCP 接入 · Claude / Cursor / Cline</div>

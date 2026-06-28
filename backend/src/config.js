@@ -6,6 +6,7 @@ const config = {
   jwtSecret: process.env.JWT_SECRET || 'insighthub-dev-secret-key-change-in-production',
   jwtExpiresIn: '7d',
   corsOrigins: process.env.CORS_ORIGINS || 'http://localhost:3000',
+  adminInviteCode: process.env.ADMIN_INVITE_CODE || 'INSIGHTHUB2024',
   nodeEnv: process.env.NODE_ENV || 'development',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
 };

@@ -43,6 +43,7 @@ function authenticateJwt(token, req, res, next) {
       id: decoded.sub || decoded.id,
       email: decoded.email,
       name: decoded.name,
+      role: decoded.role || 'user',
       authType: 'jwt',
     };
     next();

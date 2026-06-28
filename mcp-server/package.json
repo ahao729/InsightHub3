@@ -1,0 +1,24 @@
+{
+  "name": "@insighthub/mcp-server",
+  "version": "1.0.0",
+  "description": "InsightHub MCP Server - 将 InsightHub 数据能力接入 Claude Desktop、Cursor、Cline 等 AI Agent",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "@insighthub/mcp-server": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "mcp",
+    "insighthub",
+    "data",
+    "business-intelligence"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  }
+}

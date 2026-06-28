@@ -66,3 +66,41 @@ window.storage = (function () {
     }
   };
 })();
+
+/* ═══════════════════════════════════════════
+   移动端汉堡菜单导航切换
+   ═══════════════════════════════════════════ */
+(function() {
+  function initMobileNav() {
+    var btn = document.getElementById('hamburger-btn');
+    var drawer = document.getElementById('mobile-drawer');
+    var backdrop = document.getElementById('drawer-backdrop');
+    if (!btn || !drawer || !backdrop) return;
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var open = drawer.classList.toggle('open');
+      backdrop.classList.toggle('open', open);
+      btn.classList.toggle('active', open);
+      btn.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('drawer-open', open);
+    });
+    backdrop.addEventListener('click', function() {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      btn.classList.remove('active');
+      btn.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('drawer-open');
+    });
+    // ESC 键关闭
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && drawer.classList.contains('open')) {
+        backdrop.click();
+      }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileNav);
+  } else {
+    initMobileNav();
+  }
+})();
