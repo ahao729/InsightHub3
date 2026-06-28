@@ -7,8 +7,8 @@
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="assets/stub-runtime.js"></script>
 <script src="assets/api-client.js"></script>
+<script src="assets/stub-runtime.js"></script>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.svg">
 <script>navigator.serviceWorker?.register("/service-worker.js")</script>
@@ -275,7 +275,7 @@ function handleRegister(){
   if(pwd.length<8){errEl.style.display='block';errEl.textContent='密码至少 8 位';return}
   errEl.style.display='none';
   btn.disabled=true;btn.textContent='注册中...';
-  API.auth.register(name,email,pwd).then(function(r){
+  API.auth.register(email,pwd,name).then(function(r){
     if(r.error){errEl.style.display='block';errEl.textContent=r.error;btn.disabled=false;btn.textContent='免费注册 →';return}
     location.href='dashboard.html';
   }).catch(function(e){
