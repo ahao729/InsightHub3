@@ -49,3 +49,9 @@ build/
 *.bak
 coverage/
 .nyc_output/
+
+# ── Local artifacts / dev notes ──────────────────────────────
+backups/
+posts/
+screenshots/
+存档-*.md

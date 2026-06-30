@@ -79,7 +79,7 @@ class EmbeddingService {
     }
 
     // Cache the result (LRU-like: limit cache size)
-    if (this.cache.size > 5000) {
+    if (this.cache.size >= 5000) {
       // Delete oldest entry (first key)
       const firstKey = this.cache.keys().next().value;
       this.cache.delete(firstKey);

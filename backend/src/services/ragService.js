@@ -197,7 +197,7 @@ ${JSON.stringify(item, null, 2)}`).join('\n\n')}
 
     return {
       success: llmResult.success,
-      analysis: llmResult.content,
+      analysis: llmResult.success ? llmResult.content : null,
       model: llmResult.model,
       usage: llmResult.usage,
       error: llmResult.error,
