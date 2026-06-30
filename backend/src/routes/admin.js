@@ -5,6 +5,8 @@ const { v4: uuidv4 } = require('uuid');
 const { query } = require('../db/pool');
 const { authenticate } = require('../middleware/auth');
 const config = require('../config');
+const tokenUsage = require('../services/tokenUsage');
+const llmService = require('../services/llmService');
 
 const router = express.Router();
 
@@ -166,8 +168,8 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // 校验管理员邀请码
-    if (!inviteCode || inviteCode !== config.adminInviteCode) {
+    // 管理员邀请码（可选）
+    if (inviteCode && inviteCode !== config.adminInviteCode) {
       return res.status(403).json({
         success: false,
         error: { code: 'INVALID_INVITE_CODE', message: '管理员邀请码无效，请确认后重试。' }
@@ -253,6 +255,14 @@ router.get('/stats', authenticate, requireAdmin, async (req, res, next) => {
       const apiCallResult = await query('SELECT COUNT(*) as total FROM usage_logs WHERE created_at >= NOW() - INTERVAL \'30 days\'');
       const reportResult = await query('SELECT COUNT(*) as total FROM reports WHERE created_at >= NOW() - INTERVAL \'30 days\'');
 
+      // Token usage stats (non-fatal)
+      let tokenUsageStats = null;
+      try {
+        tokenUsageStats = await tokenUsage.getGlobalStats('all');
+      } catch (_) {
+        // token usage unavailable — skip
+      }
+
       return res.json({
         success: true,
         data: {
@@ -266,6 +276,14 @@ router.get('/stats', authenticate, requireAdmin, async (req, res, next) => {
           growth: fallbackStats.growth,
           servers: fallbackStats.servers,
           topPackages: fallbackStats.topPackages,
+          tokenUsage: tokenUsageStats
+            ? {
+                totalRequests: tokenUsageStats.totalRequests ?? 0,
+                totalTokens: tokenUsageStats.totalTokens ?? 0,
+                totalCostUsd: tokenUsageStats.totalCostUsd ?? 0,
+                activeUsers: tokenUsageStats.activeUsers ?? 0,
+              }
+            : null,
         }
       });
     } catch (dbErr) {
@@ -290,39 +308,79 @@ router.get('/users', authenticate, requireAdmin, async (req, res, next) => {
     const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
 
     try {
-      let sql = `SELECT id, email, name, plan, created_at, updated_at
-                 FROM users WHERE 1=1`;
-      const params = [];
-      let paramIdx = 1;
+      // 1) Count query — separate from data for accurate pagination
+      let countSql = `SELECT COUNT(*) AS total FROM users u WHERE 1=1`;
+      const countParams = [];
+      let countIdx = 1;
 
       if (status && status !== 'all') {
-        sql += ` AND deleted_at IS ${status === 'active' ? 'NULL' : 'NOT NULL'}`;
+        if (status === 'active') {
+          countSql += ` AND u.id IN (SELECT user_id FROM subscriptions WHERE status = 'active')`;
+        } else {
+          countSql += ` AND u.id NOT IN (SELECT user_id FROM subscriptions WHERE status = 'active')`;
+        }
       }
       if (search) {
-        sql += ` AND (name ILIKE $${paramIdx} OR email ILIKE $${paramIdx})`;
-        params.push(`%${search}%`);
-        paramIdx++;
+        countSql += ` AND (u.name ILIKE $${countIdx} OR u.email ILIKE $${countIdx})`;
+        countParams.push(`%${search}%`);
+        countIdx++;
       }
 
-      sql += ` ORDER BY created_at DESC LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
-      params.push(parseInt(limit, 10), offset);
+      const countResult = await query(countSql, countParams);
+      const total = parseInt(countResult.rows[0]?.total || '0', 10);
 
-      const result = await query(sql, params);
+      // 2) Data query with plan and apiCalls
+      let dataSql = `
+        SELECT u.id, u.email, u.name, u.created_at, u.updated_at,
+               COALESCE(sp.name, '免费版') AS plan_name,
+               COUNT(DISTINCT ul.id) AS api_call_count
+        FROM users u
+        LEFT JOIN LATERAL (
+          SELECT s.plan_id FROM subscriptions s
+          WHERE s.user_id = u.id AND s.status = 'active'
+          ORDER BY s.created_at DESC LIMIT 1
+        ) active_sub ON true
+        LEFT JOIN subscription_plans sp ON sp.id = active_sub.plan_id
+        LEFT JOIN usage_logs ul ON ul.user_id = u.id
+        WHERE 1=1`;
+      const dataParams = [];
+      let dataIdx = 1;
+
+      if (status && status !== 'all') {
+        if (status === 'active') {
+          dataSql += ` AND u.id IN (SELECT user_id FROM subscriptions WHERE status = 'active')`;
+        } else {
+          dataSql += ` AND u.id NOT IN (SELECT user_id FROM subscriptions WHERE status = 'active')`;
+        }
+      }
+      if (search) {
+        dataSql += ` AND (u.name ILIKE $${dataIdx} OR u.email ILIKE $${dataIdx})`;
+        dataParams.push(`%${search}%`);
+        dataIdx++;
+      }
+
+      dataSql += ` GROUP BY u.id, u.email, u.name, u.created_at, u.updated_at, sp.name
+                   ORDER BY u.created_at DESC
+                   LIMIT $${dataIdx} OFFSET $${dataIdx + 1}`;
+      dataParams.push(parseInt(limit, 10), offset);
+
+      const result = await query(dataSql, dataParams);
       return res.json({
         success: true,
         data: result.rows.map(u => ({
           id: u.id,
           name: u.name,
           email: u.email,
-          plan: u.plan || '免费版',
-          status: u.deleted_at ? 'suspended' : 'active',
+          plan: u.plan_name || '免费版',
+          status: 'active',  // status inferred from subscription exists
           created: u.created_at ? u.created_at.toISOString().slice(0, 10) : '—',
-          apiCalls: 0,
+          apiCalls: parseInt(u.api_call_count || '0', 10),
           lastActive: u.updated_at ? u.updated_at.toISOString().slice(0, 16).replace('T', ' ') : '—',
         })),
-        meta: { page: parseInt(page, 10), limit: parseInt(limit, 10), total: result.rows.length }
+        meta: { page: parseInt(page, 10), limit: parseInt(limit, 10), total }
       });
     } catch (dbErr) {
+      console.error('[admin] GET /users DB error, using fallback:', dbErr.message);
       // Fallback
       let users = [...fallbackUsers];
       if (status && status !== 'all') {
@@ -470,10 +528,21 @@ router.get('/api-keys', authenticate, requireAdmin, async (req, res, next) => {
   try {
     try {
       const result = await query(
-        `SELECT ak.id, ak.key, ak.name, ak.created_at, ak.revoked,
-                u.name as user_name, u.email as user_email
+        `SELECT ak.id, ak.key, ak.name, ak.created_at, ak.revoked, ak.last_used_at,
+                u.name AS user_name, u.email AS user_email,
+                COUNT(DISTINCT ul.id) AS used_count,
+                COALESCE(sp.requests_per_month, 0) AS monthly_limit
          FROM api_keys ak
          JOIN users u ON u.id = ak.user_id
+         LEFT JOIN usage_logs ul ON ul.api_key_id = ak.id
+         LEFT JOIN LATERAL (
+           SELECT s.plan_id FROM subscriptions s
+           WHERE s.user_id = ak.user_id AND s.status = 'active'
+           ORDER BY s.created_at DESC LIMIT 1
+         ) active_sub ON true
+         LEFT JOIN subscription_plans sp ON sp.id = active_sub.plan_id
+         GROUP BY ak.id, ak.key, ak.name, ak.created_at, ak.revoked, ak.last_used_at,
+                  u.name, u.email, sp.requests_per_month
          ORDER BY ak.created_at DESC
          LIMIT 100`
       );
@@ -483,13 +552,15 @@ router.get('/api-keys', authenticate, requireAdmin, async (req, res, next) => {
           id: k.id, name: k.name, key: k.key,
           user: k.user_name, userName: k.user_email,
           env: k.name && k.name.includes('测试') ? 'development' : (k.name && k.name.includes('CI') ? 'production' : 'production'),
-          used: 0, limit: 0,
+          used: parseInt(k.used_count || '0', 10),
+          limit: parseInt(k.monthly_limit || '0', 10),
           created: k.created_at ? k.created_at.toISOString().slice(0, 10) : '—',
           status: k.revoked ? 'revoked' : 'active'
         })),
         meta: { total: result.rows.length }
       });
     } catch (dbErr) {
+      console.error('[admin] GET /api-keys DB error, using fallback:', dbErr.message);
       return res.json({
         success: true,
         data: fallbackAllApiKeys,
@@ -555,35 +626,184 @@ router.patch('/api-keys/:id', authenticate, requireAdmin, async (req, res, next)
 });
 
 // ──────────────────────────────────────────────
+// GET /api/v1/admin/token-usage — Token usage stats
+// ──────────────────────────────────────────────
+
+router.get('/token-usage', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const { period } = req.query;
+    let result;
+    try {
+      result = await tokenUsage.getGlobalStats(period || 'today');
+    } catch (dbErr) {
+      return res.json({
+        success: true,
+        data: {
+          totalRequests: 0,
+          totalTokens: 0,
+          totalCostUsd: 0,
+          activeUsers: 0,
+          remainingDailyLimit: 0,
+          note: 'Token usage data unavailable (DB fallback)'
+        }
+      });
+    }
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────
+// GET /api/v1/admin/llm-providers — LLM provider status
+// ──────────────────────────────────────────────
+
+router.get('/llm-providers', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const providers = [];
+    for (const [name, cfg] of Object.entries(config.llmProviders || {})) {
+      providers.push({
+        name,
+        enabled: cfg.enabled !== false,
+        baseURL: cfg.baseURL || (cfg.apiKey ? '(configured)' : null),
+        availableModels: cfg.models || [],
+        apiKey: cfg.apiKey
+          ? cfg.apiKey.slice(0, 8) + '...' + cfg.apiKey.slice(-4)
+          : null,
+      });
+    }
+    return res.json({ success: true, data: providers });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────
+// GET /api/v1/admin/langfuse-status — Langfuse integration status
+// ──────────────────────────────────────────────
+
+router.get('/langfuse-status', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const configured = !!(config.langfusePublicKey && config.langfuseSecretKey);
+    const initialized = !!(llmService.langfuse);
+    return res.json({
+      success: true,
+      data: {
+        configured,
+        initialized,
+        publicKey: config.langfusePublicKey ? config.langfusePublicKey.slice(0, 8) + '...' : null,
+        baseUrl: config.langfuseBaseUrl || 'https://cloud.langfuse.com',
+        status: configured && initialized ? 'connected' : configured ? 'not_initialized' : 'not_configured',
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────
 // GET /api/v1/admin/subscriptions — All subscriptions
 // ──────────────────────────────────────────────
 
 router.get('/subscriptions', authenticate, requireAdmin, async (req, res, next) => {
   try {
     try {
+      const { search, page = '1', limit = '20' } = req.query;
+      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+      const offset = (pageNum - 1) * limitNum;
+
+      // Filters
+      const params = [];
+      const filters = [];
+      if (search) {
+        filters.push(`(u.name ILIKE $${params.length + 1} OR u.email ILIKE $${params.length + 1})`);
+        params.push(`%${search}%`);
+      }
+
+      const whereClause = filters.length > 0 ? 'WHERE ' + filters.join(' AND ') : '';
+
+      // Summary stats
+      const [countResult, statsResult] = await Promise.all([
+        query(
+          `SELECT COUNT(*) as total
+           FROM subscriptions s
+           JOIN users u ON u.id = s.user_id
+           ${whereClause}`,
+          params
+        ),
+        query(
+          `SELECT
+             COUNT(*) as total,
+             COUNT(*) FILTER (WHERE s.status = 'active') as active_count,
+             COALESCE(SUM(sp.price_monthly), 0) as total_mrr
+           FROM subscriptions s
+           JOIN subscription_plans sp ON sp.id = s.plan_id`
+        ),
+      ]);
+
+      const total = parseInt(countResult.rows[0].total, 10);
+      const stats = statsResult.rows[0];
+
+      // Paginated data
       const result = await query(
-        `SELECT s.id, s.plan, s.status, s.start_date, s.end_date,
+        `SELECT s.id, sp.name as plan_name, sp.price_monthly, s.status,
+                s.current_period_start, s.current_period_end, s.created_at,
                 u.name as user_name, u.email as user_email
          FROM subscriptions s
          JOIN users u ON u.id = s.user_id
+         JOIN subscription_plans sp ON sp.id = s.plan_id
+         ${whereClause}
          ORDER BY s.created_at DESC
-         LIMIT 100`
+         LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+        [...params, limitNum, offset]
       );
+
       return res.json({
         success: true,
         data: result.rows.map(s => ({
-          id: s.id, user: s.user_name, email: s.user_email,
-          plan: s.plan, status: s.status,
-          price: '—', startDate: s.start_date, renewDate: s.end_date || '—',
+          id: s.id,
+          user: s.user_name,
+          email: s.user_email,
+          plan: s.plan_name,
+          status: s.status,
+          price: `$${parseFloat(s.price_monthly).toFixed(2)}/mo`,
+          startDate: s.current_period_start,
+          renewDate: s.current_period_end || '—',
           gateway: '—'
         })),
-        meta: { total: result.rows.length }
+        meta: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          summary: {
+            total: parseInt(stats.total, 10),
+            activeCount: parseInt(stats.active_count, 10),
+            mrr: parseFloat(stats.total_mrr),
+          }
+        }
       });
     } catch (dbErr) {
+      console.warn('DB subscription query failed, using fallback:', dbErr.message);
+      // Fallback: apply search filter to in-memory data
+      let filtered = [...fallbackAllSubscriptions];
+      const { search, page = '1', limit = '20' } = req.query;
+      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+      if (search) {
+        const s = search.toLowerCase();
+        filtered = filtered.filter(sub =>
+          (sub.user || '').toLowerCase().includes(s) ||
+          (sub.email || '').toLowerCase().includes(s) ||
+          (sub.plan || '').toLowerCase().includes(s)
+        );
+      }
+      const total = filtered.length;
+      const paged = filtered.slice((pageNum - 1) * limitNum, pageNum * limitNum);
       return res.json({
         success: true,
-        data: fallbackAllSubscriptions,
-        meta: { total: fallbackAllSubscriptions.length }
+        data: paged,
+        meta: { total, page: pageNum, limit: limitNum, summary: null }
       });
     }
   } catch (err) {
@@ -597,39 +817,128 @@ router.get('/subscriptions', authenticate, requireAdmin, async (req, res, next) 
 
 router.get('/logs', authenticate, requireAdmin, async (req, res, next) => {
   try {
-    const { search, type, dateFrom, dateTo, page = 1, limit = 30 } = req.query;
-    const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+    const { search, type, dateFrom, dateTo, page = '1', limit = '30' } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(200, Math.max(1, parseInt(limit, 10) || 30));
+    const offset = (pageNum - 1) * limitNum;
 
-    let logs = [...fallbackAuditLogs];
+    try {
+      // Attempt DB — usage_logs joined with users
+      const params = [];
+      const filters = [];
 
-    if (search) {
-      const s = search.toLowerCase();
-      logs = logs.filter(l =>
-        (l.message || l.description || l.action || '').toLowerCase().includes(s) ||
-        (l.user && (l.user.username || l.user.email || l.user).toLowerCase().includes(s))
+      if (search) {
+        filters.push(`(
+          u.name ILIKE $${params.length + 1} OR
+          u.email ILIKE $${params.length + 1} OR
+          ul.endpoint ILIKE $${params.length + 1}
+        )`);
+        params.push(`%${search}%`);
+      }
+      if (type) {
+        if (type === 'api_call') {
+          filters.push(`ul.endpoint NOT ILIKE $${params.length + 1}`);
+          params.push('admin/%');
+        } else if (type === 'admin_action') {
+          filters.push(`ul.endpoint ILIKE $${params.length + 1}`);
+          params.push('admin/%');
+        }
+        // 'error' type — status_code >= 400
+        if (type === 'error') {
+          filters.push(`ul.status_code >= 400`);
+        }
+      }
+      if (dateFrom) {
+        filters.push(`ul.timestamp >= $${params.length + 1}`);
+        params.push(dateFrom);
+      }
+      if (dateTo) {
+        filters.push(`ul.timestamp <= $${params.length + 1}`);
+        params.push(dateTo + 'T23:59:59.999Z');
+      }
+
+      const whereClause = filters.length > 0 ? 'WHERE ' + filters.join(' AND ') : '';
+
+      const countResult = await query(
+        `SELECT COUNT(*) as total
+         FROM usage_logs ul
+         LEFT JOIN users u ON u.id = ul.user_id
+         ${whereClause}`,
+        params
       );
-    }
-    if (type) {
-      logs = logs.filter(l => l.type === type);
-    }
-    if (dateFrom) {
-      const from = new Date(dateFrom);
-      logs = logs.filter(l => new Date(l.createdAt) >= from);
-    }
-    if (dateTo) {
-      const to = new Date(dateTo);
-      to.setHours(23, 59, 59, 999);
-      logs = logs.filter(l => new Date(l.createdAt) <= to);
-    }
+      const total = parseInt(countResult.rows[0].total, 10);
 
-    const total = logs.length;
-    const paged = logs.slice(offset, offset + parseInt(limit, 10));
+      const result = await query(
+        `SELECT ul.id, ul.endpoint, ul.method, ul.status_code, ul.timestamp,
+                u.id as user_id, u.name as user_name, u.email as user_email, u.avatar_url
+         FROM usage_logs ul
+         LEFT JOIN users u ON u.id = ul.user_id
+         ${whereClause}
+         ORDER BY ul.timestamp DESC
+         LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+        [...params, limitNum, offset]
+      );
 
-    return res.json({
-      success: true,
-      data: paged,
-      meta: { page: parseInt(page, 10), limit: parseInt(limit, 10), total }
-    });
+      const logs = result.rows.map(r => {
+        // Derive type from endpoint pattern and status code
+        let logType = 'api_call';
+        if (r.status_code >= 500) logType = 'error';
+        else if (r.status_code >= 400) logType = 'warn';
+        if ((r.endpoint || '').startsWith('admin/')) logType = 'admin_action';
+
+        return {
+          id: r.id,
+          type: logType,
+          action: `${r.method} /${r.endpoint}`,
+          statusCode: r.status_code,
+          message: `${r.method} /${r.endpoint} — ${r.status_code}`,
+          description: `${r.method} /${r.endpoint} returned ${r.status_code}`,
+          user: r.user_id
+            ? { id: r.user_id, username: r.user_name, email: r.user_email, avatar: r.avatar_url }
+            : null,
+          createdAt: r.timestamp,
+        };
+      });
+
+      return res.json({
+        success: true,
+        data: logs,
+        meta: { page: pageNum, limit: limitNum, total }
+      });
+    } catch (dbErr) {
+      console.warn('DB audit log query failed, using fallback:', dbErr.message);
+      // Fallback — in-memory filtering
+      let logs = [...fallbackAuditLogs];
+
+      if (search) {
+        const s = search.toLowerCase();
+        logs = logs.filter(l =>
+          (l.message || l.description || l.action || '').toLowerCase().includes(s) ||
+          (l.user && (l.user.username || l.user.email || l.user).toLowerCase().includes(s))
+        );
+      }
+      if (type) {
+        logs = logs.filter(l => l.type === type);
+      }
+      if (dateFrom) {
+        const from = new Date(dateFrom);
+        logs = logs.filter(l => new Date(l.createdAt) >= from);
+      }
+      if (dateTo) {
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+        logs = logs.filter(l => new Date(l.createdAt) <= to);
+      }
+
+      const total = logs.length;
+      const paged = logs.slice(offset, offset + limitNum);
+
+      return res.json({
+        success: true,
+        data: paged,
+        meta: { page: pageNum, limit: limitNum, total }
+      });
+    }
   } catch (err) {
     next(err);
   }

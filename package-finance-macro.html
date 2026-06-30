@@ -16,15 +16,17 @@
 <body>
 <div class="page-shell">
 <style>
-.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
 .logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer}
 .logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
 .breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
 .breadcrumb span{cursor:pointer}
+.breadcrumb span:hover{color:var(--color-text-primary)}
 .sep{color:var(--color-border-secondary)}
 .pkg-hero{padding:36px 32px 28px;border-bottom:0.5px solid var(--color-border-tertiary)}
 .pkg-hero-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
 .pkg-icon-lg{width:52px;height:52px;border-radius:var(--border-radius-lg);background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:24px;color:#534AB7;flex-shrink:0}
+.pkg-meta{flex:1}
 .pkg-meta h1{font-size:22px;font-weight:500;margin-bottom:6px}
 .pkg-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .tag{font-size:11px;padding:3px 10px;border-radius:999px}
@@ -38,7 +40,7 @@
 .pkg-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
 .btn-subscribe{font-size:13px;padding:9px 22px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;font-weight:500}
 .btn-demo{font-size:13px;padding:9px 18px;border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);cursor:pointer}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;border-top:0.5px solid var(--color-border-tertiary)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:0;border-top:0.5px solid var(--color-border-tertiary)}
 .main{padding:28px 32px;border-right:0.5px solid var(--color-border-tertiary)}
 .sidebar{padding:24px 20px}
 .section-title{font-size:15px;font-weight:500;margin-bottom:14px}
@@ -51,11 +53,11 @@
 .api-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer}
 .api-row:hover{border-color:var(--color-border-primary);background:var(--color-background-secondary)}
 .api-method{font-size:11px;font-weight:500;padding:3px 8px;border-radius:var(--border-radius-md);background:#E6F1FB;color:#185FA5;min-width:38px;text-align:center}
-.api-path{font-size:13px;font-family:var(--font-mono);flex:1}
+.api-path{font-size:13px;font-family:var(--font-mono);flex:1;color:var(--color-text-primary)}
 .api-desc{font-size:12px;color:var(--color-text-secondary)}
 .source-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px}
 .source-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
-.source-type{font-size:11px;margin-bottom:4px}
+.source-type{font-size:11px;margin-bottom:4px;color:var(--color-text-secondary)}
 .source-name{font-size:12px;font-weight:500}
 .source-open{background:var(--color-brand-light)}
 .source-third{background:#FAEEDA}
@@ -65,11 +67,11 @@
 .source-third .source-name{color:#633806}
 .field-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px}
 .field-table th{text-align:left;padding:8px 10px;border-bottom:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);font-weight:500}
-.field-table td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.field-table td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
 .field-type{font-family:var(--font-mono);color:#185FA5;font-size:11px}
-.sb-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:14px}
+.sb-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:14px;background:var(--color-background-primary)}
 .sb-card-title{font-size:13px;font-weight:500;margin-bottom:10px}
-.plan-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.plan-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
 .plan-row:last-child{border-bottom:none}
 .plan-name{font-size:12px;color:var(--color-text-secondary)}
 .plan-price{font-size:13px;font-weight:500}
@@ -90,6 +92,11 @@
 .indicator-summary{font-size:12px;color:var(--color-text-secondary);text-align:center}
 .indicator-summary strong{color:var(--color-text-primary);font-weight:500}
 .divider{height:0.5px;background:var(--color-border-tertiary);margin:20px 0}
+.footer-inner{padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-left{font-size:13px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px;font-size:12px;color:var(--color-text-secondary)}
+.footer-links span{cursor:pointer}
+.footer-links span:hover{color:var(--color-text-primary)}
 </style>
 
 <div class="nav">
@@ -105,6 +112,7 @@
   <a class="drawer-link" href="api-docs.html">API 文档</a>
   <a class="drawer-link" href="pricing.html">定价</a>
   <a class="drawer-link" href="solutions.html">解决方案</a>
+  <a class="drawer-link" href="blog.html">博客</a>
   <a class="drawer-link" href="auth.html">登录 / 注册</a>
 </div>
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
@@ -274,6 +282,14 @@ function selectIndicator(key){
 }
 renderChart('cpi');
 </script>
+<footer class="footer-inner">
+  <div class="footer-left">© 2026 InsightHub Data</div>
+  <div class="footer-links">
+    <span onclick="location.href='privacy.html'">隐私政策</span>
+    <span onclick="location.href='terms.html'">服务条款</span>
+    <span onclick="location.href='status.html'">系统状态</span>
+  </div>
+</footer>
 </div>
 </body>
 </html>

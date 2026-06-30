@@ -24,8 +24,29 @@ CREATE TABLE IF NOT EXISTS api_keys (
     name VARCHAR(255) NOT NULL,
     last_used_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
     revoked BOOLEAN DEFAULT FALSE
 );
+
+-- Token usage tracking for LLM API calls
+CREATE TABLE IF NOT EXISTS token_usage (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    api_key_id UUID REFERENCES api_keys(id) ON DELETE SET NULL,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    model VARCHAR(100) NOT NULL,
+    provider VARCHAR(50) NOT NULL DEFAULT 'openai',
+    prompt_tokens INTEGER NOT NULL DEFAULT 0,
+    completion_tokens INTEGER NOT NULL DEFAULT 0,
+    total_tokens INTEGER NOT NULL DEFAULT 0,
+    cost NUMERIC(10,6) NOT NULL DEFAULT 0,
+    endpoint VARCHAR(255),
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_token_usage_api_key_id ON token_usage(api_key_id);
+CREATE INDEX IF NOT EXISTS idx_token_usage_user_id ON token_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_token_usage_created_at ON token_usage(created_at);
 
 CREATE TABLE IF NOT EXISTS subscription_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

@@ -105,13 +105,18 @@
 .ev-info i{color:#185FA5}
 .ev-good i{color:var(--color-brand)}
 .divider{height:0.5px;background:var(--color-border-tertiary);margin:20px 0}
+.footer-inner{padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-left{font-size:13px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px;font-size:12px;color:var(--color-text-secondary)}
+.footer-links span{cursor:pointer}
+.footer-links span:hover{color:var(--color-text-primary)}
 </style>
 
 <div class="nav">
   <div class="logo" onclick="location.href='index.html'"><div class="logo-dot"></div>InsightHub Data</div>
   <div class="breadcrumb">
     <span onclick="location.href='marketplace.html'">数据产品</span><span class="sep">/</span>
-    <span style="color:var(--color-text-primary)">企业情报与竞品监控包</span>
+    <span style="color:var(--color-text-primary)">企业情报与风控数据包</span>
   </div>
   <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
     <span></span><span></span><span></span>
@@ -123,6 +128,7 @@
   <a class="drawer-link" href="api-docs.html">API 文档</a>
   <a class="drawer-link" href="pricing.html">定价</a>
   <a class="drawer-link" href="solutions.html">解决方案</a>
+  <a class="drawer-link" href="blog.html">博客</a>
   <a class="drawer-link" href="auth.html">登录 / 注册</a>
 </div>
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
@@ -428,6 +434,14 @@ function runDemo(){
   document.getElementById('event-list').innerHTML=evHtml;
 }
 </script>
+<footer class="footer-inner">
+  <div class="footer-left">© 2026 InsightHub Data</div>
+  <div class="footer-links">
+    <span onclick="location.href='privacy.html'">隐私政策</span>
+    <span onclick="location.href='terms.html'">服务条款</span>
+    <span onclick="location.href='status.html'">系统状态</span>
+  </div>
+</footer>
 </div>
 </body>
 </html>

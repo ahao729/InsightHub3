@@ -16,7 +16,7 @@
 <body>
 <div class="page-shell">
 <style>
-.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
 .logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer}
 .logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
 .breadcrumb{font-size:12px;color:var(--color-text-secondary)}
@@ -64,6 +64,26 @@
 .legend-row{display:flex;gap:16px;margin-bottom:16px;font-size:11px;color:var(--color-text-secondary)}
 .legend-item{display:flex;align-items:center;gap:5px}
 .legend-dot{width:8px;height:8px;border-radius:50%}
+.footer-inner{padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-left{font-size:13px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px;font-size:12px;color:var(--color-text-secondary)}
+.footer-links span{cursor:pointer}
+.footer-links span:hover{color:var(--color-text-primary)}
+/* Mobile drawer */
+.mobile-drawer{display:none;position:fixed;top:0;right:-280px;width:280px;max-width:80vw;height:100vh;background:var(--color-background-primary);border-left:0.5px solid var(--color-border-tertiary);z-index:1050;flex-direction:column;padding:20px 8px 8px;transition:right .3s;box-shadow:0 4px 24px rgba(0,0,0,0.12);overflow-y:auto}
+.mobile-drawer.open{right:0}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px}
+.drawer-logo{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.drawer-close{width:28px;height:28px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);border-radius:var(--border-radius-sm)}
+.drawer-close:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.drawer-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-primary);text-decoration:none;transition:background var(--transition-fast)}
+.drawer-link:hover{background:var(--color-background-secondary)}
+.drawer-link i{font-size:16px;color:var(--color-text-secondary);width:20px;text-align:center}
+.drawer-link.active{background:var(--color-brand-light);color:var(--color-brand)}
+.drawer-link.active i{color:var(--color-brand)}
+.drawer-divider{height:0.5px;background:var(--color-border-tertiary);margin:8px 12px}
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1040}
+.drawer-backdrop.active{display:block}
 </style>
 
 <div class="nav">
@@ -76,11 +96,16 @@
 </div>
 
 <div class="mobile-drawer" id="mobile-drawer">
-  <a class="drawer-link" href="marketplace.html">数据产品</a>
-  <a class="drawer-link" href="api-docs.html">API 文档</a>
-  <a class="drawer-link" href="pricing.html">定价</a>
-  <a class="drawer-link" href="solutions.html">解决方案</a>
-  <a class="drawer-link" href="auth.html">登录 / 注册</a>
+  <div class="drawer-header">
+    <div class="drawer-logo"><div class="logo-dot"></div>InsightHub Data</div>
+    <button class="drawer-close" id="drawer-close" aria-label="关闭菜单"><i class="ti ti-x"></i></button>
+  </div>
+  <a class="drawer-link" href="marketplace.html"><i class="ti ti-package"></i>数据产品</a>
+  <a class="drawer-link" href="api-docs.html"><i class="ti ti-file-code"></i>API 文档</a>
+  <a class="drawer-link" href="pricing.html"><i class="ti ti-currency-yen"></i>定价</a>
+  <a class="drawer-link" href="solutions.html"><i class="ti ti-briefcase"></i>解决方案</a>
+  <a class="drawer-link" href="blog.html"><i class="ti ti-news"></i>博客</a>
+  <a class="drawer-link" href="auth.html"><i class="ti ti-user"></i>登录 / 注册</a>
 </div>
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
@@ -186,7 +211,39 @@ function renderHistory(){
 
 renderServices();
 renderHistory();
+
+// Mobile drawer
+(function() {
+  var btn = document.getElementById('hamburger-btn');
+  var drawer = document.getElementById('mobile-drawer');
+  var backdrop = document.getElementById('drawer-backdrop');
+  var closeBtn = document.getElementById('drawer-close');
+  function openDrawer() {
+    drawer.classList.add('open');
+    backdrop.classList.add('active');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('active');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+  if (btn) btn.addEventListener('click', openDrawer);
+  if (backdrop) backdrop.addEventListener('click', closeDrawer);
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  document.querySelectorAll('.drawer-link').forEach(function(link) {
+    link.addEventListener('click', closeDrawer);
+  });
+})();
 </script>
+<footer class="footer-inner">
+  <div class="footer-left">© 2026 InsightHub Data</div>
+  <div class="footer-links">
+    <span onclick="location.href='privacy.html'">隐私</span>
+    <span onclick="location.href='terms.html'">条款</span>
+    <span onclick="location.href='status.html'">接口状态</span>
+  </div>
+</footer>
 </div>
 </body>
 </html>

@@ -99,6 +99,11 @@
 .gap-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--color-text-secondary);padding:8px 10px;border-radius:var(--border-radius-md);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary)}
 .gap-row i{color:#BA7517;font-size:14px;flex-shrink:0;margin-top:1px}
 .divider{height:0.5px;background:var(--color-border-tertiary);margin:20px 0}
+.footer-inner{padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-left{font-size:13px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px;font-size:12px;color:var(--color-text-secondary)}
+.footer-links span{cursor:pointer}
+.footer-links span:hover{color:var(--color-text-primary)}
 </style>
 
 <div class="nav">
@@ -117,6 +122,7 @@
   <a class="drawer-link" href="api-docs.html">API 文档</a>
   <a class="drawer-link" href="pricing.html">定价</a>
   <a class="drawer-link" href="solutions.html">解决方案</a>
+  <a class="drawer-link" href="blog.html">博客</a>
   <a class="drawer-link" href="auth.html">登录 / 注册</a>
 </div>
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
@@ -415,6 +421,14 @@ function runDemo(){
   document.getElementById('gap-list').innerHTML=html;
 }
 </script>
+<footer class="footer-inner">
+  <div class="footer-left">© 2026 InsightHub Data</div>
+  <div class="footer-links">
+    <span onclick="location.href='privacy.html'">隐私政策</span>
+    <span onclick="location.href='terms.html'">服务条款</span>
+    <span onclick="location.href='status.html'">系统状态</span>
+  </div>
+</footer>
 </div>
 </body>
 </html>

@@ -6,8 +6,8 @@
    - 外部 CDN → 网络优先
    ======================================== */
 
-const CACHE_NAME = 'insighthub-v1';
-const STATIC_CACHE = 'insighthub-static-v1';
+const CACHE_NAME = 'insighthub-v2';
+const STATIC_CACHE = 'insighthub-static-v2';
 
 /** 预缓存的核心静态资源（相对于根路径） */
 const PRECACHE_STATIC = [
@@ -81,21 +81,33 @@ async function networkFirst(request, timeoutMs = 3000) {
   }
 }
 
-/** 缓存优先，回退网络 */
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(STATIC_CACHE);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    // 对于静态资源，如果网络也失败则返回空
-    return new Response('', { status: 408, statusText: 'Offline' });
+/** 缓存优先，后台更新（stale-while-revalidate） */
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(STATIC_CACHE);
+  const cached = await cache.match(request);
+
+  // 后台取网络更新缓存（不阻塞当前请求）
+  const networkPromise = fetch(request)
+    .then((response) => {
+      if (response.ok) {
+        cache.put(request, response.clone());
+      }
+      return response;
+    })
+    .catch(() => null);
+
+  // 有缓存则直接返回，同时后台静默更新
+  if (cached) {
+    // 静默触发网络更新
+    networkPromise.then(() => {});
+    return cached;
   }
+
+  // 无缓存则等网络
+  const network = await networkPromise;
+  if (network) return network;
+
+  return new Response('', { status: 408, statusText: 'Offline' });
 }
 
 /** 拦截请求 */
@@ -124,9 +136,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 静态资源 → 缓存优先
+  // 静态资源 → 缓存优先，后台静默更新（避免旧缓存导致渲染异常）
   if (isStaticAsset(url)) {
-    event.respondWith(cacheFirst(request));
+    event.respondWith(staleWhileRevalidate(request));
     return;
   }
 

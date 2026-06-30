@@ -78,7 +78,7 @@
         </div>
       </div>
       <div style="position:relative">
-        <label>邀请码 <span style="font-size:11px;color:var(--color-text-secondary)">（必填）</span></label>
+        <label>邀请码 <span style="font-size:11px;color:var(--color-text-secondary)">（可选）</span></label>
         <div class="pwd-wrap">
           <input id="reg-invite" type="text" placeholder="管理员邀请码" autocomplete="off">
         </div>
@@ -630,7 +630,7 @@ function loadUsers() {
   s.status = document.getElementById('user-status-filter').value;
   API.admin.getUsers({ page: s.page, limit: 20, search: s.search, role: s.role, status: s.status }).then(function(res){
     var data = res.data || [];
-    var total = res.total || 0;
+    var total = (res.meta && res.meta.total) || 0;
     s.totalPages = Math.max(1, Math.ceil(total / 20));
     document.getElementById('user-count-label').textContent = '共 ' + total + ' 条';
     document.getElementById('users-page-info').textContent = s.page + ' / ' + s.totalPages;
@@ -644,23 +644,23 @@ function loadUsers() {
     }
     var html = '';
     data.forEach(function(u){
-      var rolePill = u.role === 'admin' ? '<span class="pill pill-red">admin</span>' : '<span class="pill pill-blue">user</span>';
+      var rolePill = u.plan === 'admin' ? '<span class="pill pill-red">admin</span>' : '<span class="pill pill-blue">user</span>';
       var statusPill = '';
       if (u.status === 'active') statusPill = '<span class="pill pill-green">active</span>';
       else if (u.status === 'inactive') statusPill = '<span class="pill pill-gray">inactive</span>';
       else if (u.status === 'suspended') statusPill = '<span class="pill pill-red">suspended</span>';
       else statusPill = '<span class="pill pill-gray">' + (u.status || '—') + '</span>';
-      var quota = u.quotaMonthly !== undefined && u.quotaMonthly !== null ? u.quotaMonthly : '—';
-      var registered = u.createdAt ? new Date(u.createdAt).toLocaleDateString('zh-CN') : '—';
+      var quota = u.apiCalls !== undefined && u.apiCalls !== null ? u.apiCalls : '—';
+      var registered = u.created ? new Date(u.created).toLocaleDateString('zh-CN') : '—';
       html += '<tr>'
-        + '<td class="text-mono">' + (u._id || u.id || '').slice(-6) + '</td>'
-        + '<td><strong>' + escapeHtml(u.username || '') + '</strong></td>'
+        + '<td class="text-mono">' + (u.id || '').slice(-6) + '</td>'
+        + '<td><strong>' + escapeHtml(u.name || '') + '</strong></td>'
         + '<td class="text-secondary">' + escapeHtml(u.email || '') + '</td>'
         + '<td>' + rolePill + '</td>'
         + '<td>' + statusPill + '</td>'
         + '<td>' + quota + '</td>'
         + '<td class="text-secondary">' + registered + '</td>'
-        + '<td><button class="action-btn action-btn-sm" onclick="editUser(\'' + (u._id || u.id) + '\')">编辑</button></td>'
+        + '<td><button class="action-btn action-btn-sm" onclick="editUser(\'' + (u.id) + '\')">编辑</button></td>'
         + '</tr>';
     });
     tbody.innerHTML = html;
@@ -678,12 +678,12 @@ function pageUsers(dir) {
 
 function editUser(id) {
   API.admin.getUserDetail(id).then(function(u){
-    document.getElementById('edit-user-id').value = u._id || u.id;
-    document.getElementById('edit-username').value = u.username || '';
+    document.getElementById('edit-user-id').value = u.id;
+    document.getElementById('edit-username').value = u.name || '';
     document.getElementById('edit-email').value = u.email || '';
-    document.getElementById('edit-role').value = u.role || 'user';
+    document.getElementById('edit-role').value = u.plan || 'user';
     document.getElementById('edit-status').value = u.status || 'active';
-    document.getElementById('edit-quota').value = u.quotaMonthly || '';
+    document.getElementById('edit-quota').value = u.apiCalls || '';
     document.getElementById('user-modal').classList.add('active');
   }).catch(function(e){
     alert('获取用户详情失败: ' + (e.message || e));
@@ -802,7 +802,7 @@ function loadLogs() {
   s.dateTo = document.getElementById('log-date-to').value;
   API.admin.getLogs({ page: s.page, limit: 30, search: s.search, type: s.type, dateFrom: s.dateFrom, dateTo: s.dateTo }).then(function(res){
     var data = res.data || [];
-    var total = res.total || 0;
+    var total = (res.meta && res.meta.total) || 0;
     s.totalPages = Math.max(1, Math.ceil(total / 30));
     document.getElementById('log-count-label').textContent = '共 ' + total + ' 条';
     document.getElementById('logs-page-info').textContent = s.page + ' / ' + s.totalPages;
@@ -1009,8 +1009,8 @@ function handleRegister() {
   var name = document.getElementById('reg-name').value.trim() || email.split('@')[0];
   var invite = document.getElementById('reg-invite').value.trim();
   var errorEl = document.getElementById('reg-error');
-  if (!email || !password || !confirmPwd || !invite) {
-    errorEl.textContent = '请填写所有必填字段';
+  if (!email || !password || !confirmPwd) {
+    errorEl.textContent = '请填写所有必填字段（邀请码可选）';
     errorEl.style.display = 'block';
     return;
   }
@@ -1100,6 +1100,10 @@ document.getElementById('login-password').addEventListener('keydown', function(e
 document.getElementById('reg-confirm').addEventListener('keydown', function(e){
   if (e.key === 'Enter') handleRegister();
 });
+
+// click login / register buttons
+document.getElementById('reg-btn').addEventListener('click', handleRegister);
+document.getElementById('login-btn').addEventListener('click', handleLogin);
 
 // sidebar logout
 document.getElementById('logout-btn-sidebar').addEventListener('click', handleLogout);

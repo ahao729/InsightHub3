@@ -70,6 +70,16 @@
 .footer-links{display:flex;gap:20px;font-size:12px;color:var(--color-text-secondary)}
 .footer-links span{cursor:pointer}
 .footer-links span:hover{color:var(--color-text-primary)}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px}
+.drawer-logo{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.drawer-close{width:28px;height:28px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);border-radius:var(--border-radius-sm)}
+.drawer-close:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.mobile-drawer .drawer-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-primary);text-decoration:none;transition:background var(--transition-fast)}
+.mobile-drawer .drawer-link:hover{background:var(--color-background-secondary)}
+.mobile-drawer .drawer-link i{font-size:16px;color:var(--color-text-secondary);width:20px;text-align:center}
+.mobile-drawer .drawer-link.active{background:var(--color-brand-light);color:var(--color-brand)}
+.mobile-drawer .drawer-link.active i{color:var(--color-brand)}
+.drawer-divider{height:0.5px;background:var(--color-border-tertiary);margin:8px 12px}
 </style>
 
 <nav id="site-nav">
@@ -82,11 +92,17 @@
   </div>
 </nav>
 <div class="mobile-drawer" id="mobile-drawer">
-  <a class="drawer-link" href="marketplace.html">数据产品</a>
-  <a class="drawer-link" href="api-docs.html">API 文档</a>
-  <a class="drawer-link" href="pricing.html">定价</a>
-  <a class="drawer-link" href="solutions.html">解决方案</a>
-  <a class="drawer-link" href="auth.html">登录 / 注册</a>
+  <div class="drawer-header">
+    <div class="drawer-logo">☰ InsightHub</div>
+    <button class="drawer-close" id="drawer-close" aria-label="关闭菜单"><i class="ti ti-x" aria-hidden="true"></i></button>
+  </div>
+  <a class="drawer-link active" href="marketplace.html"><i class="ti ti-database" aria-hidden="true"></i>数据产品</a>
+  <a class="drawer-link" href="api-docs.html"><i class="ti ti-code" aria-hidden="true"></i>API 文档</a>
+  <a class="drawer-link" href="pricing.html"><i class="ti ti-currency-yen" aria-hidden="true"></i>定价</a>
+  <a class="drawer-link" href="solutions.html"><i class="ti ti-lightbulb" aria-hidden="true"></i>解决方案</a>
+  <a class="drawer-link" href="blog.html"><i class="ti ti-article" aria-hidden="true"></i>博客</a>
+  <div class="drawer-divider"></div>
+  <a class="drawer-link" href="auth.html"><i class="ti ti-user" aria-hidden="true"></i>登录 / 注册</a>
 </div>
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
@@ -232,5 +248,6 @@ document.querySelectorAll('#cat-filters .filter-chip').forEach(chip => {
 
 render(packages);
 </script>
+<script>(function(){var e=document.getElementById("hamburger-btn"),t=document.getElementById("mobile-drawer"),n=document.getElementById("drawer-backdrop"),o=document.getElementById("drawer-close");function i(){t.classList.add("open"),n.classList.add("open"),e.setAttribute("aria-expanded","true")}function r(){t.classList.remove("open"),n.classList.remove("open"),e.setAttribute("aria-expanded","false")}e.addEventListener("click",i),n.addEventListener("click",r),o.addEventListener("click",r),document.addEventListener("keydown",function(e){"Escape"===e.key&&r()})})();</script>
 </body>
 </html>

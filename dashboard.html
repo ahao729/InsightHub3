@@ -178,7 +178,7 @@
       <div class="topbar-title" id="page-title">总览</div>
       <div class="topbar-right">
         <button class="topbar-btn"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i></button>
-        <button class="topbar-btn topbar-btn-primary" id="top-action-btn" onclick="handleTopAction()">生成报告 ↗</button>
+        <button class="topbar-btn topbar-btn-primary" id="top-action-btn">生成报告 ↗</button>
       </div>
     </div>
 
@@ -454,11 +454,8 @@ function switchTab(name) {
   document.getElementById('top-action-btn').textContent = name === 'apikeys' ? '+ 新建 Key' : name === 'reports' ? '生成报告 ↗' : name === 'monitor' ? '+ 新建监控' : name === 'packages' ? '浏览市场' : '生成报告 ↗';
 
   document.querySelectorAll('.sb-nav-item').forEach(function (el) { el.classList.remove('active'); });
-  var navMap = { overview: 0, apikeys: 1, reports: 2, monitor: 3 };
-  var idx = navMap[name];
-  if (idx !== undefined) {
-    document.querySelectorAll('.sb-nav-section:first-child .sb-nav-item')[idx].classList.add('active');
-  }
+  var activeItem = document.querySelector('.sb-nav-item[onclick*="switchTab(\'' + name + '\')"]');
+  if (activeItem) activeItem.classList.add('active');
 
   if (name === 'apikeys' && __dashboardData) renderLogTable(__dashboardData.recentLogs || []);
 }
@@ -485,10 +482,6 @@ window.copyKey = function (key) {
     document.body.removeChild(ta);
     showToast('已复制到剪贴板');
   });
-};
-
-window.handleTopAction = function () {
-  location.href = 'report-generator.html';
 };
 
 window.switchTab = switchTab;
@@ -769,20 +762,7 @@ function reloadDashboard() {
     __dashboardData = data;
     var loading = document.getElementById('dash-reload');
     if (loading) loading.remove();
-    renderPlan(data.plan);
-    renderMetrics(data.metrics);
-    if (data.trend) renderTrend(data.trend.labels, data.trend.values);
-    renderReports(data.recentReports);
-    renderMonitors(data.monitors);
-    renderPackages(data.subscribedPackages);
-    renderApiKeys(data.apiKeys);
-    renderLogTable(data.recentLogs);
-    var reportHd = document.querySelector('#tab-reports .section-hd-title');
-    if (reportHd && data.metrics) reportHd.textContent = '\u6211\u7684\u62A5\u544A\uFF08' + (data.metrics.reports || 0) + ' \u4EFD\uFF09';
-    var monitorHd = document.querySelector('#tab-monitor .section-hd-title');
-    if (monitorHd && data.metrics) monitorHd.textContent = '\u76D1\u63A7\u4EFB\u52A1\uFF08' + (data.metrics.activeMonitors || 0) + ' \u4E2A\u6D3B\u8DC3\uFF09';
-    var pkgHd = document.querySelector('#tab-packages .section-hd-title');
-    if (pkgHd && data.subscribedPackages) pkgHd.textContent = '\u5DF2\u8BA2\u9605\u6570\u636E\u5305\uFF08' + (data.subscribedPackages.length || 0) + '\uFF09';
+    renderAll(data);
   }).catch(function (err) {
     var loading = document.getElementById('dash-reload');
     if (loading) loading.remove();
@@ -824,11 +804,29 @@ function renderApiKeys(keys) {
   renderKeyCard(dev, '.key-card:nth-child(2)', 'key-dev');
 }
 
+// ========== 公共渲染函数 ==========
+function renderAll(data) {
+  renderPlan(data.plan);
+  renderMetrics(data.metrics);
+  if (data.trend) renderTrend(data.trend.labels, data.trend.values);
+  renderReports(data.recentReports);
+  renderMonitors(data.monitors);
+  renderPackages(data.subscribedPackages);
+  renderApiKeys(data.apiKeys);
+  renderLogTable(data.recentLogs);
+  var reportHd = document.querySelector('#tab-reports .section-hd-title');
+  if (reportHd && data.metrics) reportHd.textContent = '\u6211\u7684\u62A5\u544A\uFF08' + (data.metrics.reports || 0) + ' \u4EFD\uFF09';
+  var monitorHd = document.querySelector('#tab-monitor .section-hd-title');
+  if (monitorHd && data.metrics) monitorHd.textContent = '\u76D1\u63A7\u4EFB\u52A1\uFF08' + (data.metrics.activeMonitors || 0) + ' \u4E2A\u6D3B\u8DC3\uFF09';
+  var pkgHd = document.querySelector('#tab-packages .section-hd-title');
+  if (pkgHd && data.subscribedPackages) pkgHd.textContent = '\u5DF2\u8BA2\u9605\u6570\u636E\u5305\uFF08' + (data.subscribedPackages.length || 0) + '\uFF09';
+}
+
 // ========== 主初始化 ==========
 function initDashboard() {
   // 鉴权守卫：未登录则跳转
   if (!API.auth.isAuthenticated()) {
-    location.href = 'login.html';
+    location.href = 'auth.html';
     return;
   }
 
@@ -845,49 +843,11 @@ function initDashboard() {
     __dashboardData = data;
     var loading = document.getElementById('dash-loading');
     if (loading) loading.remove();
-
-    // plan
-    renderPlan(data.plan);
-
-    // metrics
-    renderMetrics(data.metrics);
-
-    // trend chart
-    if (data.trend) renderTrend(data.trend.labels, data.trend.values);
-
-    // reports (both tabs)
-    renderReports(data.recentReports);
-
-    // monitors (both tabs)
-    renderMonitors(data.monitors);
-
-    // packages
-    renderPackages(data.subscribedPackages);
-
-    // API keys + logs
-    renderApiKeys(data.apiKeys);
-    renderLogTable(data.recentLogs);
-
-    // 更新报告中心标题中的报告数
-    var reportHd = document.querySelector('#tab-reports .section-hd-title');
-    if (reportHd && data.metrics) {
-      reportHd.textContent = '\u6211\u7684\u62A5\u544A\uFF08' + (data.metrics.reports || 0) + ' \u4EFD\uFF09';
-    }
-    // 更新监控任务标题中的活跃数
-    var monitorHd = document.querySelector('#tab-monitor .section-hd-title');
-    if (monitorHd && data.metrics) {
-      monitorHd.textContent = '\u76D1\u63A7\u4EFB\u52A1\uFF08' + (data.metrics.activeMonitors || 0) + ' \u4E2A\u6D3B\u8DC3\uFF09';
-    }
-    // 更新已订阅数据包标题
-    var pkgHd = document.querySelector('#tab-packages .section-hd-title');
-    if (pkgHd && data.subscribedPackages) {
-      pkgHd.textContent = '\u5DF2\u8BA2\u9605\u6570\u636E\u5305\uFF08' + (data.subscribedPackages.length || 0) + '\uFF09';
-    }
-
+    renderAll(data);
     // 检测 URL 参数中的 tab
     var params = new URLSearchParams(window.location.search);
     var tab = params.get('tab');
-    if (tab) switchTab(tab);
+    switchTab(tab || 'overview');
   }).catch(function (err) {
     var loading = document.getElementById('dash-loading');
     if (loading) loading.remove();

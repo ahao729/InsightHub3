@@ -74,18 +74,20 @@
 .hamburger.active span:nth-child(2){opacity:0}
 .hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 .drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:998;opacity:0;transition:opacity 0.3s ease}
-.drawer-backdrop.active{display:block;opacity:1}
-.mobile-drawer{display:none;position:fixed;top:0;left:0;bottom:0;width:280px;max-width:80vw;background:var(--color-surface,#fff);z-index:999;transform:translateX(-100%);transition:transform 0.3s ease;overflow-y:auto;padding:20px 16px;box-shadow:2px 0 12px rgba(0,0,0,0.1)}
-.mobile-drawer.active{transform:translateX(0)}
-.drawer-user{display:flex;align-items:center;gap:12px;padding-bottom:16px}
-.drawer-avatar{width:40px;height:40px;border-radius:50%;background:var(--color-brand,#1d9e75);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;flex-shrink:0}
-.drawer-name{font-weight:600;font-size:15px;color:var(--color-text,#1a1a1a)}
-.drawer-plan{font-size:12px;color:var(--color-text-secondary,#999791);margin-top:2px}
-.drawer-divider{height:1px;background:var(--color-border,#e8e6e1);margin:8px 0}
-.drawer-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--color-text,#1a1a1a);text-decoration:none;font-size:14px;transition:background 0.2s;border:none;background:none;width:100%;cursor:pointer;font-family:inherit}
-.drawer-link:hover{background:var(--color-background-secondary,#f5f4f0)}
-.drawer-link i{font-size:18px;width:20px;text-align:center;color:var(--color-text-secondary,#999791)}
-@media(max-width:768px){.hamburger{display:flex}.drawer-backdrop.active{display:block}.mobile-drawer{display:block}}
+.drawer-backdrop.open{display:block;opacity:1}
+.mobile-drawer{display:none;position:fixed;top:0;right:0;bottom:0;width:280px;max-width:80vw;background:var(--color-surface,#fff);z-index:999;transform:translateX(100%);transition:transform 0.3s ease;overflow-y:auto;padding:20px 0;box-shadow:-2px 0 12px rgba(0,0,0,0.1)}
+.mobile-drawer.open{transform:translateX(0)}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:4px 16px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px}
+.drawer-logo{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.drawer-close{width:28px;height:28px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);border-radius:var(--border-radius-sm);margin-left:auto}
+.drawer-close:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.drawer-divider{height:0.5px;background:var(--color-border-tertiary);margin:8px 16px}
+.drawer-link{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--color-text-primary);text-decoration:none;font-size:13px;transition:background var(--transition-fast);border:none;background:none;width:100%;cursor:pointer;font-family:inherit}
+.drawer-link:hover{background:var(--color-background-secondary)}
+.drawer-link i{font-size:16px;width:20px;text-align:center;color:var(--color-text-secondary)}
+.drawer-link.active{background:var(--color-brand-light);color:var(--color-brand)}
+.drawer-link.active i{color:var(--color-brand)}
+@media(max-width:768px){.hamburger{display:flex}.drawer-backdrop.open{display:block}.mobile-drawer{display:block}}
 </style>
 
 <div class="shell">
@@ -99,11 +101,17 @@
     </div>
 
     <div class="mobile-drawer" id="mobile-drawer">
-      <a class="drawer-link" href="marketplace.html">数据产品</a>
-      <a class="drawer-link" href="api-docs.html">API 文档</a>
-      <a class="drawer-link" href="pricing.html">定价</a>
-      <a class="drawer-link" href="solutions.html">解决方案</a>
-      <a class="drawer-link" href="auth.html">登录 / 注册</a>
+      <div class="drawer-header">
+        <div class="drawer-logo">☰ InsightHub</div>
+        <button class="drawer-close" id="drawer-close" aria-label="关闭菜单"><i class="ti ti-x" aria-hidden="true"></i></button>
+      </div>
+      <a class="drawer-link" href="marketplace.html"><i class="ti ti-database" aria-hidden="true"></i>数据产品</a>
+      <a class="drawer-link" href="api-docs.html"><i class="ti ti-code" aria-hidden="true"></i>API 文档</a>
+      <a class="drawer-link" href="pricing.html"><i class="ti ti-currency-yen" aria-hidden="true"></i>定价</a>
+      <a class="drawer-link" href="solutions.html"><i class="ti ti-lightbulb" aria-hidden="true"></i>解决方案</a>
+      <a class="drawer-link" href="blog.html"><i class="ti ti-article" aria-hidden="true"></i>博客</a>
+      <div class="drawer-divider"></div>
+      <a class="drawer-link active" href="auth.html"><i class="ti ti-user" aria-hidden="true"></i>登录 / 注册</a>
     </div>
     <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
@@ -312,6 +320,7 @@ function checkStrength(){
   }
 }
 </script>
+<script>(function(){var e=document.getElementById("hamburger-btn"),t=document.getElementById("mobile-drawer"),n=document.getElementById("drawer-backdrop"),o=document.getElementById("drawer-close");function i(){t.classList.add("open"),n.classList.add("open"),e.setAttribute("aria-expanded","true")}function r(){t.classList.remove("open"),n.classList.remove("open"),e.setAttribute("aria-expanded","false")}e.addEventListener("click",i),n.addEventListener("click",r),o.addEventListener("click",r),document.addEventListener("keydown",function(e){"Escape"===e.key&&r()})})();</script>
 </div>
 </body>
 </html>

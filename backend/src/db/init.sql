@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
     name VARCHAR(255) NOT NULL,
     last_used_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
     revoked BOOLEAN DEFAULT FALSE
 );
 
@@ -221,6 +222,30 @@ CREATE TABLE IF NOT EXISTS web3_data (
 CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys(user_id);
 CREATE INDEX IF NOT EXISTS idx_api_keys_key ON api_keys(key);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+
+-- ============================================================
+-- Token Usage Tracking
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS token_usage (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    model VARCHAR(255) NOT NULL,
+    input_tokens INTEGER NOT NULL DEFAULT 0,
+    output_tokens INTEGER NOT NULL DEFAULT 0,
+    total_tokens INTEGER NOT NULL DEFAULT 0,
+    cost_usd DECIMAL(12,6) NOT NULL DEFAULT 0,
+    task_type VARCHAR(100) DEFAULT 'general',
+    package_code VARCHAR(50),
+    timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_token_usage_user_id ON token_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_token_usage_timestamp ON token_usage(timestamp);
+CREATE INDEX IF NOT EXISTS idx_token_usage_task_type ON token_usage(task_type);
+CREATE INDEX IF NOT EXISTS idx_token_usage_package ON token_usage(package_code);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
 CREATE INDEX IF NOT EXISTS idx_usage_logs_user_id ON usage_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_usage_logs_timestamp ON usage_logs(timestamp);
