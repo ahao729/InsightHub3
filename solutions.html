@@ -86,6 +86,23 @@
 .drawer-divider{height:0.5px;background:var(--color-border-tertiary);margin:8px 12px}
 .drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1040}
 .drawer-backdrop.active{display:block}
+/* Hamburger: hidden on desktop, shown on mobile */
+.hamburger{display:none;flex-direction:column;justify-content:center;align-items:center;width:36px;height:36px;border:none;background:transparent;cursor:pointer;padding:6px;border-radius:var(--border-radius-sm,8px);gap:4px}
+.hamburger:hover{background:var(--color-background-secondary)}
+.hamburger span{display:block;width:20px;height:2px;background:var(--color-text-primary);border-radius:2px}
+/* ===== responsive ===== */
+@media(max-width:768px){
+  .nav{padding:12px 16px}
+  .hero{padding:24px 16px 16px}
+  .hero h1{font-size:18px}
+  .persona-tabs{gap:6px;padding:0 16px}
+  .ptab{padding:8px 14px;font-size:12px}
+  .usecase-grid{grid-template-columns:1fr}
+  .cta-row{flex-direction:column}
+  .btn-subscribe,.btn-secondary{width:100%;text-align:center}
+  .footer-inner{padding:16px;flex-direction:column;text-align:center}
+  .hamburger{display:flex}
+}
 </style>
 
 <div class="nav">

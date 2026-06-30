@@ -78,6 +78,37 @@
 .trust-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--color-text-secondary);margin-top:14px}
 .trust-row i{font-size:14px;color:var(--color-brand)}
 .divider{height:0.5px;background:var(--color-border-tertiary);margin:20px 0}
+
+/* ===== hamburger + mobile drawer ===== */
+.hamburger{display:none;flex-direction:column;justify-content:center;align-items:center;width:36px;height:36px;border:none;background:transparent;cursor:pointer;padding:6px;border-radius:var(--border-radius-sm,8px);gap:4px;z-index:1100;margin-left:auto}
+.hamburger:hover{background:var(--color-background-secondary)}
+.hamburger span{display:block;width:20px;height:2px;background:var(--color-text-primary);border-radius:2px;transition:all .2s}
+.hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.mobile-drawer{display:none;position:fixed;top:0;right:-280px;width:280px;max-width:80vw;height:100vh;background:var(--color-background-primary);border-left:0.5px solid var(--color-border-tertiary);z-index:1050;flex-direction:column;padding:20px 8px 8px;transition:right .3s;box-shadow:0 4px 24px rgba(0,0,0,0.12);overflow-y:auto}
+.mobile-drawer.open{right:0}
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1040;opacity:0;transition:opacity .3s}
+.drawer-backdrop.open{display:block;opacity:1}
+.drawer-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--color-text-primary);text-decoration:none;font-size:14px;cursor:pointer;border:none;background:none;width:100%;font-family:inherit}
+.drawer-link:hover{background:var(--color-background-secondary)}
+.drawer-link i{font-size:18px;width:20px;text-align:center;color:var(--color-text-secondary)}
+
+/* ===== responsive ===== */
+@media(max-width:768px){
+  .hamburger{display:flex}
+  .logo-bar{padding:12px 16px}
+  .steps-bar{padding:12px 16px;overflow-x:auto;gap:4px}
+  .step-line{width:12px}
+  .body{grid-template-columns:1fr}
+  .main{padding:20px 16px;border-right:none}
+  .plan-grid{grid-template-columns:1fr;gap:8px}
+  .pkg-select-grid{grid-template-columns:1fr}
+  .billing-toggle{flex-direction:column}
+  .field-row{grid-template-columns:1fr}
+  .pay-method-grid{grid-template-columns:1fr}
+  .sidebar{padding:20px 16px}
+}
 </style>
 
 <div class="logo-bar">
