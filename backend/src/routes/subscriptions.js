@@ -179,7 +179,7 @@ router.post('/subscribe', authenticate, async (req, res, next) => {
         }
       });
     } catch (dbErr) {
-      // Fallback
+      // Fallback (in-memory only — will be lost on restart; TODO: queue for DB sync)
       const plan = fallbackPlans.find(p => p.code === plan_code);
       if (!plan) {
         return res.status(404).json({

@@ -1,5 +1,6 @@
 const express = require('express');
 const { authenticate } = require('../middleware/auth');
+const { requireAdmin } = require('./admin');
 const ragService = require('../services/ragService');
 const tokenUsage = require('../services/tokenUsage');
 
@@ -171,9 +172,8 @@ router.get('/token-usage', authenticate, async (req, res, next) => {
 // 管理员：查看全局 Token 用量统计
 // ──────────────────────────────────────────────
 
-router.get('/admin/token-usage', authenticate, async (req, res, next) => {
+router.get('/admin/token-usage', authenticate, requireAdmin, async (req, res, next) => {
   try {
-    // TODO: 添加管理员权限检查
     const period = req.query.period || 'today';
 
     const stats = await tokenUsage.getGlobalStats(period);

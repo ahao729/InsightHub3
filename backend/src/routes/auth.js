@@ -8,18 +8,8 @@ const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
-// In-memory fallback store for when DB is unavailable
+// In-memory fallback store for when DB is unavailable (populated dynamically)
 const fallbackUsers = new Map();
-// Pre-seeded demo user
-const DEMO_USER = {
-  id: 'dev-demo-id',
-  email: 'demo@insighthub.ai',
-  name: 'Demo用户',
-  password_hash: bcrypt.hashSync('demo123456', 10),
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-fallbackUsers.set(DEMO_USER.email, DEMO_USER);
 
 // POST /api/v1/auth/register
 router.post('/register', async (req, res, next) => {

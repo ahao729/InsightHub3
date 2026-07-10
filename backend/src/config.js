@@ -3,9 +3,9 @@ require('dotenv').config();
 const config = {
   port: parseInt(process.env.PORT, 10) || 4000,
   databaseUrl: process.env.DATABASE_URL || 'postgresql://localhost:5432/insighthub',
-  jwtSecret: process.env.JWT_SECRET || 'insighthub-dev-secret-key-change-in-production',
+  jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: '7d',
-  corsOrigins: process.env.CORS_ORIGINS || 'http://localhost:3000',
+  corsOrigins: process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001,http://localhost:5173',
   adminInviteCode: process.env.ADMIN_INVITE_CODE || 'INSIGHTHUB2024',
   nodeEnv: process.env.NODE_ENV || 'development',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
@@ -22,6 +22,8 @@ const config = {
   deepseekApiKey: process.env.DEEPSEEK_API_KEY || '',
   deepseekBaseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1',
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
+  zhipuApiKey: process.env.ZHIPU_API_KEY || '',
+  zhipuBaseUrl: process.env.ZHIPU_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4',
 
   llmProviders: {
     openai: {
@@ -41,6 +43,12 @@ const config = {
       baseUrl: process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com/v1',
       models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
       fallbackModel: 'claude-3-haiku',
+    },
+    zhipu: {
+      apiKey: process.env.ZHIPU_API_KEY || '',
+      baseUrl: process.env.ZHIPU_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4',
+      models: ['glm-4-plus', 'glm-4', 'glm-4-flash'],
+      fallbackModel: 'glm-4-flash',
     },
   },
 
@@ -85,6 +93,9 @@ const config = {
     'deepseek-chat': { input: 0.00014, output: 0.00028 },
     'claude-3-opus': { input: 0.015, output: 0.075 },
     'claude-3-sonnet': { input: 0.003, output: 0.015 },
+    'glm-4-plus': { input: 0.007, output: 0.007 },
+    'glm-4': { input: 0.002, output: 0.002 },
+    'glm-4-flash': { input: 0.00014, output: 0.00014 },
   },
 };
 

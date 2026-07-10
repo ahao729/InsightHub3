@@ -108,6 +108,11 @@ router.get('/stats', authenticate, async (req, res, next) => {
       return res.json({
         success: true,
         data: {
+          user: {
+            name: req.user.name || '用户',
+            email: req.user.email || '',
+            avatar: req.user.avatar || null,
+          },
           plan: fallbackPlan,
           metrics: fallbackMetrics,
           trend: {
@@ -135,6 +140,11 @@ router.get('/stats', authenticate, async (req, res, next) => {
       return res.json({
         success: true,
         data: {
+          user: {
+            name: req.user.name || '用户',
+            email: req.user.email || '',
+            avatar: req.user.avatar || null,
+          },
           plan: fallbackPlan,
           metrics: fallbackMetrics,
           trend: fallbackTrend,

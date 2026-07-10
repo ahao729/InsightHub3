@@ -168,11 +168,11 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // 管理员邀请码（可选）
-    if (inviteCode && inviteCode !== config.adminInviteCode) {
+    // 管理员注册需要有效的邀请码
+    if (!inviteCode || inviteCode !== config.adminInviteCode) {
       return res.status(403).json({
         success: false,
-        error: { code: 'INVALID_INVITE_CODE', message: '管理员邀请码无效，请确认后重试。' }
+        error: { code: 'INVALID_INVITE_CODE', message: '请提供有效的管理员邀请码。' }
       });
     }
 
@@ -221,17 +221,8 @@ router.post('/register', async (req, res) => {
 // ──────────────────────────────────────────────
 
 function requireAdmin(req, res, next) {
-  // Admin role from JWT (set by admin login)
+  // Only JWT with admin role or admin API key can pass
   if (req.user && req.user.role === 'admin') {
-    return next();
-  }
-  // In development, allow any authenticated user with specific emails
-  const adminEmails = ['admin@insighthub.data', 'admin@example.com'];
-  if (req.user && (adminEmails.includes(req.user.email) || req.user.id === 'dev-admin-id')) {
-    return next();
-  }
-  // Check for admin API key
-  if (req.user && req.user.apiKey === 'sk-dev-admin') {
     return next();
   }
   return res.status(403).json({
@@ -975,3 +966,4 @@ router.get('/health', authenticate, requireAdmin, async (req, res, next) => {
 });
 
 module.exports = router;
+module.exports.requireAdmin = requireAdmin;

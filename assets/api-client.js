@@ -6,9 +6,13 @@
 (function () {
   'use strict';
 
-  // 自动检测环境：开发模式(Vite :3000)用独立后端端口，生产(nginx)用同域代理
+  // 自动检测环境：
+  //   - file:// 直接打开（port 为空）或 Vite 开发模式(:3000/:3001) → localhost:4000
+  //   - 生产环境（nginx 同域代理）→ /api/v1
   var API_BASE = (function () {
-    if (window.location.port === '3000') {
+    var port = window.location.port;
+    var proto = window.location.protocol;
+    if (port === '3000' || port === '3001' || proto === 'file:') {
       return 'http://localhost:4000/api/v1';
     }
     return '/api/v1';
@@ -207,7 +211,7 @@
           });
         }
         var qstr = qs.length ? '?' + qs.join('&') : '';
-        return request('GET', '/admin/users' + qstr).then(function (res) { return res; });
+        return request('GET', '/admin/users' + qstr);
       },
       getUserDetail: function (id) {
         return request('GET', '/admin/users/' + encodeURIComponent(id)).then(function (res) { return res.data; });
@@ -216,13 +220,13 @@
         return request('PATCH', '/admin/users/' + encodeURIComponent(id), body).then(function (res) { return res.data; });
       },
       getApiKeys: function () {
-        return request('GET', '/admin/api-keys').then(function (res) { return res; });
+        return request('GET', '/admin/api-keys').then(function (res) { return res.data; });
       },
       updateApiKey: function (id, body) {
         return request('PATCH', '/admin/api-keys/' + encodeURIComponent(id), body).then(function (res) { return res.data; });
       },
       getSubscriptions: function () {
-        return request('GET', '/admin/subscriptions').then(function (res) { return res; });
+        return request('GET', '/admin/subscriptions').then(function (res) { return res.data; });
       },
       getLogs: function (params) {
         var qs = [];
@@ -234,7 +238,7 @@
           });
         }
         var qstr = qs.length ? '?' + qs.join('&') : '';
-        return request('GET', '/admin/logs' + qstr).then(function (res) { return res; });
+        return request('GET', '/admin/logs' + qstr);
       },
       getHealth: function () {
         return request('GET', '/admin/health').then(function (res) { return res.data; });
@@ -243,7 +247,7 @@
 
     // === 健康检查 ===
     health: function () {
-      return fetch('http://localhost:4000/api/health').then(function (r) { return r.json(); });
+      return fetch(API_BASE.replace('/api/v1', '/api/health')).then(function (r) { return r.json(); });
     },
   };
 

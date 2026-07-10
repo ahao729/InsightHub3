@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>跨境电商数据包 · InsightHub Data</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="assets/api-client.js"></script>
+<script src="assets/stub-runtime.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+<style>
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
+.breadcrumb span{cursor:pointer}
+.breadcrumb span:hover{color:var(--color-text-primary)}
+.sep{color:var(--color-border-secondary)}
+.pkg-hero{padding:36px 32px 28px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.pkg-hero-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+.pkg-icon-lg{width:52px;height:52px;border-radius:var(--border-radius-lg);background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:24px;color:#854F0B;flex-shrink:0}
+.pkg-meta{flex:1}
+.pkg-meta h1{font-size:22px;font-weight:500;margin-bottom:6px}
+.pkg-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tag{font-size:11px;padding:3px 10px;border-radius:999px}
+.tag-soon{background:#F1EFE8;color:#5F5E5A}
+.tag-cat{background:#F1EFE8;color:#444441;border:0.5px solid var(--color-border-tertiary)}
+.pkg-desc{font-size:14px;color:var(--color-text-secondary);line-height:1.7;max-width:580px;margin-bottom:20px}
+.pkg-stats{display:flex;gap:24px;flex-wrap:wrap}
+.pstat{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-secondary)}
+.pstat i{font-size:16px;color:#854F0B}
+.pkg-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-subscribe{font-size:13px;padding:9px 22px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;font-weight:500}
+.btn-demo{font-size:13px;padding:9px 18px;border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);cursor:pointer}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:0;border-top:0.5px solid var(--color-border-tertiary)}
+.main{padding:28px 32px;border-right:0.5px solid var(--color-border-tertiary)}
+.sidebar{padding:24px 20px}
+.section-title{font-size:15px;font-weight:500;margin-bottom:14px}
+.section-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px}
+.q-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.q-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px}
+.q-card-icon{font-size:16px;color:#854F0B;margin-bottom:8px}
+.q-card-text{font-size:13px;color:var(--color-text-secondary);line-height:1.5}
+.api-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.api-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.api-row:hover{border-color:var(--color-border-primary);background:var(--color-background-secondary)}
+.api-method{font-size:11px;font-weight:500;padding:3px 8px;border-radius:var(--border-radius-md);background:#E6F1FB;color:#185FA5;min-width:38px;text-align:center}
+.api-path{font-size:13px;font-family:var(--font-mono);flex:1;color:var(--color-text-primary)}
+.api-desc{font-size:12px;color:var(--color-text-secondary)}
+.source-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px}
+.source-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
+.source-type{font-size:11px;margin-bottom:4px;color:var(--color-text-secondary)}
+.source-name{font-size:12px;font-weight:500}
+.source-open{background:var(--color-brand-light)}
+.source-third{background:#FAEEDA}
+.source-open .source-type{color:var(--color-brand-dark)}
+.source-third .source-type{color:#854F0B}
+.source-open .source-name{color:var(--color-text-success)}
+.source-third .source-name{color:#633806}
+.field-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px}
+.field-table th{text-align:left;padding:8px 10px;border-bottom:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);font-weight:500}
+.field-table td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.field-type{font-family:var(--font-mono);color:#185FA5;font-size:11px}
+.sb-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:14px;background:var(--color-background-primary)}
+.sb-card-title{font-size:13px;font-weight:500;margin-bottom:10px}
+.plan-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.plan-row:last-child{border-bottom:none}
+.plan-name{font-size:12px;color:var(--color-text-secondary)}
+.plan-price{font-size:13px;font-weight:500}
+.status-badge-soon{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 12px;border-radius:var(--border-radius-md);background:#F1EFE8;color:#444441;margin-bottom:14px}
+.mcp-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;margin-bottom:8px}
+.mcp-name{font-size:12px;font-weight:500;margin-bottom:2px}
+.mcp-desc{font-size:11px;color:var(--color-text-secondary)}
+.demo-box{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:28px;background:var(--color-background-secondary)}
+.demo-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:8px;font-weight:500}
+.demo-input-row{display:flex;gap:8px;margin-bottom:14px}
+.demo-input-row input{flex:1;font-size:13px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.demo-run{font-size:12px;padding:7px 14px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;white-space:nowrap}
+.mkt-card{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.mkt-avatar{width:40px;height:40px;border-radius:var(--border-radius-md);background:#FAEEDA;color:#854F0B;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;flex-shrink:0}
+.mkt-name{font-size:14px;font-weight:500}
+.mkt-loc{font-size:11px;color:var(--color-text-secondary)}
+.mkt-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.mkt-stat{background:var(--color-background-primary);border-radius:var(--border-radius-md);padding:10px;text-align:center}
+.mkt-stat-label{font-size:10px;color:var(--color-text-secondary);margin-bottom:3px}
+.mkt-stat-val{font-size:13px;font-weight:500}
+.cat-list{display:flex;flex-direction:column;gap:6px}
+.cat-row{display:flex;align-items:center;justify-content:space-between;font-size:12px;padding:8px 10px;border-radius:var(--border-radius-md);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary)}
+.cat-name{color:var(--color-text-primary)}
+.cat-share{font-size:11px;padding:2px 8px;border-radius:999px;background:#FAEEDA;color:#854F0B}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:20px 0}
+.footer-inner{padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-left{font-size:13px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px;font-size:12px;color:var(--color-text-secondary)}
+.footer-links span{cursor:pointer}
+.footer-links span:hover{color:var(--color-text-primary)}
+</style>
+
+<div class="nav">
+  <div class="logo" onclick="location.href='index.html'"><div class="logo-dot"></div>InsightHub Data</div>
+  <div class="breadcrumb"><span onclick="location.href='marketplace.html'">数据产品</span><span class="sep">/</span><span style="color:var(--color-text-primary)">跨境电商数据包</span></div>
+  <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<div class="mobile-drawer" id="mobile-drawer">
+  <a class="drawer-link" href="marketplace.html">数据产品</a>
+  <a class="drawer-link" href="api-docs.html">API 文档</a>
+  <a class="drawer-link" href="pricing.html">定价</a>
+  <a class="drawer-link" href="solutions.html">解决方案</a>
+  <a class="drawer-link" href="blog.html">博客</a>
+  <a class="drawer-link" href="auth.html">登录 / 注册</a>
+</div>
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+<div class="pkg-hero">
+  <div class="pkg-hero-top">
+    <div class="pkg-icon-lg"><i class="ti ti-world" aria-hidden="true"></i></div>
+    <div class="pkg-meta">
+      <h1>跨境电商数据包</h1>
+      <div class="pkg-meta-row">
+        <span class="tag tag-soon" style="background:#E7F3E7;color:#1A6B3C"><i class="ti ti-check" style="font-size:11px" aria-hidden="true"></i> 已上线</span>
+        <span class="tag tag-cat">国际贸易</span>
+      </div>
+    </div>
+  </div>
+  <div class="pkg-desc">为跨境电商卖家、选品经理和物流运营提供目标市场情报、品类趋势、物流成本测算、关税政策变化及汇率支付分析，支持 AI 自动生成市场进入策略报告。</div>
+  <div class="pkg-stats">
+    <div class="pstat"><i class="ti ti-api" aria-hidden="true"></i>8 个 API 接口</div>
+    <div class="pstat"><i class="ti ti-refresh" aria-hidden="true"></i>每日更新</div>
+    <div class="pstat"><i class="ti ti-plug" aria-hidden="true"></i>支持 MCP</div>
+    <div class="pstat"><i class="ti ti-file-analytics" aria-hidden="true"></i>AI 市场报告</div>
+    <div class="pstat"><i class="ti ti-database" aria-hidden="true"></i>12 个数据源</div>
+  </div>
+  <div class="pkg-actions">
+    <button class="btn-subscribe" onclick="location.href='checkout.html'">订阅此数据包 →</button>
+    <button class="btn-demo" onclick="document.getElementById('cb-demo').scrollIntoView()">运行下方 Demo ↓</button>
+    <button class="btn-demo" onclick="location.href='api-docs.html'">下载 API 文档</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="main">
+
+    <div class="section-title">这个数据包能回答哪些问题</div>
+    <div class="q-grid">
+      <div class="q-card"><div class="q-card-icon"><i class="ti ti-building-store" aria-hidden="true"></i></div><div class="q-card-text">某个目标市场目前哪些品类需求增长最快？</div></div>
+      <div class="q-card"><div class="q-card-icon"><i class="ti ti-scale" aria-hidden="true"></i></div><div class="q-card-text">两款相似商品在不同国家的定价和利润如何？</div></div>
+      <div class="q-card"><div class="q-card-icon"><i class="ti ti-truck" aria-hidden="true"></i></div><div class="q-card-text">从中国到美国海运/空运的成本和时效是多少？</div></div>
+      <div class="q-card"><div class="q-card-icon"><i class="ti ti-file-import" aria-hidden="true"></i></div><div class="q-card-text">目标国家最近的关税或进口政策有什么变化？</div></div>
+      <div class="q-card"><div class="q-card-icon"><i class="ti ti-currency-dollar" aria-hidden="true"></i></div><div class="q-card-text">主流付款渠道在目标市场的手续费和覆盖率如何？</div></div>
+      <div class="q-card"><div class="q-card-icon"><i class="ti ti-file-analytics" aria-hidden="true"></i></div><div class="q-card-text">能否一键生成跨境市场进入策略分析报告？</div></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title">API 接口列表</div>
+    <div class="section-sub">以下接口已上线，可通过 API 密钥直接调用</div>
+    <div class="api-list">
+      <div class="api-row"><span class="api-method">GET</span><span class="api-path">/v1/market/overview</span><span class="api-desc">目标市场概况查询</span></div>
+      <div class="api-row"><span class="api-method">GET</span><span class="api-path">/v1/market/category-trends</span><span class="api-desc">品类趋势与竞争分析</span></div>
+      <div class="api-row"><span class="api-method">POST</span><span class="api-path">/v1/product/profit-calc</span><span class="api-desc">跨境利润计算器</span></div>
+      <div class="api-row"><span class="api-method">GET</span><span class="api-path">/v1/logistics/rates</span><span class="api-desc">物流成本与时效查询</span></div>
+      <div class="api-row"><span class="api-method">GET</span><span class="api-path">/v1/tariff/policy</span><span class="api-desc">关税政策与法规动态</span></div>
+      <div class="api-row"><span class="api-method">GET</span><span class="api-path">/v1/payment/methods</span><span class="api-desc">跨境支付渠道分析</span></div>
+      <div class="api-row"><span class="api-method">GET</span><span class="api-path">/v1/competitor/top-sellers</span><span class="api-desc">竞品热销榜单</span></div>
+      <div class="api-row"><span class="api-method">POST</span><span class="api-path">/v1/report/market-entry</span><span class="api-desc">AI 市场进入报告生成</span></div>
+    </div>
+
+    <div class="divider" id="cb-demo"></div>
+    <div class="section-title">效果预览 — 品类趋势查询</div>
+    <div class="demo-box">
+      <div class="demo-label">输入目标市场和品类，预览趋势数据（上线前为模拟数据）</div>
+      <div class="demo-input-row">
+        <input type="text" id="demo-market" value="美国站" placeholder="输入目标市场..." />
+        <input type="text" id="demo-category" value="家居用品" placeholder="输入品类..." style="flex:0.6" />
+        <button class="demo-run" onclick="runDemo()">运行预览 ↗</button>
+      </div>
+
+      <div class="mkt-card">
+        <div class="mkt-avatar" id="mkt-avatar">US</div>
+        <div>
+          <div class="mkt-name" id="mkt-name">美国站 · 家居用品</div>
+          <div class="mkt-loc" id="mkt-loc">市场规模 $482 亿 · 年增长 8.3%</div>
+        </div>
+      </div>
+
+      <div class="mkt-stats-grid" id="mkt-stats">
+        <div class="mkt-stat"><div class="mkt-stat-label">月搜索量</div><div class="mkt-stat-val">1,280 万</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-label">平均售价</div><div class="mkt-stat-val">$34.50</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-label">竞争度</div><div class="mkt-stat-val">中高</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-label">物流成本占比</div><div class="mkt-stat-val">18%</div></div>
+      </div>
+
+      <div class="section-sub" style="margin-bottom:8px">热销子品类分布</div>
+      <div class="cat-list" id="cat-list"></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title">数据来源</div>
+    <div class="source-grid">
+      <div class="source-card source-open"><div class="source-type">公开来源</div><div class="source-name">海关总署进出口统计</div></div>
+      <div class="source-card source-open"><div class="source-type">公开来源</div><div class="source-name">世界银行贸易数据</div></div>
+      <div class="source-card source-open"><div class="source-type">公开来源</div><div class="source-name">WTO 关税数据库</div></div>
+      <div class="source-card source-open"><div class="source-type">公开来源</div><div class="source-name">各国海关公告</div></div>
+      <div class="source-card source-third"><div class="source-type">第三方授权</div><div class="source-name">跨境支付渠道费率</div></div>
+      <div class="source-card source-third"><div class="source-type">第三方授权</div><div class="source-name">物流商公开报价</div></div>
+      <div class="source-card source-third"><div class="source-type">第三方授权</div><div class="source-name">电商平台品类数据</div></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title">核心返回字段</div>
+    <table class="field-table">
+      <thead><tr><th>字段名</th><th>类型</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>market_name</td><td class="field-type">string</td><td>目标市场名称</td></tr>
+        <tr><td>category</td><td class="field-type">string</td><td>品类名称</td></tr>
+        <tr><td>search_volume</td><td class="field-type">number</td><td>月搜索量</td></tr>
+        <tr><td>avg_price</td><td class="field-type">number</td><td>平均售价 (USD)</td></tr>
+        <tr><td>competition_level</td><td class="field-type">string</td><td>竞争等级 (低/中/高)</td></tr>
+        <tr><td>logistics_cost_pct</td><td class="field-type">number</td><td>物流成本占比</td></tr>
+        <tr><td>tariff_rate</td><td class="field-type">number</td><td>当前关税率</td></tr>
+        <tr><td>profit_estimate</td><td class="field-type">number</td><td>利润估算 (USD)</td></tr>
+        <tr><td>report_url</td><td class="field-type">string</td><td>AI 市场报告链接</td></tr>
+      </tbody>
+    </table>
+
+    <div class="divider"></div>
+    <div class="section-title">MCP 工具</div>
+    <div class="mcp-card"><div class="mcp-name">insighthub_market_overview</div><div class="mcp-desc">查询任意目标市场的宏观概况</div></div>
+    <div class="mcp-card"><div class="mcp-name">insighthub_category_trends</div><div class="mcp-desc">获取品类趋势与竞争数据</div></div>
+    <div class="mcp-card"><div class="mcp-name">insighthub_profit_calculator</div><div class="mcp-desc">计算跨境利润与成本结构</div></div>
+    <div class="mcp-card"><div class="mcp-name">insighthub_generate_market_report</div><div class="mcp-desc">生成 AI 市场进入策略报告</div></div>
+
+  </div>
+
+  <div class="sidebar">
+    <div class="status-badge-soon" style="background:#E7F3E7;color:#1A6B3C"><i class="ti ti-check" style="font-size:14px" aria-hidden="true"></i>已上线</div>
+    <div class="sb-card">
+      <div class="sb-card-title">定价方案</div>
+      <div class="plan-row"><span class="plan-name">个人版</span><span class="plan-price">¥69 / 月</span></div>
+      <div class="plan-row"><span class="plan-name">创业者版</span><span class="plan-price">¥399 / 月</span></div>
+      <div class="plan-row"><span class="plan-name">企业版</span><span class="plan-price">¥2499 / 月起</span></div>
+      <button class="btn-subscribe" style="width:100%;margin-top:14px;font-size:12px;padding:8px" onclick="location.href='checkout.html'">立即订阅 →</button>
+    </div>
+    <div class="sb-card">
+      <div class="sb-card-title">更新频率</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary);padding:4px 0"><div style="width:6px;height:6px;border-radius:50%;background:var(--color-brand)"></div>市场与品类数据 · 每日</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary);padding:4px 0"><div style="width:6px;height:6px;border-radius:50%;background:var(--color-brand)"></div>关税与物流数据 · 每周</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary);padding:4px 0"><div style="width:6px;height:6px;border-radius:50%;background:var(--color-brand)"></div>汇率与支付数据 · 实时</div>
+    </div>
+    <div class="sb-card">
+      <div class="sb-card-title">适用场景</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">跨境电商卖家选品决策、物流方案比价、多市场利润测算、关税风险管理、AI 市场进入报告。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var marketPool=[
+  {avatar:'US',name:'美国站 · 家居用品',loc:'市场规模 $482 亿 · 年增长 8.3%',
+   stats:['1,280 万','$34.50','中高','18%'],
+   cats:[['厨房收纳','32%'],['智能家居','24%'],['浴室配件','18%'],['家居装饰','16%'],['清洁工具','10%']]},
+  {avatar:'JP',name:'日本站 · 美妆个护',loc:'市场规模 $215 亿 · 年增长 5.1%',
+   stats:['860 万','$28.00','高','22%'],
+   cats:[['护肤品','35%'],['化妆品','28%'],['洗浴用品','18%'],['口腔护理','12%'],['男士理容','7%']]},
+  {avatar:'DE',name:'德国站 · 电子产品',loc:'市场规模 $356 亿 · 年增长 6.7%',
+   stats:['950 万','$89.00','中','15%'],
+   cats:[['手机配件','30%'],['智能穿戴','25%'],['耳机音箱','20%'],['充电设备','15%'],['电脑外设','10%']]},
+  {avatar:'UK',name:'英国站 · 运动户外',loc:'市场规模 $178 亿 · 年增长 9.2%',
+   stats:['720 万','$52.00','低','20%'],
+   cats:[['健身器材','28%'],['户外服装','26%'],['露营装备','20%'],['骑行配件','16%'],['水上运动','10%']]}
+];
+
+function runDemo(){
+  var market=document.getElementById('demo-market').value||'美国站';
+  var category=document.getElementById('demo-category').value||'家居用品';
+  var pick=marketPool[Math.floor(Math.random()*marketPool.length)];
+
+  document.getElementById('mkt-avatar').textContent=pick.avatar;
+  document.getElementById('mkt-name').textContent=market+' · '+category;
+  document.getElementById('mkt-loc').textContent=pick.loc;
+
+  var labels=['月搜索量','平均售价','竞争度','物流成本占比'];
+  var statsHtml=pick.stats.map(function(s,i){
+    return '<div class="mkt-stat"><div class="mkt-stat-label">'+labels[i]+'</div><div class="mkt-stat-val">'+s+'</div></div>';
+  }).join('');
+  document.getElementById('mkt-stats').innerHTML=statsHtml;
+
+  var catHtml=pick.cats.map(function(c){
+    return '<div class="cat-row"><span class="cat-name">'+c[0]+'</span><span class="cat-share">'+c[1]+'</span></div>';
+  }).join('');
+  document.getElementById('cat-list').innerHTML=catHtml;
+}
+
+runDemo();
+</script>
+<footer class="footer-inner">
+  <div class="footer-left">© 2026 InsightHub Data</div>
+  <div class="footer-links">
+    <span onclick="location.href='privacy.html'">隐私政策</span>
+    <span onclick="location.href='terms.html'">服务条款</span>
+    <span onclick="location.href='status.html'">系统状态</span>
+  </div>
+</footer>
+</div>
+<script src="assets/drawer.js"></script>
+</body>
+</html>

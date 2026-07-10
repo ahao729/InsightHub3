@@ -121,7 +121,7 @@
     <span class="filter-chip" data-status="soon">规划中</span>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <span class="result-count" id="result-count">8 个数据包</span>
+    <span class="result-count" id="result-count">9 个数据包</span>
     <select class="sort-select" id="sort-select" onchange="applyFilters()">
       <option value="default">推荐排序</option>
       <option value="price-asc">价格从低到高</option>
@@ -149,6 +149,18 @@
   <div class="empty-state" id="empty-state" style="display:none">没有找到匹配的数据包，试试调整筛选条件</div>
 </div>
 
+<div class="custom-req-section" style="padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary)">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:24px 28px">
+    <div>
+      <div style="font-size:15px;font-weight:500;margin-bottom:4px">没有找到你需要的数据？</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">我们持续根据用户反馈上架新数据包。提交你的定制需求，产品团队将在 <strong>48 小时内</strong>评估并回复。</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button class="btn btn-primary" style="font-size:13px;padding:9px 20px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;font-family:var(--font-sans)" onclick="openCustomReq()">提交数据需求 <i class="ti ti-arrow-right" style="font-size:14px" aria-hidden="true"></i></button>
+    </div>
+  </div>
+</div>
+
 <footer class="footer-inner">
   <div class="footer-left">© 2026 InsightHub Data</div>
   <div class="footer-links">
@@ -166,6 +178,7 @@ const packages = [
   {name:'AI / GEO 分析',icon:'ti-brand-google',color:'ic-blue',status:'live',statusLabel:'已上线',cat:'内容与搜索',desc:'网站 AI 可见度评分、品牌内容覆盖、GEO 优化建议',apis:6,update:'每日',price:99,link:'package-ai-geo.html'},
   {name:'企业情报与风控',icon:'ti-building',color:'ic-amber',status:'live',statusLabel:'已上线',cat:'企业风控',desc:'企业查询、风险评分、关系图谱、招投标、尽调报告',apis:6,update:'实时',price:699,link:'package-enterprise-risk.html'},
   {name:'金融宏观数据',icon:'ti-chart-line',color:'ic-purple',status:'live',statusLabel:'热门',cat:'金融',desc:'CPI/GDP/利率、财报摘要、加密基础数据、宏观报告',apis:7,update:'每日',price:99,link:'package-finance-macro.html'},
+  {name:'跨境电商数据包',icon:'ti-world',color:'ic-amber',status:'live',statusLabel:'已上线',cat:'商业情报',desc:'目标市场情报、品类趋势、物流成本、关税政策、跨境利润计算、AI 市场报告',apis:8,update:'每日',price:69,link:'package-crossborder-ecommerce.html'},
   {name:'Web3 / Crypto',icon:'ti-currency-bitcoin',color:'ic-coral',status:'soon',statusLabel:'即将上线',cat:'Web3',desc:'DeFi TVL、交易所公告、新币上线、项目风险评分',apis:6,update:'实时',price:99,link:'package-web3-crypto.html'},
   {name:'政策与招投标',icon:'ti-file-text',color:'ic-teal',status:'soon',statusLabel:'规划中',cat:'政策',desc:'政策监控、招投标线索、补贴匹配、商机提醒',apis:5,update:'每日',price:199,link:'package-policy-bidding.html'},
   {name:'技术专利趋势',icon:'ti-microscope',color:'ic-gray',status:'soon',statusLabel:'规划中',cat:'科研',desc:'专利查询、论文趋势、技术路线、机构科研实力',apis:6,update:'每周',price:199,link:'package-patent-tech.html'},
@@ -249,5 +262,45 @@ document.querySelectorAll('#cat-filters .filter-chip').forEach(chip => {
 render(packages);
 </script>
 <script>(function(){var e=document.getElementById("hamburger-btn"),t=document.getElementById("mobile-drawer"),n=document.getElementById("drawer-backdrop"),o=document.getElementById("drawer-close");function i(){t.classList.add("open"),n.classList.add("open"),e.setAttribute("aria-expanded","true")}function r(){t.classList.remove("open"),n.classList.remove("open"),e.setAttribute("aria-expanded","false")}e.addEventListener("click",i),n.addEventListener("click",r),o.addEventListener("click",r),document.addEventListener("keydown",function(e){"Escape"===e.key&&r()})})();</script>
+
+<!-- 定制需求弹窗 -->
+<div class="modal-overlay" id="custom-req-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center" onclick="closeCustomReq(event)">
+  <div class="modal-dialog" style="background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:28px;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.12)" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:500">提交数据需求</div>
+      <button style="width:28px;height:28px;border:none;background:transparent;cursor:pointer;color:var(--color-text-secondary);border-radius:var(--border-radius-sm);display:flex;align-items:center;justify-content:center" onclick="closeCustomReq()"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <input id="req-name" type="text" placeholder="你的称呼" style="font-size:13px;padding:9px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);font-family:var(--font-sans);background:var(--color-background-primary);color:var(--color-text-primary)">
+      <input id="req-email" type="email" placeholder="邮箱地址" style="font-size:13px;padding:9px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);font-family:var(--font-sans);background:var(--color-background-primary);color:var(--color-text-primary)">
+      <textarea id="req-desc" rows="4" placeholder="请描述你需要的数据类型、使用场景和预期用途（越详细越好）" style="font-size:13px;padding:9px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);font-family:var(--font-sans);resize:vertical;background:var(--color-background-primary);color:var(--color-text-primary)"></textarea>
+      <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.5">提交即表示你同意 <span style="color:var(--color-brand);cursor:pointer" onclick="location.href='privacy.html'">隐私政策</span>，我们将在 48 小时内通过邮件回复。</div>
+      <button class="btn btn-primary" style="font-size:13px;padding:10px 20px;border-radius:var(--border-radius-md);background:var(--color-brand);color:#fff;border:none;cursor:pointer;font-family:var(--font-sans);width:100%" onclick="submitCustomReq()">提交需求</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openCustomReq(){
+  document.getElementById('custom-req-overlay').style.display='flex';
+}
+function closeCustomReq(e){
+  if(e && e.target !== e.currentTarget) return;
+  document.getElementById('custom-req-overlay').style.display='none';
+}
+function submitCustomReq(){
+  var name=document.getElementById('req-name').value.trim();
+  var email=document.getElementById('req-email').value.trim();
+  var desc=document.getElementById('req-desc').value.trim();
+  if(!email){ alert('请输入邮箱地址'); return; }
+  if(!desc){ alert('请描述你的数据需求'); return; }
+  // TODO: POST to backend
+  alert('感谢提交！我们将在 48 小时内通过邮件回复你的需求。');
+  closeCustomReq();
+  document.getElementById('req-name').value='';
+  document.getElementById('req-email').value='';
+  document.getElementById('req-desc').value='';
+}
+</script>
 </body>
 </html>

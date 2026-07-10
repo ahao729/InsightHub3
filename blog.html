@@ -353,31 +353,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   render();
 });
-
-// Mobile drawer
-(function() {
-  var btn = document.getElementById('hamburger-btn');
-  var drawer = document.getElementById('mobile-drawer');
-  var backdrop = document.getElementById('drawer-backdrop');
-  var closeBtn = document.getElementById('drawer-close');
-  function openDrawer() {
-    drawer.classList.add('open');
-    backdrop.classList.add('active');
-    btn.setAttribute('aria-expanded', 'true');
-  }
-  function closeDrawer() {
-    drawer.classList.remove('open');
-    backdrop.classList.remove('active');
-    btn.setAttribute('aria-expanded', 'false');
-  }
-  if (btn) btn.addEventListener('click', openDrawer);
-  if (backdrop) backdrop.addEventListener('click', closeDrawer);
-  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-  document.querySelectorAll('.drawer-link').forEach(function(link) {
-    link.addEventListener('click', closeDrawer);
-  });
-})();
 </script>
+<script src="assets/drawer.js"></script>
 
 </body>
 </html>

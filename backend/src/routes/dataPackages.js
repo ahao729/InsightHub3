@@ -12,6 +12,7 @@ const policyBidding = require('../services/policyBidding');
 const aiGeo = require('../services/aiGeo');
 const education = require('../services/education');
 const web3Crypto = require('../services/web3Crypto');
+const crossborderEcommerce = require('../services/crossborderEcommerce');
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ const packageServices = {
   'ai-geo': aiGeo,
   'education': education,
   'web3-crypto': web3Crypto,
+  'crossborder-ecommerce': crossborderEcommerce,
 };
 
 const validPackages = Object.keys(packageServices);
@@ -39,6 +41,7 @@ const packageNames = {
   'ai-geo': 'AI / GEO 分析',
   'education': '教育',
   'web3-crypto': 'Web3 / Crypto',
+  'crossborder-ecommerce': '跨境电商',
 };
 
 /**

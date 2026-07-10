@@ -6,27 +6,8 @@ const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
-// In-memory fallback
+// In-memory fallback (populated dynamically when DB is unavailable)
 const fallbackKeys = new Map();
-// Pre-seeded dev keys
-fallbackKeys.set('sk-dev-admin', {
-  id: 'key-admin-001',
-  user_id: 'dev-admin-id',
-  key: 'sk-dev-admin',
-  name: '管理密钥',
-  last_used_at: null,
-  created_at: new Date().toISOString(),
-  revoked: false,
-});
-fallbackKeys.set('sk-dev-demo', {
-  id: 'key-demo-001',
-  user_id: 'dev-demo-id',
-  key: 'sk-dev-demo',
-  name: 'Demo密钥',
-  last_used_at: null,
-  created_at: new Date().toISOString(),
-  revoked: false,
-});
 
 function generateApiKey() {
   return 'sk-' + crypto.randomBytes(24).toString('hex');

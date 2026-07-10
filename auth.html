@@ -6,7 +6,6 @@
 <title>注册登录 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
 <link rel="manifest" href="manifest.json">
@@ -16,8 +15,8 @@
 <body>
 <div class="page-shell">
 <style>
-.shell{display:grid;grid-template-columns:minmax(0,1fr) 320px;min-height:600px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin:24px}
-.left{padding:36px 44px;display:flex;flex-direction:column;justify-content:center}
+.shell{display:grid;grid-template-columns:minmax(0,1fr) 320px;min-height:600px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;max-width:920px;margin:24px auto}
+.left{padding:40px 48px;display:flex;flex-direction:column}
 .logo-bar{display:flex;align-items:center;gap:8px;margin-bottom:32px;cursor:pointer}
 .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--color-brand)}
 .logo-text{font-size:15px;font-weight:500}
@@ -66,6 +65,8 @@
 .quote-avatar{width:24px;height:24px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:500}
 .quote-name{font-size:11px;font-weight:500}
 .quote-role{font-size:10px;color:var(--color-text-secondary)}
+.form-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:400px;width:100%;margin:0 auto}
+.form-wrap .tab-row{margin-left:auto;margin-right:auto}
 .hamburger{display:none;flex-direction:column;justify-content:center;align-items:center;width:36px;height:36px;border:none;background:transparent;cursor:pointer;padding:6px;border-radius:8px;transition:background 0.2s;margin-left:auto}
 .hamburger:hover{background:rgba(0,0,0,0.05)}
 .hamburger span{display:block;width:18px;height:2px;background:var(--color-text,#333);border-radius:2px;transition:all 0.3s ease}
@@ -115,6 +116,7 @@
     </div>
     <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
+    <div class="form-wrap">
     <div class="tab-row">
       <button class="tab-btn active" id="tab-login" onclick="switchMode('login')">登录</button>
       <button class="tab-btn" id="tab-register" onclick="switchMode('register')">注册</button>
@@ -202,6 +204,7 @@
 
       <div class="switch-text" style="margin-top:14px">已有账号？<a onclick="switchMode('login')">立即登录</a></div>
     </div>
+    </div><!-- /form-wrap -->
   </div>
 
   <div class="right">
@@ -265,8 +268,7 @@ function handleLogin(){
   if(!email||!pwd){errEl.style.display='block';errEl.textContent='请填写邮箱和密码';return}
   errEl.style.display='none';
   btn.disabled=true;btn.textContent='登录中...';
-  API.auth.login(email,pwd).then(function(r){
-    if(r.error){errEl.style.display='block';errEl.textContent=r.error;btn.disabled=false;btn.textContent='登录 →';return}
+  API.auth.login(email,pwd).then(function(){
     location.href='dashboard.html';
   }).catch(function(e){
     errEl.style.display='block';errEl.textContent=e.message||'登录失败，请重试';btn.disabled=false;btn.textContent='登录 →';
@@ -283,8 +285,7 @@ function handleRegister(){
   if(pwd.length<8){errEl.style.display='block';errEl.textContent='密码至少 8 位';return}
   errEl.style.display='none';
   btn.disabled=true;btn.textContent='注册中...';
-  API.auth.register(email,pwd,name).then(function(r){
-    if(r.error){errEl.style.display='block';errEl.textContent=r.error;btn.disabled=false;btn.textContent='免费注册 →';return}
+  API.auth.register(email,pwd,name).then(function(){
     location.href='dashboard.html';
   }).catch(function(e){
     errEl.style.display='block';errEl.textContent=e.message||'注册失败，请重试';btn.disabled=false;btn.textContent='免费注册 →';

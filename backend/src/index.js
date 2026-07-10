@@ -7,6 +7,7 @@ require('dotenv').config();
 const config = require('./config');
 const { testConnection } = require('./db/pool');
 const { errorHandler } = require('./middleware/errorHandler');
+const { rateLimit } = require('./middleware/rateLimit');
 
 // Route imports
 const authRoutes = require('./routes/auth');
@@ -71,6 +72,9 @@ app.get('/api/health', async (req, res) => {
 // ============================================================
 
 const apiRouter = express.Router();
+
+// Global rate limiting for all API routes
+apiRouter.use(rateLimit());
 
 // Mount route modules
 apiRouter.use('/auth', authRoutes);

@@ -1,384 +1,451 @@
-const mockQuery = jest.fn();
-
+jest.mock('../db/pool');
 jest.mock('../config', () => ({
   tokenTrackingEnabled: true,
   dailyTokenLimit: 1000000,
   userDailyTokenLimit: 100000,
   modelPricing: {
-    'openai/gpt-4o': { input: 0.01, output: 0.03 },
-    'deepseek/deepseek-chat': { input: 0.001, output: 0.002 },
+    'gpt-4o': { input: 0.01, output: 0.03 },
+    'deepseek-chat': { input: 0.001, output: 0.002 },
   },
-  isDev: false,
   models: { embedding: 'text-embedding-3-small' },
 }));
 
-jest.mock('../db/pool', () => ({
-  query: (...args) => mockQuery(...args),
-}));
-
+const { query } = require('../db/pool');
 const tokenUsage = require('../services/tokenUsage');
+
+jest.useFakeTimers();
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.clearAllTimers();
+
+  // Reset the singleton state for a clean slate
   tokenUsage.buffer = [];
   tokenUsage.enabled = true;
   tokenUsage.dailyLimit = 1000000;
   tokenUsage.userDailyLimit = 100000;
   tokenUsage.pricing = {
-    'openai/gpt-4o': { input: 0.01, output: 0.03 },
-    'deepseek/deepseek-chat': { input: 0.001, output: 0.002 },
+    'gpt-4o': { input: 0.01, output: 0.03 },
+    'deepseek-chat': { input: 0.001, output: 0.002 },
   };
-  // Clear any flush interval
+
+  // Tear down any flush interval from the previous test
   if (tokenUsage.flushInterval) {
     clearInterval(tokenUsage.flushInterval);
     tokenUsage.flushInterval = null;
   }
+
+  // Start a fresh flush interval (under fake timers this just registers a
+  // pending timer — it never actually fires unless we advance the clock)
+  tokenUsage._startFlushInterval();
 });
 
-afterAll(() => {
+afterEach(() => {
   if (tokenUsage.flushInterval) {
     clearInterval(tokenUsage.flushInterval);
     tokenUsage.flushInterval = null;
   }
+  jest.clearAllMocks();
 });
 
-describe('TokenUsageTracker', () => {
-  // ── track ────────────────────────────────────────────
-  describe('track', () => {
-    it('should record usage and return cost info', () => {
-      const result = tokenUsage.track({
-        userId: 'user-1',
-        model: 'openai/gpt-4o',
-        inputTokens: 500,
-        outputTokens: 200,
-        taskType: 'analysis',
-        packageCode: 'startup',
-      });
+// ── track() ──────────────────────────────────────────────────────────────
 
-      expect(result.tracked).toBe(true);
-      expect(result.totalTokens).toBe(700);
-      expect(result.costUsd).toBeCloseTo(0.005 + 0.006); // (500/1000)*0.01 + (200/1000)*0.03
-      expect(result.record).toBeDefined();
-      expect(result.record.user_id).toBe('user-1');
-      expect(result.record.model).toBe('openai/gpt-4o');
-      expect(result.record.input_tokens).toBe(500);
-      expect(result.record.output_tokens).toBe(200);
-      expect(result.record.total_tokens).toBe(700);
-      expect(result.record.task_type).toBe('analysis');
-      expect(result.record.package_code).toBe('startup');
+describe('track', () => {
+  it('records input/output tokens and calculates cost', () => {
+    const result = tokenUsage.track({
+      userId: 'user-abc',
+      model: 'gpt-4o',
+      inputTokens: 500,
+      outputTokens: 200,
+      taskType: 'analysis',
+      packageCode: 'startup-123',
     });
 
-    it('should not track when disabled', () => {
-      tokenUsage.enabled = false;
+    expect(result.tracked).toBe(true);
+    expect(result.totalTokens).toBe(700);
+    // (500/1000)*0.01 + (200/1000)*0.03 = 0.005 + 0.006 = 0.011
+    expect(result.costUsd).toBeCloseTo(0.011, 6);
+    expect(result.record).toBeDefined();
+    expect(result.record.user_id).toBe('user-abc');
+    expect(result.record.model).toBe('gpt-4o');
+    expect(result.record.input_tokens).toBe(500);
+    expect(result.record.output_tokens).toBe(200);
+    expect(result.record.total_tokens).toBe(700);
+    expect(result.record.task_type).toBe('analysis');
+    expect(result.record.package_code).toBe('startup-123');
+    expect(result.record.cost_usd).toBeCloseTo(0.011, 6);
+    expect(result.record.timestamp).toBeInstanceOf(Date);
+  });
 
-      const result = tokenUsage.track({
-        userId: 'user-1',
-        model: 'openai/gpt-4o',
-        inputTokens: 100,
-        outputTokens: 50,
-      });
+  it('returns tracked: false when tracking is disabled', () => {
+    tokenUsage.enabled = false;
 
-      expect(result.tracked).toBe(false);
-      expect(tokenUsage.buffer.length).toBe(0);
+    const result = tokenUsage.track({
+      model: 'gpt-4o',
+      inputTokens: 100,
+      outputTokens: 50,
     });
 
-    it('should handle missing optional fields gracefully', () => {
-      const result = tokenUsage.track({});
+    expect(result.tracked).toBe(false);
+    expect(tokenUsage.buffer.length).toBe(0);
+  });
 
-      expect(result.tracked).toBe(true);
-      expect(result.record.user_id).toBeNull();
-      expect(result.record.model).toBe('unknown');
-      expect(result.record.task_type).toBe('general');
-      expect(result.record.package_code).toBeNull();
+  it('handles missing optional fields with defaults', () => {
+    const result = tokenUsage.track({});
+
+    expect(result.tracked).toBe(true);
+    expect(result.record.user_id).toBeNull();
+    expect(result.record.model).toBe('unknown');
+    expect(result.record.input_tokens).toBe(0);
+    expect(result.record.output_tokens).toBe(0);
+    expect(result.record.total_tokens).toBe(0);
+    expect(result.record.task_type).toBe('general');
+    expect(result.record.package_code).toBeNull();
+  });
+
+  it('adds the record to the in-memory buffer', () => {
+    tokenUsage.track({
+      userId: 'u1',
+      model: 'gpt-4o',
+      inputTokens: 10,
+      outputTokens: 5,
     });
 
-    it('should buffer the record', () => {
-      tokenUsage.track({
-        userId: 'u1',
-        model: 'm1',
-        inputTokens: 10,
-        outputTokens: 5,
-      });
+    expect(tokenUsage.buffer.length).toBe(1);
+    expect(tokenUsage.buffer[0].user_id).toBe('u1');
+  });
+});
 
-      expect(tokenUsage.buffer.length).toBe(1);
-      expect(tokenUsage.buffer[0].user_id).toBe('u1');
+// ── trackEmbedding() ─────────────────────────────────────────────────────
+
+describe('trackEmbedding', () => {
+  it('delegates to track with taskType=embedding and given model', () => {
+    const trackSpy = jest.spyOn(tokenUsage, 'track');
+
+    tokenUsage.trackEmbedding({
+      userId: 'u1',
+      model: 'text-embedding-3-small',
+      inputTokens: 200,
+      packageCode: 'patent-007',
     });
 
-    it('should calculate cost as 0 for unknown model', () => {
-      const result = tokenUsage.track({
-        model: 'unknown/model',
-        inputTokens: 1000,
-        outputTokens: 500,
-      });
-
-      expect(result.costUsd).toBe(0);
+    expect(trackSpy).toHaveBeenCalledTimes(1);
+    expect(trackSpy).toHaveBeenCalledWith({
+      userId: 'u1',
+      model: 'text-embedding-3-small',
+      inputTokens: 200,
+      outputTokens: 0,
+      taskType: 'embedding',
+      packageCode: 'patent-007',
     });
   });
 
-  // ── trackEmbedding ────────────────────────────────────
-  describe('trackEmbedding', () => {
-    it('should delegate to track with embedding task type', () => {
-      const trackSpy = jest.spyOn(tokenUsage, 'track');
+  it('uses config.models.embedding when no model is provided', () => {
+    const trackSpy = jest.spyOn(tokenUsage, 'track');
 
-      tokenUsage.trackEmbedding({
-        userId: 'u1',
-        model: 'text-embedding-3-small',
-        inputTokens: 200,
-        packageCode: 'patent',
-      });
-
-      expect(trackSpy).toHaveBeenCalledWith({
-        userId: 'u1',
-        model: 'text-embedding-3-small',
-        inputTokens: 200,
-        outputTokens: 0,
-        taskType: 'embedding',
-        packageCode: 'patent',
-      });
+    tokenUsage.trackEmbedding({
+      userId: 'u2',
+      inputTokens: 100,
     });
 
-    it('should use default embedding model when model is not provided', () => {
-      const trackSpy = jest.spyOn(tokenUsage, 'track');
+    expect(trackSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'text-embedding-3-small' }),
+    );
+  });
+});
 
-      tokenUsage.trackEmbedding({
-        userId: 'u1',
-        inputTokens: 100,
-      });
+// ── _calculateCost() ─────────────────────────────────────────────────────
 
-      expect(trackSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ model: 'text-embedding-3-small' }),
-      );
-    });
+describe('_calculateCost', () => {
+  it('calculates cost for gpt-4o correctly', () => {
+    const cost = tokenUsage._calculateCost('gpt-4o', 1000, 500);
+    // (1000/1000)*0.01 + (500/1000)*0.03 = 0.01 + 0.015 = 0.025
+    expect(cost).toBeCloseTo(0.025, 6);
   });
 
-  // ── _calculateCost ──────────────────────────────────────
-  describe('_calculateCost', () => {
-    it('should calculate cost based on pricing config', () => {
-      const cost = tokenUsage._calculateCost('openai/gpt-4o', 1000, 500);
-      // (1000/1000)*0.01 + (500/1000)*0.03 = 0.01 + 0.015 = 0.025
-      expect(cost).toBeCloseTo(0.025);
-    });
-
-    it('should return 0 for unknown model', () => {
-      expect(tokenUsage._calculateCost('unknown', 100, 100)).toBe(0);
-    });
-
-    it('should handle zero tokens', () => {
-      const cost = tokenUsage._calculateCost('openai/gpt-4o', 0, 0);
-      expect(cost).toBe(0);
-    });
+  it('calculates cost for deepseek-chat correctly', () => {
+    const cost = tokenUsage._calculateCost('deepseek-chat', 2000, 1000);
+    // (2000/1000)*0.001 + (1000/1000)*0.002 = 0.002 + 0.002 = 0.004
+    expect(cost).toBeCloseTo(0.004, 6);
   });
 
-  // ── _getTimeFilter ─────────────────────────────────────
-  describe('_getTimeFilter', () => {
-    it('should return today filter', () => {
-      const filter = tokenUsage._getTimeFilter('today');
-      expect(filter).toContain('CURRENT_DATE');
-    });
-
-    it('should return this_week filter', () => {
-      const filter = tokenUsage._getTimeFilter('this_week');
-      expect(filter).toContain("date_trunc('week'");
-    });
-
-    it('should return this_month filter', () => {
-      const filter = tokenUsage._getTimeFilter('this_month');
-      expect(filter).toContain("date_trunc('month'");
-    });
-
-    it('should return empty for all', () => {
-      expect(tokenUsage._getTimeFilter('all')).toBe('');
-    });
-
-    it('should default to today for unknown period', () => {
-      const filter = tokenUsage._getTimeFilter('unknown');
-      expect(filter).toContain('CURRENT_DATE');
-    });
+  it('returns 0 for an unknown model', () => {
+    const cost = tokenUsage._calculateCost('unknown-model', 1000, 500);
+    expect(cost).toBe(0);
   });
 
-  // ── getUserStats ─────────────────────────────────────
-  describe('getUserStats', () => {
-    it('should return aggregated stats from DB', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{
-          total_requests: '5',
-          total_input_tokens: '1000',
-          total_output_tokens: '500',
-          total_tokens: '1500',
-          total_cost_usd: '0.025',
-        }],
-      });
+  it('returns 0 when input and output tokens are both 0', () => {
+    const cost = tokenUsage._calculateCost('gpt-4o', 0, 0);
+    expect(cost).toBe(0);
+  });
+});
 
-      const stats = await tokenUsage.getUserStats('user-1', 'today');
+// ── _getTimeFilter() ─────────────────────────────────────────────────────
 
-      expect(stats.totalRequests).toBe(5);
-      expect(stats.totalInputTokens).toBe(1000);
-      expect(stats.totalOutputTokens).toBe(500);
-      expect(stats.totalTokens).toBe(1500);
-      expect(stats.totalCostUsd).toBeCloseTo(0.025);
-      expect(stats.remainingDailyTokens).toBe(98500); // 100000 - 1500
-      expect(mockQuery).toHaveBeenCalledWith(
-        expect.stringContaining('FROM token_usage'),
-        ['user-1'],
-      );
-    });
-
-    it('should default to today period', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ total_requests: '0', total_input_tokens: '0', total_output_tokens: '0', total_tokens: '0', total_cost_usd: '0' }],
-      });
-
-      const stats = await tokenUsage.getUserStats('user-1');
-      expect(stats.totalRequests).toBe(0);
-    });
-
-    it('should return fallback stats on DB error', async () => {
-      mockQuery.mockRejectedValueOnce(new Error('DB connection lost'));
-
-      const stats = await tokenUsage.getUserStats('user-1', 'today');
-
-      expect(stats.totalRequests).toBe(0);
-      expect(stats.totalTokens).toBe(0);
-      expect(stats.remainingDailyTokens).toBe(100000);
-    });
-
-    it('should include time filter for non-all periods', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ total_requests: '0', total_input_tokens: '0', total_output_tokens: '0', total_tokens: '0', total_cost_usd: '0' }],
-      });
-
-      await tokenUsage.getUserStats('user-1', 'this_month');
-      expect(mockQuery.mock.calls[0][0]).toContain("date_trunc('month'");
-    });
+describe('_getTimeFilter', () => {
+  it('returns a filter for "today"', () => {
+    const filter = tokenUsage._getTimeFilter('today');
+    expect(filter).toContain('CURRENT_DATE');
   });
 
-  // ── getGlobalStats ─────────────────────────────────
-  describe('getGlobalStats', () => {
-    it('should return aggregated global stats', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{
-          total_requests: '100',
-          total_tokens: '50000',
-          total_cost_usd: '1.25',
-          active_users: '10',
-        }],
-      });
-
-      const stats = await tokenUsage.getGlobalStats('today');
-
-      expect(stats.totalRequests).toBe(100);
-      expect(stats.totalTokens).toBe(50000);
-      expect(stats.totalCostUsd).toBeCloseTo(1.25);
-      expect(stats.activeUsers).toBe(10);
-      expect(stats.remainingDailyLimit).toBe(950000); // 1000000 - 50000
-    });
-
-    it('should return fallback stats on DB error', async () => {
-      mockQuery.mockRejectedValueOnce(new Error('timeout'));
-
-      const stats = await tokenUsage.getGlobalStats('today');
-
-      expect(stats.totalRequests).toBe(0);
-      expect(stats.activeUsers).toBe(0);
-      expect(stats.remainingDailyLimit).toBe(1000000);
-    });
-
-    it('should not include time filter for all period', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ total_requests: '0', total_tokens: '0', total_cost_usd: '0', active_users: '0' }],
-      });
-
-      await tokenUsage.getGlobalStats('all');
-      // Should not contain "AND timestamp"
-      expect(mockQuery.mock.calls[0][0]).not.toMatch(/AND timestamp/);
-    });
+  it('returns a filter for "this_week"', () => {
+    const filter = tokenUsage._getTimeFilter('this_week');
+    expect(filter).toContain("date_trunc('week'");
   });
 
-  // ── isUserRateLimited ────────────────────────────────
-  describe('isUserRateLimited', () => {
-    it('should return false when user is under limit', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ total_requests: '1', total_input_tokens: '100', total_output_tokens: '50', total_tokens: '150', total_cost_usd: '0.005' }],
-      });
-
-      const limited = await tokenUsage.isUserRateLimited('user-1');
-      expect(limited).toBe(false);
-    });
-
-    it('should return true when user exceeds limit', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ total_requests: '999', total_input_tokens: '99999', total_output_tokens: '1', total_tokens: '100000', total_cost_usd: '1.0' }],
-      });
-
-      const limited = await tokenUsage.isUserRateLimited('user-1');
-      expect(limited).toBe(true);
-    });
-
-    it('should use today period by default', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ total_requests: '0', total_input_tokens: '0', total_output_tokens: '0', total_tokens: '0', total_cost_usd: '0' }],
-      });
-
-      await tokenUsage.isUserRateLimited('user-1');
-      // Should query with today filter
-      expect(mockQuery.mock.calls[0][0]).toContain('CURRENT_DATE');
-    });
+  it('returns a filter for "this_month"', () => {
+    const filter = tokenUsage._getTimeFilter('this_month');
+    expect(filter).toContain("date_trunc('month'");
   });
 
-  // ── isGloballyRateLimited ─────────────────────────────
-  describe('isGloballyRateLimited', () => {
-    it('should return false when under global limit', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ total_requests: '10', total_tokens: '50000', total_cost_usd: '1.0', active_users: '2' }],
-      });
-
-      const limited = await tokenUsage.isGloballyRateLimited();
-      expect(limited).toBe(false);
-    });
-
-    it('should return true when global limit exceeded', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ total_requests: '999', total_tokens: '1000000', total_cost_usd: '100', active_users: '50' }],
-      });
-
-      const limited = await tokenUsage.isGloballyRateLimited();
-      expect(limited).toBe(true);
-    });
+  it('returns an empty string for "all"', () => {
+    expect(tokenUsage._getTimeFilter('all')).toBe('');
   });
 
-  // ── flush ────────────────────────────────────────────
-  describe('flush', () => {
-    it('should do nothing when buffer is empty', async () => {
-      await tokenUsage.flush();
-      expect(mockQuery).not.toHaveBeenCalled();
+  it('defaults to today for an unrecognised period', () => {
+    const filter = tokenUsage._getTimeFilter('invalid-period');
+    expect(filter).toContain('CURRENT_DATE');
+  });
+});
+
+// ── getUserStats() ───────────────────────────────────────────────────────
+
+describe('getUserStats', () => {
+  const baseRow = {
+    total_requests: '5',
+    total_input_tokens: '1000',
+    total_output_tokens: '500',
+    total_tokens: '1500',
+    total_cost_usd: '0.025',
+  };
+
+  it('returns parsed aggregated stats from the database', async () => {
+    query.mockResolvedValueOnce({ rows: [baseRow] });
+
+    const stats = await tokenUsage.getUserStats('user-1', 'today');
+
+    expect(stats.totalRequests).toBe(5);
+    expect(stats.totalInputTokens).toBe(1000);
+    expect(stats.totalOutputTokens).toBe(500);
+    expect(stats.totalTokens).toBe(1500);
+    expect(stats.totalCostUsd).toBeCloseTo(0.025, 6);
+    expect(stats.remainingDailyTokens).toBe(98500); // 100000 - 1500
+
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining('FROM token_usage'),
+      ['user-1'],
+    );
+    expect(query.mock.calls[0][0]).toContain('CURRENT_DATE');
+  });
+
+  it('accepts period "this_week" and includes the correct time filter', async () => {
+    query.mockResolvedValueOnce({ rows: [baseRow] });
+
+    await tokenUsage.getUserStats('user-1', 'this_week');
+    expect(query.mock.calls[0][0]).toContain("date_trunc('week'");
+  });
+
+  it('accepts period "this_month" and includes the correct time filter', async () => {
+    query.mockResolvedValueOnce({ rows: [baseRow] });
+
+    await tokenUsage.getUserStats('user-1', 'this_month');
+    expect(query.mock.calls[0][0]).toContain("date_trunc('month'");
+  });
+
+  it('accepts period "all" with no time filter', async () => {
+    query.mockResolvedValueOnce({ rows: [baseRow] });
+
+    await tokenUsage.getUserStats('user-1', 'all');
+    expect(query.mock.calls[0][0]).not.toMatch(/AND timestamp/);
+  });
+
+  it('defaults to "today" when no period is provided', async () => {
+    query.mockResolvedValueOnce({
+      rows: [{
+        ...baseRow,
+        total_requests: '0',
+        total_tokens: '0',
+        total_cost_usd: '0',
+      }],
     });
 
-    it('should insert buffered records to DB', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+    const stats = await tokenUsage.getUserStats('user-1');
+    expect(stats.totalTokens).toBe(0);
+    expect(query.mock.calls[0][0]).toContain('CURRENT_DATE');
+  });
 
-      tokenUsage.track({ model: 'm1', inputTokens: 10, outputTokens: 5 });
-      tokenUsage.track({ model: 'm2', inputTokens: 20, outputTokens: 10 });
+  it('returns fallback empty stats when the database query fails', async () => {
+    query.mockRejectedValueOnce(new Error('connection lost'));
 
-      await tokenUsage.flush();
+    const stats = await tokenUsage.getUserStats('user-1', 'today');
 
-      expect(mockQuery).toHaveBeenCalledTimes(1);
-      const [sql] = mockQuery.mock.calls[0];
-      expect(sql).toContain('INSERT INTO token_usage');
-      expect(sql).toContain('VALUES'); // Should have param groups
-      expect(tokenUsage.buffer.length).toBe(0); // Buffer cleared
+    expect(stats.totalRequests).toBe(0);
+    expect(stats.totalInputTokens).toBe(0);
+    expect(stats.totalOutputTokens).toBe(0);
+    expect(stats.totalTokens).toBe(0);
+    expect(stats.totalCostUsd).toBe(0);
+    expect(stats.remainingDailyTokens).toBe(tokenUsage.userDailyLimit);
+  });
+});
+
+// ── getGlobalStats() ─────────────────────────────────────────────────────
+
+describe('getGlobalStats', () => {
+  const baseRow = {
+    total_requests: '100',
+    total_tokens: '50000',
+    total_cost_usd: '1.25',
+    active_users: '10',
+  };
+
+  it('returns aggregated admin stats from the database', async () => {
+    query.mockResolvedValueOnce({ rows: [baseRow] });
+
+    const stats = await tokenUsage.getGlobalStats('today');
+
+    expect(stats.totalRequests).toBe(100);
+    expect(stats.totalTokens).toBe(50000);
+    expect(stats.totalCostUsd).toBeCloseTo(1.25, 6);
+    expect(stats.activeUsers).toBe(10);
+    expect(stats.remainingDailyLimit).toBe(950000); // 1000000 - 50000
+
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining('FROM token_usage'),
+      [],
+    );
+  });
+
+  it('accepts period "all" with no time filter', async () => {
+    query.mockResolvedValueOnce({ rows: [baseRow] });
+
+    await tokenUsage.getGlobalStats('all');
+    expect(query.mock.calls[0][0]).not.toMatch(/AND timestamp/);
+  });
+
+  it('returns fallback empty stats when the database query fails', async () => {
+    query.mockRejectedValueOnce(new Error('timeout'));
+
+    const stats = await tokenUsage.getGlobalStats('today');
+
+    expect(stats.totalRequests).toBe(0);
+    expect(stats.totalTokens).toBe(0);
+    expect(stats.totalCostUsd).toBe(0);
+    expect(stats.activeUsers).toBe(0);
+    expect(stats.remainingDailyLimit).toBe(tokenUsage.dailyLimit);
+  });
+});
+
+// ── isUserRateLimited() ──────────────────────────────────────────────────
+
+describe('isUserRateLimited', () => {
+  it('returns false when totalTokens < userDailyLimit', async () => {
+    query.mockResolvedValueOnce({
+      rows: [{
+        total_requests: '3',
+        total_input_tokens: '200',
+        total_output_tokens: '100',
+        total_tokens: '300',
+        total_cost_usd: '0.01',
+      }],
     });
 
-    it('should re-buffer records on DB failure', async () => {
-      mockQuery.mockRejectedValueOnce(new Error('DB error'));
+    const limited = await tokenUsage.isUserRateLimited('user-1');
+    expect(limited).toBe(false);
+  });
 
-      tokenUsage.track({ model: 'm1', inputTokens: 10, outputTokens: 5 });
-      expect(tokenUsage.buffer.length).toBe(1);
-
-      await tokenUsage.flush();
-
-      // Records should be back in buffer
-      expect(tokenUsage.buffer.length).toBe(1);
-      expect(tokenUsage.buffer[0].model).toBe('m1');
+  it('returns true when totalTokens >= userDailyLimit', async () => {
+    query.mockResolvedValueOnce({
+      rows: [{
+        total_requests: '999',
+        total_input_tokens: '80000',
+        total_output_tokens: '20000',
+        total_tokens: '100000',
+        total_cost_usd: '1.0',
+      }],
     });
+
+    const limited = await tokenUsage.isUserRateLimited('user-1');
+    expect(limited).toBe(true);
+  });
+
+  it('passes the userId to getUserStats', async () => {
+    query.mockResolvedValueOnce({
+      rows: [{
+        total_requests: '0', total_input_tokens: '0', total_output_tokens: '0',
+        total_tokens: '0', total_cost_usd: '0',
+      }],
+    });
+
+    await tokenUsage.isUserRateLimited('specific-user-id');
+    expect(query.mock.calls[0][1]).toEqual(['specific-user-id']);
+  });
+});
+
+// ── isGloballyRateLimited() ──────────────────────────────────────────────
+
+describe('isGloballyRateLimited', () => {
+  it('returns false when totalTokens < dailyLimit', async () => {
+    query.mockResolvedValueOnce({
+      rows: [{
+        total_requests: '10', total_tokens: '50000',
+        total_cost_usd: '1.0', active_users: '2',
+      }],
+    });
+
+    const limited = await tokenUsage.isGloballyRateLimited();
+    expect(limited).toBe(false);
+  });
+
+  it('returns true when totalTokens >= dailyLimit', async () => {
+    query.mockResolvedValueOnce({
+      rows: [{
+        total_requests: '999', total_tokens: '1000000',
+        total_cost_usd: '100', active_users: '50',
+      }],
+    });
+
+    const limited = await tokenUsage.isGloballyRateLimited();
+    expect(limited).toBe(true);
+  });
+});
+
+// ── flush() ──────────────────────────────────────────────────────────────
+
+describe('flush', () => {
+  it('does nothing when the buffer is empty', async () => {
+    await tokenUsage.flush();
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it('inserts buffered records and clears the buffer on success', async () => {
+    query.mockResolvedValueOnce({ rows: [] });
+
+    tokenUsage.track({ model: 'gpt-4o', inputTokens: 10, outputTokens: 5 });
+    tokenUsage.track({ model: 'deepseek-chat', inputTokens: 20, outputTokens: 10 });
+
+    expect(tokenUsage.buffer.length).toBe(2);
+
+    await tokenUsage.flush();
+
+    expect(query).toHaveBeenCalledTimes(1);
+    const [sql, params] = query.mock.calls[0];
+    expect(sql).toContain('INSERT INTO token_usage');
+    expect(sql).toContain('VALUES');
+    // 2 records × 11 params each
+    expect(params.length).toBe(22);
+    expect(tokenUsage.buffer.length).toBe(0);
+  });
+
+  it('re-buffers records when the database insert fails', async () => {
+    query.mockRejectedValueOnce(new Error('DB write failed'));
+
+    tokenUsage.track({ model: 'gpt-4o', inputTokens: 50, outputTokens: 25 });
+    expect(tokenUsage.buffer.length).toBe(1);
+
+    await tokenUsage.flush();
+
+    // Buffer should still contain the record (re-buffered on failure)
+    expect(tokenUsage.buffer.length).toBe(1);
+    expect(tokenUsage.buffer[0].model).toBe('gpt-4o');
   });
 });

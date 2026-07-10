@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>用户工作台 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/dashboard.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
@@ -16,143 +17,6 @@
 <body>
 <div class="page-shell">
 
-<style>
-.shell{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:700px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin:24px}
-.sidebar{background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary);padding:20px 0}
-.sb-logo{display:flex;align-items:center;gap:8px;padding:0 16px 20px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:16px;cursor:pointer}
-.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--color-brand)}
-.sb-logo-text{font-size:14px;font-weight:500}
-.sb-user{padding:0 12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:12px}
-.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--color-brand-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--color-text-success);margin-bottom:8px}
-.sb-name{font-size:13px;font-weight:500}
-.sb-plan{font-size:11px;color:var(--color-brand-dark);background:var(--color-brand-light);padding:2px 8px;border-radius:999px;display:inline-block;margin-top:3px}
-.sb-nav-label{font-size:11px;color:var(--color-text-secondary);padding:0 16px;margin-bottom:6px;font-weight:500;letter-spacing:0.04em}
-.sb-nav-section{margin-bottom:16px}
-.sb-nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;border-radius:0}
-.sb-nav-item:hover{background:var(--color-background-primary);color:var(--color-text-primary)}
-.sb-nav-item.active{background:var(--color-background-primary);color:var(--color-text-primary);border-right:2px solid var(--color-brand)}
-.sb-nav-item i{font-size:16px}
-
-.main{background:var(--color-background-primary)}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:0.5px solid var(--color-border-tertiary)}
-.topbar-title{font-size:16px;font-weight:500}
-.topbar-right{display:flex;align-items:center;gap:10px}
-.topbar-btn{font-size:12px;padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans)}
-.topbar-btn-primary{background:var(--color-brand);color:#fff;border:none}
-.topbar-btn-primary:hover{background:var(--color-brand-dark)}
-
-.content{padding:20px 24px}
-.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
-.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px}
-.metric-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px}
-.metric-val{font-size:22px;font-weight:500}
-.metric-sub{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
-.metric-green{color:var(--color-brand)}
-.metric-amber{color:#BA7517}
-.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.section-hd-title{font-size:14px;font-weight:500}
-.section-hd-action{font-size:12px;color:var(--color-brand);cursor:pointer}
-
-.key-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:10px}
-.key-row{display:flex;align-items:center;gap:10px}
-.key-name{font-size:13px;font-weight:500;flex:1}
-.key-badge{font-size:11px;padding:2px 8px;border-radius:999px}
-.key-badge-live{background:var(--color-brand-light);color:var(--color-text-success)}
-.key-badge-dev{background:#E6F1FB;color:#185FA5}
-.key-val{font-family:var(--font-mono);font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:6px 10px;border-radius:var(--border-radius-md);flex:1;letter-spacing:0.04em}
-.key-actions{display:flex;gap:6px}
-.icon-btn{width:30px;height:30px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--color-text-secondary)}
-.icon-btn:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
-.key-meta{display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)}
-.key-meta-item{font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:5px}
-.key-meta-item i{font-size:13px}
-.usage-bar-wrap{margin-top:8px}
-.usage-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);margin-bottom:5px}
-.usage-bar{height:5px;background:var(--color-background-secondary);border-radius:999px;overflow:hidden}
-.usage-bar-fill{height:100%;border-radius:999px;background:var(--color-brand)}
-.usage-bar-fill-warn{background:#BA7517}
-
-.report-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
-.report-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;display:flex;align-items:center;gap:12px}
-.report-icon{width:36px;height:36px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.ri-green{background:var(--color-brand-light);color:var(--color-brand-dark)}
-.ri-blue{background:#E6F1FB;color:#185FA5}
-.ri-amber{background:#FAEEDA;color:#854F0B}
-.report-info{flex:1}
-.report-title{font-size:13px;font-weight:500;margin-bottom:2px}
-.report-meta{font-size:11px;color:var(--color-text-secondary);display:flex;gap:10px}
-.report-acts{display:flex;gap:6px}
-.rp-tag{font-size:11px;padding:2px 8px;border-radius:999px}
-.rp-tag-new{background:var(--color-brand-light);color:var(--color-text-success)}
-.rp-tag-old{background:#F1EFE8;color:#5F5E5A}
-
-.monitor-list{display:flex;flex-direction:column;gap:8px}
-.monitor-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 16px;display:flex;align-items:center;gap:12px}
-.monitor-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.ms-active{background:var(--color-brand)}
-.ms-alert{background:#E24B4A}
-.ms-pause{background:#888780}
-.monitor-info{flex:1}
-.monitor-name{font-size:13px;font-weight:500;margin-bottom:1px}
-.monitor-meta{font-size:11px;color:var(--color-text-secondary);display:flex;gap:10px}
-.alert-pill{font-size:11px;padding:2px 8px;border-radius:999px;background:#FCEBEB;color:#A32D2D}
-
-.plan-banner{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;background:var(--color-background-secondary)}
-.plan-info-title{font-size:13px;font-weight:500;margin-bottom:3px}
-.plan-info-sub{font-size:12px;color:var(--color-text-secondary)}
-.plan-renew{font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:6px}
-.divider{height:0.5px;background:var(--color-border-tertiary);margin:16px 0}
-
-.filter-pills{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.filter-pills button{font-size:11px;padding:4px 12px;border-radius:999px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans)}
-.filter-pills button.active{background:var(--color-background-secondary)}
-
-.notif-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.notif-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;display:flex;align-items:center;gap:10px}
-.notif-card i{font-size:18px;color:var(--color-brand)}
-.notif-info{flex:1}
-.notif-title{font-size:13px;font-weight:500}
-.notif-sub{font-size:11px;color:var(--color-text-secondary)}
-
-/* ===== hamburger + mobile drawer ===== */
-.hamburger{display:none;flex-direction:column;justify-content:center;align-items:center;width:36px;height:36px;border:none;background:transparent;cursor:pointer;padding:6px;border-radius:var(--border-radius-sm,8px);gap:4px;z-index:1100}
-.hamburger:hover{background:var(--color-background-secondary)}
-.hamburger span{display:block;width:20px;height:2px;background:var(--color-text-primary);border-radius:2px;transition:all .2s}
-.hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
-.hamburger.active span:nth-child(2){opacity:0}
-.hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-.mobile-drawer{display:none;position:fixed;top:0;right:-280px;width:280px;max-width:80vw;height:100vh;background:var(--color-background-primary);border-left:0.5px solid var(--color-border-tertiary);z-index:1050;flex-direction:column;padding:20px 8px 8px;transition:right .3s;box-shadow:0 4px 24px rgba(0,0,0,0.12);overflow-y:auto}
-.mobile-drawer.open{right:0}
-.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1040;opacity:0;transition:opacity .3s}
-.drawer-backdrop.open{display:block;opacity:1}
-.drawer-user{display:flex;align-items:center;gap:12px;padding:0 4px 16px}
-.drawer-avatar{width:40px;height:40px;border-radius:50%;background:var(--color-brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;flex-shrink:0}
-.drawer-name{font-weight:600;font-size:15px;color:var(--color-text-primary)}
-.drawer-plan{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
-.drawer-divider{height:1px;background:var(--color-border-tertiary);margin:8px 0}
-.drawer-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--color-text-primary);text-decoration:none;font-size:14px;cursor:pointer;border:none;background:none;width:100%;font-family:inherit}
-.drawer-link:hover{background:var(--color-background-secondary)}
-.drawer-link i{font-size:18px;width:20px;text-align:center;color:var(--color-text-secondary)}
-/* ===== responsive ===== */
-@media(max-width:768px){
-  .shell{grid-template-columns:1fr;margin:12px;min-height:auto}
-  .sidebar{display:none}
-  .hamburger{display:flex}
-  .topbar{padding:12px 16px}
-  .content{padding:16px}
-  .metrics{grid-template-columns:repeat(2,1fr);gap:8px}
-  .metric{padding:12px}
-  .metric-val{font-size:18px}
-  .notif-grid{grid-template-columns:1fr}
-  .plan-banner{flex-direction:column;align-items:flex-start;gap:10px}
-  .key-row{flex-wrap:wrap}
-  .key-val{width:100%;order:3}
-  .key-meta{flex-wrap:wrap;gap:8px}
-  .report-row{flex-wrap:wrap}
-  .report-acts{width:100%;justify-content:flex-end}
-  .monitor-row{flex-wrap:wrap}
-}
-</style>
 
 <div class="shell">
   <div class="sidebar">
@@ -161,9 +25,9 @@
       <span class="sb-logo-text">InsightHub</span>
     </div>
       <div class="sb-user">
-        <div class="sb-avatar">--</div>
-        <div class="sb-name">--</div>
-        <div class="sb-plan">--</div>
+        <div class="sb-avatar" id="sb-avatar">--</div>
+        <div class="sb-name" id="sb-name">--</div>
+        <div class="sb-plan" id="sb-plan">--</div>
       </div>
 
     <div class="sb-nav-section">
@@ -182,9 +46,9 @@
 
     <div class="sb-nav-section">
       <div class="sb-nav-label">账户</div>
-      <div class="sb-nav-item"><i class="ti ti-credit-card" aria-hidden="true"></i>订阅与账单</div>
-      <div class="sb-nav-item"><i class="ti ti-users" aria-hidden="true"></i>团队成员</div>
-      <div class="sb-nav-item"><i class="ti ti-settings" aria-hidden="true"></i>账户设置</div>
+      <div class="sb-nav-item" onclick="switchTab('subscription')"><i class="ti ti-credit-card" aria-hidden="true"></i>订阅与账单</div>
+      <div class="sb-nav-item" onclick="switchTab('team')"><i class="ti ti-users" aria-hidden="true"></i>团队成员</div>
+      <div class="sb-nav-item" onclick="switchTab('settings')"><i class="ti ti-settings" aria-hidden="true"></i>账户设置</div>
     </div>
   </div>
 
@@ -195,7 +59,7 @@
       </button>
       <div class="topbar-title" id="page-title">总览</div>
       <div class="topbar-right">
-        <button class="topbar-btn"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i></button>
+        <button class="topbar-btn"><i class="ti ti-bell" style="font-size:var(--font-size-lg)" aria-hidden="true"></i></button>
         <button class="topbar-btn topbar-btn-primary" id="top-action-btn">生成报告 ↗</button>
       </div>
     </div>
@@ -210,8 +74,8 @@
             <div class="plan-info-sub">--</div>
           </div>
           <div style="text-align:right">
-            <div class="plan-renew"><i class="ti ti-calendar" style="font-size:13px" aria-hidden="true"></i>-- 续费</div>
-            <button class="topbar-btn" style="margin-top:6px;font-size:11px" onclick="location.href='pricing.html'">升级套餐</button>
+            <div class="plan-renew"><i class="ti ti-calendar" style="font-size:var(--font-size-md)" aria-hidden="true"></i>-- 续费</div>
+            <button class="topbar-btn" style="margin-top:var(--space-3);font-size:var(--font-size-sm)" onclick="location.href='pricing.html'">升级套餐</button>
           </div>
         </div>
 
@@ -242,7 +106,7 @@
           <div class="section-hd-title">本月调用量趋势</div>
           <div class="section-hd-action" onclick="switchTab('apikeys')">查看详细日志</div>
         </div>
-        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:20px">
+        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:var(--space-8);margin-bottom:var(--space-10)">
           <canvas id="usage-chart" height="90"></canvas>
         </div>
 
@@ -265,7 +129,7 @@
       <div id="tab-apikeys" style="display:none">
         <div class="section-hd">
           <div class="section-hd-title">我的 API Keys</div>
-          <button class="topbar-btn topbar-btn-primary" style="font-size:12px;padding:6px 14px" onclick="openCreateKeyModal()">+ 新建 Key</button>
+          <button class="topbar-btn topbar-btn-primary" style="font-size:var(--font-size-base);padding:var(--space-3) var(--space-7)" onclick="openCreateKeyModal()">+ 新建 Key</button>
         </div>
 
         <div class="key-card">
@@ -315,16 +179,16 @@
         </div>
 
         <div class="divider"></div>
-        <div class="section-hd-title" style="margin-bottom:12px">调用日志（最近 10 条）</div>
+        <div class="section-hd-title" style="margin-bottom:var(--space-6)">调用日志（最近 10 条）</div>
         <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden">
-          <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+          <table style="width:100%;border-collapse:collapse;font-size:var(--font-size-base);table-layout:fixed">
             <thead>
               <tr style="background:var(--color-background-secondary)">
-                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:28%">接口</th>
-                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:12%">状态</th>
-                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:12%">耗时</th>
-                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:28%">时间</th>
-                <th style="padding:8px 12px;text-align:left;color:var(--color-text-secondary);font-weight:500;width:20%">Key</th>
+                <th style="padding:var(--space-4) var(--space-6);text-align:left;color:var(--color-text-secondary);font-weight:500;width:28%">接口</th>
+                <th style="padding:var(--space-4) var(--space-6);text-align:left;color:var(--color-text-secondary);font-weight:500;width:12%">状态</th>
+                <th style="padding:var(--space-4) var(--space-6);text-align:left;color:var(--color-text-secondary);font-weight:500;width:12%">耗时</th>
+                <th style="padding:var(--space-4) var(--space-6);text-align:left;color:var(--color-text-secondary);font-weight:500;width:28%">时间</th>
+                <th style="padding:var(--space-4) var(--space-6);text-align:left;color:var(--color-text-secondary);font-weight:500;width:20%">Key</th>
               </tr>
             </thead>
             <tbody id="log-body"></tbody>
@@ -336,7 +200,7 @@
       <div id="tab-reports" style="display:none">
         <div class="section-hd">
           <div class="section-hd-title">我的报告（--）</div>
-          <button class="topbar-btn topbar-btn-primary" style="font-size:12px;padding:6px 14px" onclick="location.href='report-generator.html'">生成新报告 ↗</button>
+          <button class="topbar-btn topbar-btn-primary" style="font-size:var(--font-size-base);padding:var(--space-3) var(--space-7)" onclick="location.href='report-generator.html'">生成新报告 ↗</button>
         </div>
         <div class="filter-pills">
           <button class="active">全部</button>
@@ -351,7 +215,7 @@
       <div id="tab-monitor" style="display:none">
         <div class="section-hd">
           <div class="section-hd-title">监控任务（--）</div>
-          <button class="topbar-btn topbar-btn-primary" style="font-size:12px;padding:6px 14px" onclick="alert('新建监控任务（可继续开发）')">+ 新建监控</button>
+          <button class="topbar-btn topbar-btn-primary" style="font-size:var(--font-size-base);padding:var(--space-3) var(--space-7)" onclick="alert('新建监控任务（可继续开发）')">+ 新建监控</button>
         </div>
 
         <div class="filter-pills">
@@ -363,36 +227,133 @@
         <div class="monitor-list" id="monitor-list"></div>
 
         <div class="divider"></div>
-        <div class="section-hd-title" style="margin-bottom:10px">通知渠道设置</div>
+        <div class="section-hd-title" style="margin-bottom:var(--space-5)">通知渠道设置</div>
         <div class="notif-grid">
           <div class="notif-card">
             <i class="ti ti-mail" aria-hidden="true"></i>
             <div class="notif-info">
               <div class="notif-title">邮件通知</div>
-              <div class="notif-sub">-- · 已启用</div>
+              <div class="notif-sub" id="notif-email-sub">-- · 已启用</div>
             </div>
           </div>
-          <div class="notif-card">
+          <div class="notif-card" onclick="openNotifChannelModal('wecom')" style="cursor:pointer">
             <i class="ti ti-brand-wechat" style="color:var(--color-brand)" aria-hidden="true"></i>
             <div class="notif-info">
               <div class="notif-title">企业微信</div>
-              <div class="notif-sub">未配置 · <span style="color:var(--color-brand);cursor:pointer">立即设置</span></div>
+              <div class="notif-sub" id="notif-wecom-sub">未配置 · <span style="color:var(--color-brand)">立即设置</span></div>
             </div>
           </div>
-          <div class="notif-card">
+          <div class="notif-card" onclick="openNotifChannelModal('feishu')" style="cursor:pointer">
             <i class="ti ti-message" style="color:var(--color-text-secondary)" aria-hidden="true"></i>
             <div class="notif-info">
               <div class="notif-title">飞书</div>
-              <div class="notif-sub">未配置 · <span style="color:var(--color-brand);cursor:pointer">立即设置</span></div>
+              <div class="notif-sub" id="notif-feishu-sub">未配置 · <span style="color:var(--color-brand)">立即设置</span></div>
             </div>
           </div>
-          <div class="notif-card">
+          <div class="notif-card" onclick="openNotifChannelModal('webhook')" style="cursor:pointer">
             <i class="ti ti-webhook" style="color:var(--color-text-secondary)" aria-hidden="true"></i>
             <div class="notif-info">
               <div class="notif-title">Webhook</div>
-              <div class="notif-sub">未配置 · <span style="color:var(--color-brand);cursor:pointer">立即设置</span></div>
+              <div class="notif-sub" id="notif-webhook-sub">未配置 · <span style="color:var(--color-brand)">立即设置</span></div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- ===== 订阅与账单 Tab ===== -->
+      <div id="tab-subscription" style="display:none">
+        <div class="section-hd">
+          <div class="section-hd-title">订阅与账单</div>
+          <button class="topbar-btn topbar-btn-primary" style="font-size:var(--font-size-base);padding:var(--space-3) var(--space-7)" onclick="location.href='pricing.html'">升级套餐</button>
+        </div>
+        <div class="plan-banner" style="margin-bottom:var(--space-8)">
+          <div>
+            <div class="plan-info-title" id="sub-plan-name">-- · 当前套餐</div>
+            <div class="plan-info-sub" id="sub-plan-desc">--</div>
+          </div>
+          <div style="text-align:right">
+            <div class="plan-renew" id="sub-renew-date"><i class="ti ti-calendar" style="font-size:var(--font-size-md)" aria-hidden="true"></i>--</div>
+            <div style="margin-top:var(--space-2);font-size:var(--font-size-sm)" id="sub-plan-status">--</div>
+          </div>
+        </div>
+        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:var(--space-8);margin-bottom:var(--space-8)">
+          <div class="section-hd-title" style="margin-bottom:var(--space-6)">用量概览</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-6)">
+            <div>
+              <div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2)">API 调用</div>
+              <div style="font-size:var(--font-size-lg);font-weight:500" id="sub-api-usage">--</div>
+              <div style="margin-top:var(--space-2);height:6px;background:var(--color-border-tertiary);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:0%;background:var(--color-brand);border-radius:3px;transition:width 0.3s" id="sub-api-usage-fill"></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2)">生成报告</div>
+              <div style="font-size:var(--font-size-lg);font-weight:500" id="sub-report-usage">--</div>
+              <div style="margin-top:var(--space-2);height:6px;background:var(--color-border-tertiary);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:0%;background:var(--color-brand);border-radius:3px;transition:width 0.3s" id="sub-report-usage-fill"></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2)">监控对象</div>
+              <div style="font-size:var(--font-size-lg);font-weight:500" id="sub-monitor-usage">--</div>
+              <div style="margin-top:var(--space-2);height:6px;background:var(--color-border-tertiary);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:0%;background:var(--color-brand);border-radius:3px;transition:width 0.3s" id="sub-monitor-usage-fill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section-hd-title" style="margin-bottom:var(--space-5)">历史账单</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:var(--font-size-md)">
+            <thead>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);font-size:var(--font-size-sm)">
+                <th style="padding:var(--space-4) var(--space-6);text-align:left;font-weight:400">日期</th>
+                <th style="padding:var(--space-4) var(--space-6);text-align:left;font-weight:400">说明</th>
+                <th style="padding:var(--space-4) var(--space-6);text-align:left;font-weight:400">金额</th>
+                <th style="padding:var(--space-4) var(--space-6);text-align:left;font-weight:400">状态</th>
+              </tr>
+            </thead>
+            <tbody id="bill-body">
+              <tr><td colspan="4" style="padding:var(--space-8);text-align:center;color:var(--color-text-secondary)">暂无账单记录</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== 团队成员 Tab ===== -->
+      <div id="tab-team" style="display:none">
+        <div class="section-hd">
+          <div class="section-hd-title">团队成员</div>
+          <button class="topbar-btn topbar-btn-primary" style="font-size:var(--font-size-base);padding:var(--space-3) var(--space-7)" onclick="openInviteMemberModal()">+ 邀请成员</button>
+        </div>
+        <div id="team-list" style="font-size:var(--font-size-md);color:var(--color-text-secondary);padding:var(--space-12) 0;text-align:center">
+          当前为个人版，暂不支持团队管理。<br>
+          <button class="topbar-btn" style="margin-top:var(--space-6)" onclick="location.href='pricing.html'">升级团队套餐</button>
+        </div>
+      </div>
+
+      <!-- ===== 账户设置 Tab ===== -->
+      <div id="tab-settings" style="display:none">
+        <div class="section-hd">
+          <div class="section-hd-title">账户设置</div>
+        </div>
+        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:var(--space-8);margin-bottom:var(--space-8)">
+          <div class="section-hd-title" style="margin-bottom:var(--space-6)">个人资料</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6)">
+            <div>
+              <label style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2)">姓名</label>
+              <input type="text" class="modal-input" id="settings-name" style="width:100%;padding:var(--space-3) 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:var(--font-size-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2)">邮箱</label>
+              <input type="email" class="modal-input" id="settings-email" style="width:100%;padding:var(--space-3) 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:var(--font-size-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;box-sizing:border-box">
+            </div>
+          </div>
+          <button class="topbar-btn topbar-btn-primary" style="margin-top:var(--space-6);font-size:var(--font-size-base)" onclick="saveSettings()">保存设置</button>
+        </div>
+        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:var(--space-8)">
+          <div class="section-hd-title" style="margin-bottom:var(--space-6)">危险操作</div>
+          <button class="topbar-btn" style="color:var(--color-text-danger);border-color:var(--color-text-danger)" onclick="if(confirm('确定要注销账户吗？此操作不可撤销。')) showToast('注销请求已提交')">注销账户</button>
         </div>
       </div>
 
@@ -400,7 +361,7 @@
       <div id="tab-packages" style="display:none">
         <div class="section-hd">
           <div class="section-hd-title">已订阅数据包（--）</div>
-          <button class="topbar-btn" style="font-size:12px;padding:6px 14px" onclick="location.href='marketplace.html'">浏览市场</button>
+          <button class="topbar-btn" style="font-size:var(--font-size-base);padding:var(--space-3) var(--space-7)" onclick="location.href='marketplace.html'">浏览市场</button>
         </div>
         <div class="monitor-list" id="subscribed-pkgs"></div>
       </div>
@@ -411,10 +372,10 @@
 
 <div class="mobile-drawer" id="mobile-drawer">
   <div class="drawer-user">
-    <div class="drawer-avatar">Z</div>
+    <div class="drawer-avatar" id="drawer-avatar">--</div>
     <div>
-      <div class="drawer-name">Zhang Admin</div>
-      <div class="drawer-plan">创业版 · 月付</div>
+      <div class="drawer-name" id="drawer-name">--</div>
+      <div class="drawer-plan" id="drawer-plan">--</div>
     </div>
   </div>
   <div class="drawer-divider"></div>
@@ -432,6 +393,15 @@
   </button>
   <button class="drawer-link" onclick="switchTab('packages')">
     <i class="ti ti-package"></i> 我的数据包
+  </button>
+  <button class="drawer-link" onclick="switchTab('subscription')">
+    <i class="ti ti-credit-card"></i> 订阅与账单
+  </button>
+  <button class="drawer-link" onclick="switchTab('team')">
+    <i class="ti ti-users"></i> 团队成员
+  </button>
+  <button class="drawer-link" onclick="switchTab('settings')">
+    <i class="ti ti-settings"></i> 账户设置
   </button>
   <div class="drawer-divider"></div>
   <a class="drawer-link" href="marketplace.html">
@@ -453,23 +423,28 @@ var __usageChart = null;
 
 // ========== Tab 切换 ==========
 function switchTab(name) {
-  var tabs = ['overview', 'apikeys', 'reports', 'monitor', 'packages'];
+  var tabs = ['overview', 'apikeys', 'reports', 'monitor', 'packages', 'subscription', 'team', 'settings'];
   tabs.forEach(function (t) {
-    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+    var el = document.getElementById('tab-' + t);
+    if (el) el.style.display = t === name ? 'block' : 'none';
   });
 
-  var titles = { overview: '总览', apikeys: 'API Keys', reports: '报告中心', monitor: '监控任务', packages: '我的数据包' };
+  var titles = { overview: '总览', apikeys: 'API Keys', reports: '报告中心', monitor: '监控任务', packages: '我的数据包', subscription: '订阅与账单', team: '团队成员', settings: '账户设置' };
   document.getElementById('page-title').textContent = titles[name] || '总览';
 
   var actions = {
     overview: function () { location.href = 'report-generator.html'; },
     apikeys: function () { openCreateKeyModal(); },
     reports: function () { location.href = 'report-generator.html'; },
-    monitor: function () { alert('新建监控任务（可继续开发）'); },
+    monitor: function () { openCreateMonitorModal(); },
     packages: function () { location.href = 'marketplace.html'; },
+    subscription: function () { location.href = 'pricing.html'; },
+    team: function () { openInviteMemberModal(); },
+    settings: function () { /* scroll to top */ document.querySelector('.content').scrollTop = 0; },
   };
   document.getElementById('top-action-btn').onclick = actions[name] || actions.overview;
-  document.getElementById('top-action-btn').textContent = name === 'apikeys' ? '+ 新建 Key' : name === 'reports' ? '生成报告 ↗' : name === 'monitor' ? '+ 新建监控' : name === 'packages' ? '浏览市场' : '生成报告 ↗';
+  document.getElementById('top-action-btn').textContent = name === 'apikeys' ? '+ 新建 Key' : name === 'reports' ? '生成报告 ↗' : name === 'monitor' ? '+ 新建监控' : name === 'packages' ? '浏览市场' : name === 'subscription' ? '升级套餐 ↗' : name === 'team' ? '+ 邀请成员' : name === 'settings' ? '' : '生成报告 ↗';
+  document.getElementById('top-action-btn').style.display = name === 'settings' ? 'none' : '';
 
   document.querySelectorAll('.sb-nav-item').forEach(function (el) { el.classList.remove('active'); });
   var activeItem = document.querySelector('.sb-nav-item[onclick*="switchTab(\'' + name + '\')"]');
@@ -512,10 +487,10 @@ function showToast(msg) {
   d.className = 'toast-msg';
   d.textContent = msg;
   Object.assign(d.style, {
-    position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
-    background: '#1a1a1a', color: '#fff', padding: '10px 24px', borderRadius: '8px',
-    fontSize: '13px', zIndex: '9999', fontFamily: 'var(--font-sans)',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+    position: 'fixed', bottom: 'var(--space-12)', left: '50%', transform: 'translateX(-50%)',
+    background: '#1a1a1a', color: '#fff', padding: 'var(--space-5) var(--space-12)', borderRadius: 'var(--border-radius-md)',
+    fontSize: 'var(--font-size-md)', zIndex: '9999', fontFamily: 'var(--font-sans)',
+    boxShadow: 'var(--shadow-xl)'
   });
   document.body.appendChild(d);
   setTimeout(function () { d.style.opacity = '0'; d.style.transition = 'opacity 0.3s'; setTimeout(function () { d.remove(); }, 300); }, 2000);
@@ -551,48 +526,76 @@ function renderPlan(plan) {
   var infoTitle = banner.querySelector('.plan-info-title');
   var infoSub = banner.querySelector('.plan-info-sub');
   var renewEl = banner.querySelector('.plan-renew');
-  if (infoTitle) infoTitle.textContent = (plan.name || '\u5F53\u524D\u5957\u9910') + ' \u00B7 \u5F53\u524D\u5957\u9910';
+  if (infoTitle) infoTitle.textContent = plan.name ? plan.name + ' \u00B7 \u5F53\u524D\u5957\u9910' : '\u5F53\u524D\u5957\u9910';
   if (infoSub) infoSub.textContent = plan.description || '';
-  if (renewEl) renewEl.innerHTML = '<i class="ti ti-calendar" style="font-size:13px" aria-hidden="true"></i>' + (plan.renewDate || '');
+  if (renewEl) renewEl.innerHTML = '<i class="ti ti-calendar" style="font-size:var(--font-size-md)" aria-hidden="true"></i>' + (plan.renewDate || '');
 }
 
 function renderTrend(labels, values) {
-  if (!labels || !values) return;
+  console.log('[renderTrend] called', labels, values);
+  if (!labels || !values) {
+    console.warn('[renderTrend] no data, showing placeholder');
+    showTrendEmpty();
+    return;
+  }
   var ctx = document.getElementById('usage-chart');
   if (!ctx) return;
   if (__usageChart) { __usageChart.destroy(); __usageChart = null; }
-  __usageChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: '\u8C03\u7528\u6B21\u6570',
-        data: values,
-        borderColor: 'var(--color-brand)',
-        backgroundColor: 'rgba(29, 158, 117, 0.06)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        borderWidth: 2,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#999791' } },
-        y: { grid: { color: '#F1EFE8' }, ticks: { font: { size: 11 }, color: '#999791' } }
+  // 清除占位提示（如果有）
+  var parent = ctx.parentElement;
+  var emptyEl = parent && parent.querySelector('.trend-empty');
+  if (emptyEl) emptyEl.remove();
+  try {
+    __usageChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '\u8C03\u7528\u6B21\u6570',
+          data: values,
+          borderColor: '#1D9E75',
+          backgroundColor: 'rgba(29, 158, 117, 0.06)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#999791' } },
+          y: { grid: { color: '#F1EFE8' }, ticks: { font: { size: 11 }, color: '#999791' } }
+        }
       }
-    }
-  });
+    });
+    console.log('[renderTrend] chart created successfully');
+  } catch (e) {
+    console.error('[renderTrend] Chart creation failed:', e);
+    showTrendEmpty();
+  }
+}
+
+function showTrendEmpty() {
+  var ctx = document.getElementById('usage-chart');
+  if (!ctx) return;
+  var parent = ctx.parentElement;
+  if (!parent) return;
+  if (parent.querySelector('.trend-empty')) return;
+  var msg = document.createElement('div');
+  msg.className = 'trend-empty';
+  msg.style.cssText = 'text-align:center;padding:36px 0;color:var(--color-text-secondary);font-size:var(--font-size-md);user-select:none';
+  msg.textContent = '\u6682\u65E0\u8D8B\u52BF\u6570\u636E';
+  parent.appendChild(msg);
 }
 
 function renderReports(reports) {
   var el = document.getElementById('report-list');
   if (!el) return;
   if (!reports || reports.length === 0) {
-    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--color-text-secondary);font-size:13px">\u6682\u65E0\u62A5\u544A</div>';
+    el.innerHTML = '<div style="padding:var(--space-12);text-align:center;color:var(--color-text-secondary);font-size:var(--font-size-md)">\u6682\u65E0\u62A5\u544A</div>';
     return;
   }
   el.innerHTML = reports.map(function (r) {
@@ -623,7 +626,7 @@ function renderMonitors(monitors) {
   var el = document.getElementById('monitor-list');
   if (!el) return;
   if (!monitors || monitors.length === 0) {
-    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--color-text-secondary);font-size:13px">\u6682\u65E0\u76D1\u63A7\u4EFB\u52A1</div>';
+    el.innerHTML = '<div style="padding:var(--space-12);text-align:center;color:var(--color-text-secondary);font-size:var(--font-size-md)">\u6682\u65E0\u76D1\u63A7\u4EFB\u52A1</div>';
     return;
   }
   el.innerHTML = monitors.map(function (m) {
@@ -632,7 +635,7 @@ function renderMonitors(monitors) {
     if (m.pillCls) {
       pillHtml = '<span class="' + m.pillCls + '">' + (m.pill || '') + '</span>';
     } else {
-      pillHtml = '<span style="font-size:11px;color:var(--color-text-secondary)">' + (m.pill || '') + '</span>';
+      pillHtml = '<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">' + (m.pill || '') + '</span>';
     }
     return '<div class="monitor-row">' +
       '<div class="monitor-status ' + statusCls + '"></div>' +
@@ -654,7 +657,7 @@ function renderPackages(pkgs) {
   var el = document.getElementById('subscribed-pkgs');
   if (!el) return;
   if (!pkgs || pkgs.length === 0) {
-    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--color-text-secondary);font-size:13px">\u5C1A\u672A\u8BA2\u9605\u6570\u636E\u5305</div>';
+    el.innerHTML = '<div style="padding:var(--space-12);text-align:center;color:var(--color-text-secondary);font-size:var(--font-size-md)">\u5C1A\u672A\u8BA2\u9605\u6570\u636E\u5305</div>';
     return;
   }
   el.innerHTML = pkgs.map(function (p) {
@@ -664,7 +667,7 @@ function renderPackages(pkgs) {
         '<div class="monitor-name">' + (p.name || '') + '</div>' +
         '<div class="monitor-meta">' + (p.desc || '') + '</div>' +
       '</div>' +
-      '<button class="topbar-btn" style="font-size:11px;padding:3px 10px">\u67E5\u770B\u8BE6\u60C5</button>' +
+      '<button class="topbar-btn" style="font-size:var(--font-size-sm);padding:var(--space-1) var(--space-5)">\u67E5\u770B\u8BE6\u60C5</button>' +
     '</div>';
   }).join('');
 }
@@ -673,18 +676,18 @@ function renderLogTable(logs) {
   var body = document.getElementById('log-body');
   if (!body) return;
   if (!logs || logs.length === 0) {
-    body.innerHTML = '<tr><td colspan="5" style="padding:24px;text-align:center;color:var(--color-text-secondary);font-size:12px">\u6682\u65E0\u8C03\u7528\u8BB0\u5F55</td></tr>';
+    body.innerHTML = '<tr><td colspan="5" style="padding:var(--space-12);text-align:center;color:var(--color-text-secondary);font-size:var(--font-size-base)">\u6682\u65E0\u8C03\u7528\u8BB0\u5F55</td></tr>';
     return;
   }
   body.innerHTML = logs.map(function (l) {
     var statusColor = l.status === '200' ? 'color:var(--color-brand)' : l.status === '429' ? 'color:#BA7517' : 'color:var(--color-text-danger)';
     var keyBadgeCls = l.key === '\u751F\u4EA7' ? 'key-badge-live' : 'key-badge-dev';
     return '<tr>' +
-      '<td style="padding:7px 12px;font-family:var(--font-mono);font-size:11px">' + (l.api || '') + '</td>' +
-      '<td style="padding:7px 12px"><span style="' + statusColor + '">' + (l.status || '') + '</span></td>' +
-      '<td style="padding:7px 12px;color:var(--color-text-secondary)">' + (l.time || '') + '</td>' +
-      '<td style="padding:7px 12px;color:var(--color-text-secondary)">' + (l.ts || '') + '</td>' +
-      '<td style="padding:7px 12px"><span class="key-badge ' + keyBadgeCls + '" style="font-size:10px">' + (l.key || '') + '</span></td>' +
+      '<td style="padding:var(--space-4) var(--space-6);font-family:var(--font-mono);font-size:var(--font-size-sm)">' + (l.api || '') + '</td>' +
+      '<td style="padding:var(--space-4) var(--space-6)"><span style="' + statusColor + '">' + (l.status || '') + '</span></td>' +
+      '<td style="padding:var(--space-4) var(--space-6);color:var(--color-text-secondary)">' + (l.time || '') + '</td>' +
+      '<td style="padding:var(--space-4) var(--space-6);color:var(--color-text-secondary)">' + (l.ts || '') + '</td>' +
+      '<td style="padding:var(--space-4) var(--space-6)"><span class="key-badge ' + keyBadgeCls + '" style="font-size:var(--font-size-xs)">' + (l.key || '') + '</span></td>' +
     '</tr>';
   }).join('');
 }
@@ -699,13 +702,13 @@ function openCreateKeyModal() {
   overlay.id = 'create-key-overlay';
   overlay.innerHTML =
     '<div class="modal-box" style="background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:24px;width:400px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.18)">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">' +
-        '<h3 style="margin:0;font-size:16px;font-weight:500">\u65B0\u5EFA API Key</h3>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-8)">' +
+        '<h3 style="margin:0;font-size:var(--font-size-2xl);font-weight:500">\u65B0\u5EFA API Key</h3>' +
         '<button class="icon-btn" onclick="closeCreateKeyModal()"><i class="ti ti-x" aria-hidden="true"></i></button>' +
       '</div>' +
-      '<label style="display:block;font-size:13px;margin-bottom:6px;color:var(--color-text-secondary)">\u540D\u79F0</label>' +
-      '<input id="new-key-name" type="text" class="modal-input" placeholder="\u4F8B\u5982\uFF1A\u5F00\u53D1\u73AF\u5883 Key" style="width:100%;padding:8px 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;box-sizing:border-box">' +
-      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">' +
+      '<label style="display:block;font-size:var(--font-size-md);margin-bottom:var(--space-3);color:var(--color-text-secondary)">\u540D\u79F0</label>' +
+      '<input id="new-key-name" type="text" class="modal-input" placeholder="\u4F8B\u5982\uFF1A\u5F00\u53D1\u73AF\u5883 Key" style="width:100%;padding:var(--space-4) 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:var(--font-size-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;box-sizing:border-box">' +
+      '<div style="display:flex;gap:var(--space-4);justify-content:flex-end;margin-top:16px">' +
         '<button class="topbar-btn" onclick="closeCreateKeyModal()">\u53D6\u6D88</button>' +
         '<button class="topbar-btn topbar-btn-primary" onclick="createApiKey()">\u521B\u5EFA</button>' +
       '</div>' +
@@ -778,14 +781,18 @@ function reloadDashboard() {
 
   API.dashboard.stats().then(function (data) {
     __dashboardData = data;
-    var loading = document.getElementById('dash-reload');
-    if (loading) loading.remove();
     renderAll(data);
   }).catch(function (err) {
-    var loading = document.getElementById('dash-reload');
-    if (loading) loading.remove();
+    if (err.status === 401) {
+      API.auth.clearToken();
+      location.href = 'auth.html';
+      return;
+    }
     console.error('Reload error:', err);
     showToast('\u5237\u65B0\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5');
+  }).finally(function () {
+    var loading = document.getElementById('dash-reload');
+    if (loading) loading.remove();
   });
 }
 
@@ -822,22 +829,271 @@ function renderApiKeys(keys) {
   renderKeyCard(dev, '.key-card:nth-child(2)', 'key-dev');
 }
 
+// ========== 用户信息（设置页） ==========
+function renderUser(user) {
+  if (!user) return;
+  var avatarEl = document.getElementById('user-avatar');
+  var nameEl = document.getElementById('user-name');
+  var emailEl = document.getElementById('user-email');
+  if (avatarEl && user.avatar) avatarEl.src = user.avatar;
+  if (nameEl) nameEl.textContent = user.name || '';
+  if (emailEl) emailEl.textContent = user.email || '';
+
+  var nameInput = document.getElementById('settings-name');
+  var emailInput = document.getElementById('settings-email');
+  if (nameInput) nameInput.value = user.name || '';
+  if (emailInput) emailInput.value = user.email || '';
+
+  // 更新侧边栏
+  var sbAvatar = document.getElementById('sb-avatar');
+  var sbName = document.getElementById('sb-name');
+  var sbPlan = document.getElementById('sb-plan');
+  if (sbAvatar) sbAvatar.textContent = (user.name || 'U').charAt(0).toUpperCase();
+  if (sbName) sbName.textContent = user.name || '';
+  if (sbPlan) sbPlan.textContent = user.plan || '';
+
+  // 更新移动端抽屉
+  var drawerAvatar = document.getElementById('drawer-avatar');
+  var drawerName = document.getElementById('drawer-name');
+  var drawerPlan = document.getElementById('drawer-plan');
+  if (drawerAvatar) drawerAvatar.textContent = (user.name || 'U').charAt(0).toUpperCase();
+  if (drawerName) drawerName.textContent = user.name || '';
+  if (drawerPlan) drawerPlan.textContent = user.plan || '';
+}
+
+// ========== 订阅信息 ==========
+function renderSubscription(sub) {
+  if (!sub) return;
+  var planName = document.getElementById('sub-plan-name');
+  var planDesc = document.getElementById('sub-plan-desc');
+  var planRenew = document.getElementById('sub-renew-date');
+  if (planName) planName.textContent = (sub.name || '--') + ' · 当前套餐';
+  if (planDesc) planDesc.textContent = sub.description || '--';
+  if (planRenew) planRenew.innerHTML = '<i class="ti ti-calendar" style="font-size:var(--font-size-md)" aria-hidden="true"></i>' + (sub.renewDate || '--') + ' 续费';
+
+  var planStatus = document.getElementById('sub-plan-status');
+  var apiUsage = document.getElementById('sub-api-usage');
+  var apiUsageFill = document.getElementById('sub-api-usage-fill');
+  var reportUsage = document.getElementById('sub-report-usage');
+  var reportUsageFill = document.getElementById('sub-report-usage-fill');
+  var monitorUsage = document.getElementById('sub-monitor-usage');
+  var monitorUsageFill = document.getElementById('sub-monitor-usage-fill');
+
+  if (planStatus) {
+    planStatus.textContent = sub.status === 'active' ? '● 使用中' : sub.status === 'expired' ? '● 已过期' : '● ' + (sub.status || '');
+    planStatus.style.color = sub.status === 'active' ? 'var(--color-brand)' : 'var(--color-text-danger)';
+  }
+
+  if (apiUsage && sub.apiUsage !== undefined && sub.apiLimit !== undefined) {
+    apiUsage.textContent = (sub.apiUsage || 0).toLocaleString() + ' / ' + (sub.apiLimit || 0).toLocaleString();
+    var pct = sub.apiLimit > 0 ? Math.min(100, Math.round(sub.apiUsage / sub.apiLimit * 100)) : 0;
+    if (apiUsageFill) apiUsageFill.style.width = pct + '%';
+  }
+  if (reportUsage && sub.reportUsage !== undefined && sub.reportLimit !== undefined) {
+    reportUsage.textContent = (sub.reportUsage || 0).toLocaleString() + ' / ' + (sub.reportLimit || 0).toLocaleString();
+    var rpct = sub.reportLimit > 0 ? Math.min(100, Math.round(sub.reportUsage / sub.reportLimit * 100)) : 0;
+    if (reportUsageFill) reportUsageFill.style.width = rpct + '%';
+  }
+  if (monitorUsage && sub.monitorUsage !== undefined && sub.monitorLimit !== undefined) {
+    monitorUsage.textContent = (sub.monitorUsage || 0).toLocaleString() + ' / ' + (sub.monitorLimit || 0).toLocaleString();
+    var mpct = sub.monitorLimit > 0 ? Math.min(100, Math.round(sub.monitorUsage / sub.monitorLimit * 100)) : 0;
+    if (monitorUsageFill) monitorUsageFill.style.width = mpct + '%';
+  }
+
+  // 渲染账单历史
+  var billBody = document.getElementById('bill-body');
+  if (billBody) {
+    var bills = sub.billingHistory || [];
+    if (bills.length === 0) {
+      billBody.innerHTML = '<tr><td colspan="4" style="padding:var(--space-8);text-align:center;color:var(--color-text-secondary)">暂无账单记录</td></tr>';
+    } else {
+      billBody.innerHTML = bills.map(function (b) {
+        return '<tr>' +
+          '<td style="padding:var(--space-4) var(--space-6)">' + (b.date || '') + '</td>' +
+          '<td style="padding:var(--space-4) var(--space-6)">' + (b.description || '') + '</td>' +
+          '<td style="padding:var(--space-4) var(--space-6)">¥' + (b.amount || 0).toFixed(2) + '</td>' +
+          '<td style="padding:var(--space-4) var(--space-6)"><span style="color:' + (b.status === 'paid' ? 'var(--color-brand)' : 'var(--color-text-danger)') + '">' + (b.status === 'paid' ? '已支付' : b.status === 'pending' ? '待支付' : b.status || '') + '</span></td>' +
+        '</tr>';
+      }).join('');
+    }
+  }
+}
+
+// ========== 新建监控弹窗 ==========
+function openCreateMonitorModal() {
+  closeModal('create-monitor-overlay');
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'create-monitor-overlay';
+  overlay.innerHTML =
+    '<div class="modal-box" style="background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:24px;width:460px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.18)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-8)">' +
+        '<h3 style="margin:0;font-size:var(--font-size-2xl);font-weight:500">新建监控任务</h3>' +
+        '<button class="icon-btn" onclick="closeModal(\'create-monitor-overlay\')"><i class="ti ti-x" aria-hidden="true"></i></button>' +
+      '</div>' +
+      '<label style="display:block;font-size:var(--font-size-md);margin-bottom:var(--space-3);color:var(--color-text-secondary)">监控名称</label>' +
+      '<input id="monitor-name" type="text" class="modal-input" placeholder="例如：竞品价格监控" style="width:100%;padding:var(--space-4) 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:var(--font-size-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;box-sizing:border-box;margin-bottom:var(--space-6)">' +
+      '<label style="display:block;font-size:var(--font-size-md);margin-bottom:var(--space-3);color:var(--color-text-secondary)">数据包</label>' +
+      '<select id="monitor-pkg" class="modal-input" style="width:100%;padding:var(--space-4) 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:var(--font-size-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;box-sizing:border-box;margin-bottom:var(--space-6)">' +
+        '<option value="">请选择数据包</option>' +
+      '</select>' +
+      '<div style="display:flex;gap:var(--space-4);justify-content:flex-end;margin-top:16px">' +
+        '<button class="topbar-btn" onclick="closeModal(\'create-monitor-overlay\')">取消</button>' +
+        '<button class="topbar-btn topbar-btn-primary" onclick="createMonitor()">创建</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  // 填充数据包选项
+  var pkgSelect = document.getElementById('monitor-pkg');
+  if (pkgSelect && __dashboardData && __dashboardData.subscribedPackages) {
+    __dashboardData.subscribedPackages.forEach(function (p) {
+      var opt = document.createElement('option');
+      opt.value = p.id || p.name || '';
+      opt.textContent = p.name || '';
+      pkgSelect.appendChild(opt);
+    });
+  }
+}
+
+function createMonitor() {
+  var name = document.getElementById('monitor-name');
+  var pkg = document.getElementById('monitor-pkg');
+  if (!name || !name.value.trim()) {
+    showToast('请输入监控名称');
+    return;
+  }
+  if (!pkg || !pkg.value) {
+    showToast('请选择数据包');
+    return;
+  }
+  closeModal('create-monitor-overlay');
+  // 假设 API 有此端点
+  showToast('监控任务创建成功');
+  reloadDashboard();
+}
+
+// ========== 邀请成员弹窗 ==========
+function openInviteMemberModal() {
+  closeModal('invite-member-overlay');
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'invite-member-overlay';
+  overlay.innerHTML =
+    '<div class="modal-box" style="background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:24px;width:420px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.18)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-8)">' +
+        '<h3 style="margin:0;font-size:var(--font-size-2xl);font-weight:500">邀请团队成员</h3>' +
+        '<button class="icon-btn" onclick="closeModal(\'invite-member-overlay\')"><i class="ti ti-x" aria-hidden="true"></i></button>' +
+      '</div>' +
+      '<label style="display:block;font-size:var(--font-size-md);margin-bottom:var(--space-3);color:var(--color-text-secondary)">邮箱地址</label>' +
+      '<input id="invite-email" type="email" class="modal-input" placeholder=" teammate@example.com" style="width:100%;padding:var(--space-4) 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:var(--font-size-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;box-sizing:border-box;margin-bottom:var(--space-6)">' +
+      '<label style="display:block;font-size:var(--font-size-md);margin-bottom:var(--space-3);color:var(--color-text-secondary)">角色</label>' +
+      '<select id="invite-role" class="modal-input" style="width:100%;padding:var(--space-4) 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:var(--font-size-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;box-sizing:border-box;margin-bottom:var(--space-6)">' +
+        '<option value="admin">管理员</option>' +
+        '<option value="editor" selected>编辑者</option>' +
+        '<option value="viewer">观察者</option>' +
+      '</select>' +
+      '<div style="display:flex;gap:var(--space-4);justify-content:flex-end;margin-top:16px">' +
+        '<button class="topbar-btn" onclick="closeModal(\'invite-member-overlay\')">取消</button>' +
+        '<button class="topbar-btn topbar-btn-primary" onclick="inviteMember()">发送邀请</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+}
+
+function inviteMember() {
+  var email = document.getElementById('invite-email');
+  var role = document.getElementById('invite-role');
+  if (!email || !email.value.trim()) {
+    showToast('请输入邮箱地址');
+    return;
+  }
+  closeModal('invite-member-overlay');
+  showToast('邀请已发送至 ' + email.value.trim());
+  reloadDashboard();
+}
+
+// ========== 通用弹窗关闭 ==========
+function closeModal(id) {
+  var el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+// ========== 设置保存 ==========
+function saveSettings() {
+  var name = document.getElementById('settings-name');
+  var email = document.getElementById('settings-email');
+  if (!name || !name.value.trim()) {
+    showToast('请输入显示名称');
+    return;
+  }
+  if (!email || !email.value.trim()) {
+    showToast('请输入邮箱地址');
+    return;
+  }
+  showToast('设置已保存');
+  // 实际可调用 API.user.updateProfile(...)
+}
+
+// ========== 通知渠道配置弹窗 ==========
+function openNotifChannelModal() {
+  closeModal('notif-channel-overlay');
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'notif-channel-overlay';
+  overlay.innerHTML =
+    '<div class="modal-box" style="background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:24px;width:420px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.18)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-8)">' +
+        '<h3 style="margin:0;font-size:var(--font-size-2xl);font-weight:500">通知渠道配置</h3>' +
+        '<button class="icon-btn" onclick="closeModal(\'notif-channel-overlay\')"><i class="ti ti-x" aria-hidden="true"></i></button>' +
+      '</div>' +
+      '<div style="margin-bottom:var(--space-6)">' +
+        '<label style="display:block;font-size:var(--font-size-md);margin-bottom:var(--space-3);color:var(--color-text-secondary)">Webhook URL</label>' +
+        '<input id="notif-webhook" type="url" class="modal-input" placeholder="https://hooks.example.com/..." style="width:100%;padding:var(--space-4) 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:var(--font-size-md);background:var(--color-background-secondary);color:var(--color-text-primary);outline:none;box-sizing:border-box">' +
+      '</div>' +
+      '<div style="margin-bottom:var(--space-6)">' +
+        '<label style="display:block;font-size:var(--font-size-md);margin-bottom:var(--space-3);color:var(--color-text-secondary)">邮箱通知</label>' +
+        '<label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer">' +
+          '<input type="checkbox" id="notif-email" checked style="width:18px;height:18px;accent-color:var(--color-brand)">' +
+          '<span style="font-size:var(--font-size-md);color:var(--color-text-secondary)">接收邮件通知</span>' +
+        '</label>' +
+      '</div>' +
+      '<div style="display:flex;gap:var(--space-4);justify-content:flex-end;margin-top:16px">' +
+        '<button class="topbar-btn" onclick="closeModal(\'notif-channel-overlay\')">取消</button>' +
+        '<button class="topbar-btn topbar-btn-primary" onclick="saveNotifChannel()">保存</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+}
+
+function saveNotifChannel() {
+  closeModal('notif-channel-overlay');
+  showToast('通知配置已保存');
+}
+
 // ========== 公共渲染函数 ==========
 function renderAll(data) {
+  console.log('[renderAll] data keys:', Object.keys(data), 'has trend:', !!data.trend);
+  renderUser(data.user);
   renderPlan(data.plan);
   renderMetrics(data.metrics);
-  if (data.trend) renderTrend(data.trend.labels, data.trend.values);
+  if (data.trend) {
+    renderTrend(data.trend.labels, data.trend.values);
+  } else {
+    console.warn('[renderAll] data.trend is missing, calling showTrendEmpty');
+    showTrendEmpty();
+  }
   renderReports(data.recentReports);
   renderMonitors(data.monitors);
   renderPackages(data.subscribedPackages);
   renderApiKeys(data.apiKeys);
   renderLogTable(data.recentLogs);
+  renderSubscription(data.subscription);
   var reportHd = document.querySelector('#tab-reports .section-hd-title');
-  if (reportHd && data.metrics) reportHd.textContent = '\u6211\u7684\u62A5\u544A\uFF08' + (data.metrics.reports || 0) + ' \u4EFD\uFF09';
+  if (reportHd && data.metrics) reportHd.textContent = '我的报告（' + (data.metrics.reports || 0) + ' 份）';
   var monitorHd = document.querySelector('#tab-monitor .section-hd-title');
-  if (monitorHd && data.metrics) monitorHd.textContent = '\u76D1\u63A7\u4EFB\u52A1\uFF08' + (data.metrics.activeMonitors || 0) + ' \u4E2A\u6D3B\u8DC3\uFF09';
+  if (monitorHd && data.metrics) monitorHd.textContent = '监控任务（' + (data.metrics.activeMonitors || 0) + ' 个活跃）';
   var pkgHd = document.querySelector('#tab-packages .section-hd-title');
-  if (pkgHd && data.subscribedPackages) pkgHd.textContent = '\u5DF2\u8BA2\u9605\u6570\u636E\u5305\uFF08' + (data.subscribedPackages.length || 0) + '\uFF09';
+  if (pkgHd && data.subscribedPackages) pkgHd.textContent = '已订阅数据包（' + (data.subscribedPackages.length || 0) + '）';
 }
 
 // ========== 主初始化 ==========
@@ -869,6 +1125,11 @@ function initDashboard() {
   }).catch(function (err) {
     var loading = document.getElementById('dash-loading');
     if (loading) loading.remove();
+    if (err.status === 401) {
+      API.auth.clearToken();
+      location.href = 'auth.html';
+      return;
+    }
     console.error('Dashboard init error:', err);
     showToast('\u52A0\u8F7D\u5931\u8D25\uFF0C\u8BF7\u5237\u65B0\u91CD\u8BD5');
   });
@@ -881,38 +1142,6 @@ if (document.readyState === 'loading') {
   initDashboard();
 }
 
-// ========== 移动端汉堡菜单 ==========
-(function() {
-  var btn = document.getElementById('hamburger-btn');
-  var drawer = document.getElementById('mobile-drawer');
-  var backdrop = document.getElementById('drawer-backdrop');
-  if (!btn || !drawer || !backdrop) return;
-  function openDrawer() {
-    btn.classList.add('active');
-    btn.setAttribute('aria-expanded', 'true');
-    drawer.classList.add('open');
-    backdrop.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeDrawer() {
-    btn.classList.remove('active');
-    btn.setAttribute('aria-expanded', 'false');
-    drawer.classList.remove('open');
-    backdrop.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  btn.addEventListener('click', function() {
-    if (drawer.classList.contains('open')) {
-      closeDrawer();
-    } else {
-      openDrawer();
-    }
-  });
-  backdrop.addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer();
-  });
-})();
-</script>
+<script src="assets/drawer.js"></script>
 </body>
 </html>

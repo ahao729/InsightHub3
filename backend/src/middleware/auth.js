@@ -9,9 +9,6 @@ const config = require('../config');
 
 // In-memory fallback store for when DB is unavailable
 const apiKeyCache = new Map();
-// Pre-seeded keys for development
-apiKeyCache.set('sk-dev-admin', { user_id: 'dev-admin-id', name: 'Development Admin Key' });
-apiKeyCache.set('sk-dev-demo', { user_id: 'dev-demo-id', name: 'Development Demo Key' });
 
 function authenticate(req, res, next) {
   // Check for API key first

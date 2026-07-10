@@ -471,9 +471,11 @@ h4, .h4 {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: var(--space-7) var(--space-16);
   border-bottom: var(--border-width-thin) solid var(--color-border-tertiary);
   background: var(--color-background-primary);
+  box-sizing: border-box;
 }
 .logo {
   font-size: var(--font-size-2xl);

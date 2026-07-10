@@ -91,6 +91,20 @@
 .demo-key{color:#185FA5}
 .demo-val{color:var(--color-brand-dark)}
 .demo-str{color:#854F0B}
+.demo-toggle-json{font-size:11px;padding:5px 10px;border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);cursor:pointer;white-space:nowrap;transition:border-color .15s,color .15s}
+.demo-toggle-json:hover{border-color:var(--color-border-primary);color:var(--color-text-primary)}
+.demo-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.demo-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;background:var(--color-background-primary)}
+.demo-card-wide{grid-column:1/-1}
+.demo-card-label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--color-text-secondary);margin-bottom:6px;font-weight:500}
+.demo-card-value{font-size:13px;color:var(--color-text-primary);line-height:1.5}
+.demo-card-value.demo-risk{color:#C62828}
+.demo-score-value{font-size:36px;font-weight:600;color:var(--color-brand-dark);line-height:1.1}
+.demo-score-bar{height:4px;background:var(--color-border-tertiary);border-radius:2px;margin-top:8px;overflow:hidden}
+.demo-score-fill{height:100%;background:var(--color-brand);border-radius:2px;transition:width .3s ease}
+.demo-score-note{font-size:10px;color:var(--color-text-secondary);margin-top:4px}
+.demo-tag-row{display:flex;flex-wrap:wrap;gap:6px}
+.demo-tag{font-size:11px;padding:3px 10px;border-radius:999px;background:var(--color-brand-light);color:var(--color-brand-dark);border:0.5px solid var(--color-border-tertiary)}
 .divider{height:0.5px;background:var(--color-border-tertiary);margin:20px 0}
 .footer-inner{padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
 .footer-left{font-size:13px;color:var(--color-text-secondary)}
@@ -227,19 +241,64 @@
       <div class="demo-input-row">
         <input type="text" id="demo-topic" value="面向中小企业的 AI 客服 SaaS" placeholder="输入行业或项目方向..." />
         <button class="demo-run" onclick="runDemo()">运行 ↗</button>
+        <button class="demo-toggle-json" id="demo-toggle-btn" onclick="toggleDemoView()">查看 JSON</button>
       </div>
-      <div class="demo-output" id="demo-out">
-<span class="demo-key">{</span>
-  <span class="demo-key">"project"</span>: <span class="demo-str">"面向中小企业的 AI 客服 SaaS"</span>,
-  <span class="demo-key">"opportunity_score"</span>: <span class="demo-val">82</span>,
-  <span class="demo-key">"market_growth"</span>: <span class="demo-str">"高速增长 · 年均 34%"</span>,
-  <span class="demo-key">"top_competitors"</span>: [<span class="demo-str">"Intercom"</span>, <span class="demo-str">"Tidio"</span>, <span class="demo-str">"智齿科技"</span>],
-  <span class="demo-key">"recommended_model"</span>: <span class="demo-str">"SaaS 按座位订阅 + API 用量计费"</span>,
-  <span class="demo-key">"top_risk"</span>: <span class="demo-str">"大厂自研替代风险 · 客户教育成本高"</span>,
-  <span class="demo-key">"mvp_suggestion"</span>: <span class="demo-str">"先做微信/企微接入 + 知识库问答"</span>,
-  <span class="demo-key">"report_url"</span>: <span class="demo-str">"https://insighthub.data/reports/xxx"</span>
-<span class="demo-key">}</span>
+
+      <!-- Card View (default) -->
+      <div id="demo-card-view">
+        <div class="demo-card-grid">
+          <div class="demo-card demo-card-score">
+            <div class="demo-card-label">市场机会评分</div>
+            <div class="demo-score-value" id="d-score">82</div>
+            <div class="demo-score-bar"><div class="demo-score-fill" id="d-score-fill" style="width:82%"></div></div>
+            <div class="demo-score-note">满分 100</div>
+          </div>
+          <div class="demo-card">
+            <div class="demo-card-label">项目方向</div>
+            <div class="demo-card-value" id="d-project">面向中小企业的 AI 客服 SaaS</div>
+          </div>
+          <div class="demo-card">
+            <div class="demo-card-label">市场增长</div>
+            <div class="demo-card-value" id="d-growth">高速增长 · 年均 34%</div>
+          </div>
+          <div class="demo-card">
+            <div class="demo-card-label">推荐商业模式</div>
+            <div class="demo-card-value" id="d-model">SaaS 按座位订阅 + API 用量计费</div>
+          </div>
+          <div class="demo-card">
+            <div class="demo-card-label">最大风险</div>
+            <div class="demo-card-value demo-risk" id="d-risk">大厂自研替代风险 · 客户教育成本高</div>
+          </div>
+          <div class="demo-card demo-card-wide">
+            <div class="demo-card-label">主要竞品</div>
+            <div class="demo-tag-row" id="d-competitors">
+              <span class="demo-tag">Intercom</span>
+              <span class="demo-tag">Tidio</span>
+              <span class="demo-tag">智齿科技</span>
+            </div>
+          </div>
+          <div class="demo-card demo-card-wide">
+            <div class="demo-card-label">MVP 建议</div>
+            <div class="demo-card-value" id="d-mvp">先做微信/企微接入 + 知识库问答</div>
+          </div>
+          <div class="demo-card demo-card-wide">
+            <div class="demo-card-label">完整报告</div>
+            <div class="demo-card-value" id="d-report"><a href="#" style="color:var(--color-brand);text-decoration:none">https://insighthub.data/reports/xxx</a></div>
+          </div>
+        </div>
       </div>
+
+      <!-- JSON View (hidden by default) -->
+      <div class="demo-output" id="demo-json-view" style="display:none">{
+  "project": "面向中小企业的 AI 客服 SaaS",
+  "opportunity_score": 82,
+  "market_growth": "高速增长 · 年均 34%",
+  "top_competitors": ["Intercom", "Tidio", "智齿科技"],
+  "recommended_model": "SaaS 按座位订阅 + API 用量计费",
+  "top_risk": "大厂自研替代风险 · 客户教育成本高",
+  "mvp_suggestion": "先做微信/企微接入 + 知识库问答",
+  "report_url": "https://insighthub.data/reports/xxx"
+}</div>
     </div>
 
     <div class="divider"></div>
@@ -364,6 +423,9 @@
       <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">
         每条数据标注：来源 · 时间戳 · 更新频率 · 是否公开授权。AI 报告引用链接可追溯，不构成投资建议。
       </div>
+      <div style="font-size:11px;color:var(--color-text-tertiary);line-height:1.5;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)">
+        <i class="ti ti-shield-check" style="font-size:12px" aria-hidden="true"></i> 所有数据源自合规公开渠道与授权第三方接口，符合《数据安全法》《个人信息保护法》要求。
+      </div>
     </div>
 
     <button class="btn-demo" style="width:100%;font-size:12px;padding:8px;margin-bottom:8px" onclick="location.href='mcp-guide.html'">MCP 接入指南 ↗</button>
@@ -373,22 +435,60 @@
 
 <script>
 function runDemo(){
-  var t=document.getElementById('demo-topic').value||'AI 客服 SaaS';
+  var t=document.getElementById('demo-topic').value||'面向中小企业的 AI 客服 SaaS';
+
+  // Simulate API response
   var scores=[74,79,82,85,88,91];
   var sc=scores[Math.floor(Math.random()*scores.length)];
   var growths=['高速增长 · 年均 28%','高速增长 · 年均 34%','稳定增长 · 年均 18%','快速增长 · 年均 42%'];
   var gr=growths[Math.floor(Math.random()*growths.length)];
-  document.getElementById('demo-out').innerHTML=
-    '<span class="demo-key">{</span>\n'+
-    '  <span class="demo-key">"project"</span>: <span class="demo-str">"'+t+'"</span>,\n'+
-    '  <span class="demo-key">"opportunity_score"</span>: <span class="demo-val">'+sc+'</span>,\n'+
-    '  <span class="demo-key">"market_growth"</span>: <span class="demo-str">"'+gr+'"</span>,\n'+
-    '  <span class="demo-key">"top_competitors"</span>: [<span class="demo-str">"竞品 A"</span>, <span class="demo-str">"竞品 B"</span>, <span class="demo-str">"竞品 C"</span>],\n'+
-    '  <span class="demo-key">"recommended_model"</span>: <span class="demo-str">"SaaS 订阅 + 用量计费"</span>,\n'+
-    '  <span class="demo-key">"top_risk"</span>: <span class="demo-str">"市场竞争激烈 · 获客成本高"</span>,\n'+
-    '  <span class="demo-key">"mvp_suggestion"</span>: <span class="demo-str">"先做核心场景 · 小步快跑验证"</span>,\n'+
-    '  <span class="demo-key">"report_url"</span>: <span class="demo-str">"https://insighthub.data/reports/demo"</span>\n'+
-    '<span class="demo-key">}</span>';
+  var pool=['Intercom','Tidio','智齿科技','Zendesk','Freshdesk','HubSpot'];
+  var comps=[];
+  for(var i=0;i<3;i++){var idx=Math.floor(Math.random()*pool.length);comps.push(pool[idx]);pool.splice(idx,1);}
+  var models=['SaaS 按座位订阅 + API 用量计费','免费增值 + 企业版订阅','交易抽成 + 增值服务','SaaS 订阅 + 用量计费'];
+  var model=models[Math.floor(Math.random()*models.length)];
+  var risks=['大厂自研替代风险 · 客户教育成本高','市场竞争激烈 · 获客成本高','监管合规风险 · 数据本地化要求','技术门槛高 · 人才招聘困难'];
+  var risk=risks[Math.floor(Math.random()*risks.length)];
+  var mvps=['先做微信/企微接入 + 知识库问答','先做核心场景 · 小步快跑验证','聚焦单一垂直行业做深做透','MVP：最小可行产品 + 种子用户内测'];
+  var mvp=mvps[Math.floor(Math.random()*mvps.length)];
+  var rid=Math.random().toString(36).substring(2,8);
+
+  // Card view
+  document.getElementById('d-project').textContent=t;
+  document.getElementById('d-score').textContent=sc;
+  document.getElementById('d-score-fill').style.width=sc+'%';
+  document.getElementById('d-growth').textContent=gr;
+  document.getElementById('d-model').textContent=model;
+  document.getElementById('d-risk').textContent=risk;
+  document.getElementById('d-mvp').textContent=mvp;
+  document.getElementById('d-report').innerHTML='<a href="#" style="color:var(--color-brand);text-decoration:none">https://insighthub.data/reports/'+rid+'</a>';
+  var tags='';
+  for(var i=0;i<comps.length;i++){tags+='<span class="demo-tag">'+comps[i]+'</span>';}
+  document.getElementById('d-competitors').innerHTML=tags;
+
+  // JSON view
+  document.getElementById('demo-json-view').textContent=
+    '{\n  "project": "'+t+'",\n  "opportunity_score": '+sc+',\n  "market_growth": "'+gr+'",\n  "top_competitors": ["'+comps.join('", "')+'"],\n  "recommended_model": "'+model+'",\n  "top_risk": "'+risk+'",\n  "mvp_suggestion": "'+mvp+'",\n  "report_url": "https://insighthub.data/reports/'+rid+'"\n}';
+
+  // Reset to card view
+  document.getElementById('demo-card-view').style.display='';
+  document.getElementById('demo-json-view').style.display='none';
+  document.getElementById('demo-toggle-btn').textContent='查看 JSON';
+}
+
+function toggleDemoView(){
+  var card=document.getElementById('demo-card-view');
+  var json=document.getElementById('demo-json-view');
+  var btn=document.getElementById('demo-toggle-btn');
+  if(card.style.display==='none'){
+    card.style.display='';
+    json.style.display='none';
+    btn.textContent='查看 JSON';
+  } else {
+    card.style.display='none';
+    json.style.display='';
+    btn.textContent='查看卡片';
+  }
 }
 </script>
 <footer class="footer-inner">
@@ -400,5 +500,6 @@ function runDemo(){
   </div>
 </footer>
 </div>
+<script src="assets/drawer.js"></script>
 </body>
 </html>
