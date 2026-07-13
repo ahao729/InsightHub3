@@ -13,19 +13,21 @@ from scrapy import Spider
 from scrapy.exceptions import DropItem
 
 from crawler.items import (
-    MarketNewsItem,
     CompanyProfileItem,
-    FinancialIndicatorItem,
-    PatentItem,
-    PolicyDocumentItem,
-    EducationDataItem,
-    Web3Item,
-    MarketNewsModel,
     CompanyProfileModel,
-    FinancialIndicatorModel,
-    PatentModel,
-    PolicyDocumentModel,
+    CrossborderDataItem,
+    CrossborderDataModel,
+    EducationDataItem,
     EducationDataModel,
+    FinancialIndicatorItem,
+    FinancialIndicatorModel,
+    MarketNewsItem,
+    MarketNewsModel,
+    PatentItem,
+    PatentModel,
+    PolicyDocumentItem,
+    PolicyDocumentModel,
+    Web3Item,
     Web3Model,
 )
 
@@ -41,6 +43,7 @@ ITEM_TYPE_MAP = {
     PolicyDocumentItem: ("policy_documents", PolicyDocumentModel),
     EducationDataItem: ("education_data", EducationDataModel),
     Web3Item: ("web3_data", Web3Model),
+    CrossborderDataItem: ("crossborder_data", CrossborderDataModel),
 }
 
 
@@ -110,6 +113,9 @@ class DedupPipeline:
         if isinstance(item, EducationDataItem):
             key = f"{item.get('institution_name')}|{item.get('subject')}|{item.get('year')}"
             return key
+        if isinstance(item, CrossborderDataItem):
+            key = f"{item.get('title')}|{item.get('data_date')}|{item.get('indicator')}"
+            return key
         return None
 
     def process_item(self, item, spider: Spider):
@@ -168,8 +174,8 @@ class DatabasePipeline:
         data = dict(item)
         data["crawled_at"] = data.get("crawled_at") or datetime.utcnow().isoformat()
 
-        # Convert list fields to JSON strings
-        for field in ("inventors",):
+        # Convert list fields to JSON strings for JSONB columns
+        for field in ("inventors", "tags"):
             if field in data and isinstance(data[field], (list, tuple)):
                 data[field] = json.dumps(data[field], ensure_ascii=False)
 
@@ -193,6 +199,8 @@ class DatabasePipeline:
             conflict_col = "registration_number"
         elif table == "education_data":
             conflict_col = "institution_name, subject, year"
+        elif table == "crossborder_data":
+            conflict_col = "title, data_date, indicator"
 
         sql = (
             f"INSERT INTO {table} ({', '.join(columns)}) "

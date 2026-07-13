@@ -157,6 +157,7 @@ AVAILABLE_SPIDERS = [
     "uspto_patents",
     "arxiv_papers",
     "public_company",
+    "uncomtrade_crossborder",
 ]
 
 # Default args for each spider
@@ -178,6 +179,12 @@ SPIDER_DEFAULT_ARGS = {
         "max_results": 30,
     },
     "public_company": {"query": "Technology", "max_records": 10},
+    "uncomtrade_crossborder": {
+        "reporter": "156",
+        "partner": "842",
+        "max_pages": 5,
+        "query": "跨境电商 OR 跨境贸易",
+    },
 }
 
 

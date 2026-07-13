@@ -66,6 +66,11 @@ AVAILABLE_SPIDERS = {
         "class": "ArxivPapersSpider",
         "description": "arXiv API — academic research papers",
     },
+    "uncomtrade_crossborder": {
+        "module": "crawler.spiders.uncomtrade_crossborder",
+        "class": "UncomtradeCrossborderSpider",
+        "description": "跨境电商市场、物流、合规与平台运营数据",
+    },
 }
 
 

@@ -222,3 +222,53 @@ class Web3Model(BaseModel):
     source: Optional[str] = None
     crawl_id: Optional[str] = None
     crawled_at: Optional[str] = None
+
+
+class CrossborderDataItem(scrapy.Item):
+    """Crossborder ecommerce data item."""
+
+    category = (
+        scrapy.Field()
+    )  # market-intel, product-analysis, logistics, compliance, platform-ops
+    subcategory = (
+        scrapy.Field()
+    )  # crossborder-volume, platform-share, top-categories, etc.
+    title = scrapy.Field()
+    source = scrapy.Field()
+    summary = scrapy.Field()
+    value = scrapy.Field()  # numeric value
+    value_unit = scrapy.Field()  # %, USD, 亿美元, etc.
+    growth_rate = scrapy.Field()  # percentage growth
+    country_origin = scrapy.Field()
+    country_destination = scrapy.Field()
+    product_category = scrapy.Field()
+    indicator = scrapy.Field()  # trade_volume, market_size, shipping_cost, etc.
+    confidence_score = scrapy.Field()  # 0-1
+    data_date = scrapy.Field()
+    tags = scrapy.Field()  # list of strings
+    url = scrapy.Field()
+    source_db = scrapy.Field()  # rename to avoid conflict with source field
+    crawl_id = scrapy.Field()
+    crawled_at = scrapy.Field()
+
+
+class CrossborderDataModel(BaseModel):
+    category: str = Field(..., max_length=64)
+    subcategory: Optional[str] = Field(None, max_length=64)
+    title: str = Field(..., max_length=512)
+    source: Optional[str] = Field(None, max_length=256)
+    summary: Optional[str] = None
+    value: Optional[float] = None
+    value_unit: Optional[str] = Field(None, max_length=32)
+    growth_rate: Optional[float] = None
+    country_origin: Optional[str] = Field(None, max_length=128)
+    country_destination: Optional[str] = Field(None, max_length=128)
+    product_category: Optional[str] = Field(None, max_length=128)
+    indicator: Optional[str] = Field(None, max_length=64)
+    confidence_score: Optional[float] = Field(None, ge=0.0, le=1.0)
+    data_date: Optional[str] = None
+    tags: Optional[str] = None  # stored as JSON array string
+    url: Optional[str] = Field(None, max_length=2048)
+    source_db: Optional[str] = Field(None, max_length=256)
+    crawl_id: Optional[str] = None
+    crawled_at: Optional[str] = None
