@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>行业解决方案 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
@@ -257,15 +257,17 @@ var solutions={
   }
 };
 
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
 function render(key){
   var s=solutions[key];
   var pkgHtml=s.pkgs.map(function(p){
     var link=pkgLinkMap[p.name]||'marketplace.html';
-    return '<div class="flow-card" onclick="location.href=\''+link+'\'"><div class="flow-icon '+p.cls+'"><i class="ti '+p.icon+'" aria-hidden="true"></i></div><div class="flow-name">'+p.name+'</div><div class="flow-desc">'+p.desc+'</div></div>';
+    return '<div class="flow-card" onclick="location.href=\''+escapeHtml(link)+'\'"><div class="flow-icon '+escapeHtml(p.cls)+'"><i class="ti '+escapeHtml(p.icon)+'" aria-hidden="true"></i></div><div class="flow-name">'+escapeHtml(p.name)+'</div><div class="flow-desc">'+escapeHtml(p.desc)+'</div></div>';
   }).join('<div class="flow-arrow"><i class="ti ti-arrow-right" aria-hidden="true"></i></div>');
 
   var usecaseHtml=s.usecases.map(function(u){
-    return '<div class="usecase-card"><div class="usecase-q"><i class="ti ti-circle-check" aria-hidden="true"></i>'+u+'</div></div>';
+    return '<div class="usecase-card"><div class="usecase-q"><i class="ti ti-circle-check" aria-hidden="true"></i>'+escapeHtml(u)+'</div></div>';
   }).join('');
 
   var workflowHtml=s.workflow.map(function(w,i){
@@ -274,12 +276,12 @@ function render(key){
 
   document.getElementById('content').innerHTML=
     '<div class="solution-head">'+
-      '<div><div class="solution-title">'+s.title+'</div><div class="solution-sub">'+s.sub+'</div></div>'+
+      '<div><div class="solution-title">'+escapeHtml(s.title)+'</div><div class="solution-sub">'+escapeHtml(s.sub)+'</div></div>'+
       '<div class="bundle-price-box">'+
         '<div class="bundle-price-label">组合套餐价格</div>'+
-        '<div><span class="bundle-price-val">¥'+s.price+'</span><span class="bundle-price-orig">¥'+s.orig+'</span></div>'+
+        '<div><span class="bundle-price-val">¥'+escapeHtml(String(s.price))+'</span><span class="bundle-price-orig">¥'+escapeHtml(String(s.orig))+'</span></div>'+
         '<div class="bundle-price-unit">/ 月起</div>'+
-        '<div class="bundle-save">'+s.save+'</div>'+
+        '<div class="bundle-save">'+escapeHtml(s.save)+'</div>'+
       '</div>'+
     '</div>'+
     '<div class="section-title">包含数据包</div>'+

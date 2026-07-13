@@ -6,7 +6,7 @@
 <title>用户工作台 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/dashboard.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -215,7 +215,7 @@
       <div id="tab-monitor" style="display:none">
         <div class="section-hd">
           <div class="section-hd-title">监控任务（--）</div>
-          <button class="topbar-btn topbar-btn-primary" style="font-size:var(--font-size-base);padding:var(--space-3) var(--space-7)" onclick="alert('新建监控任务（可继续开发）')">+ 新建监控</button>
+          <button class="topbar-btn topbar-btn-primary" style="font-size:var(--font-size-base);padding:var(--space-3) var(--space-7)" onclick="openCreateMonitorModal()">+ 新建监控</button>
         </div>
 
         <div class="filter-pills">
@@ -421,7 +421,34 @@
 var __dashboardData = null;
 var __usageChart = null;
 
-// ========== Tab 切换 ==========
+// ========== 工具函数 ==========
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+/** Sanitize a value used as a CSS class name — only allow safe characters */
+function sanitizeCssClass(cls) {
+  if (cls == null) return '';
+  return String(cls).replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+// ESC 键关闭弹窗
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    var overlay = document.querySelector('.modal-overlay');
+    if (overlay) {
+      if (overlay.id === 'create-key-overlay') closeCreateKeyModal();
+      else closeModal(overlay.id);
+    }
+  }
+});
+
+// ========== Tab 切换 ==
 function switchTab(name) {
   var tabs = ['overview', 'apikeys', 'reports', 'monitor', 'packages', 'subscription', 'team', 'settings'];
   tabs.forEach(function (t) {
@@ -528,7 +555,7 @@ function renderPlan(plan) {
   var renewEl = banner.querySelector('.plan-renew');
   if (infoTitle) infoTitle.textContent = plan.name ? plan.name + ' \u00B7 \u5F53\u524D\u5957\u9910' : '\u5F53\u524D\u5957\u9910';
   if (infoSub) infoSub.textContent = plan.description || '';
-  if (renewEl) renewEl.innerHTML = '<i class="ti ti-calendar" style="font-size:var(--font-size-md)" aria-hidden="true"></i>' + (plan.renewDate || '');
+  if (renewEl) renewEl.innerHTML = '<i class="ti ti-calendar" style="font-size:var(--font-size-md)" aria-hidden="true"></i>' + escapeHtml(plan.renewDate || '');
 }
 
 function renderTrend(labels, values) {
@@ -599,16 +626,16 @@ function renderReports(reports) {
     return;
   }
   el.innerHTML = reports.map(function (r) {
-    var iconCls = r.icon || 'ri-green';
-    var iconName = r.iconName || 'ti-file-text';
+    var iconCls = sanitizeCssClass(r.icon) || 'ri-green';
+    var iconName = sanitizeCssClass(r.iconName) || 'ti-file-text';
     var tagCls = r.tag === '\u65B0' ? 'rp-tag-new' : 'rp-tag-old';
     return '<div class="report-row">' +
       '<div class="report-icon ' + iconCls + '"><i class="ti ' + iconName + '" aria-hidden="true"></i></div>' +
       '<div class="report-info">' +
-        '<div class="report-title">' + (r.title || '') + '</div>' +
-        '<div class="report-meta"><span>' + (r.pkg || '') + '</span><span>' + (r.date || '') + '</span></div>' +
+        '<div class="report-title">' + escapeHtml(r.title || '') + '</div>' +
+        '<div class="report-meta"><span>' + escapeHtml(r.pkg || '') + '</span><span>' + escapeHtml(r.date || '') + '</span></div>' +
       '</div>' +
-      '<span class="rp-tag ' + tagCls + '">' + (r.tag || '') + '</span>' +
+      '<span class="rp-tag ' + tagCls + '">' + escapeHtml(r.tag || '') + '</span>' +
       '<div class="report-acts">' +
         '<button class="icon-btn"><i class="ti ti-download" aria-hidden="true"></i></button>' +
         '<button class="icon-btn"><i class="ti ti-eye" aria-hidden="true"></i></button>' +
@@ -630,18 +657,18 @@ function renderMonitors(monitors) {
     return;
   }
   el.innerHTML = monitors.map(function (m) {
-    var statusCls = m.status || 'ms-active';
+    var statusCls = sanitizeCssClass(m.status) || 'ms-active';
     var pillHtml;
     if (m.pillCls) {
-      pillHtml = '<span class="' + m.pillCls + '">' + (m.pill || '') + '</span>';
+      pillHtml = '<span class="' + sanitizeCssClass(m.pillCls) + '">' + escapeHtml(m.pill || '') + '</span>';
     } else {
-      pillHtml = '<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">' + (m.pill || '') + '</span>';
+      pillHtml = '<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">' + escapeHtml(m.pill || '') + '</span>';
     }
     return '<div class="monitor-row">' +
       '<div class="monitor-status ' + statusCls + '"></div>' +
       '<div class="monitor-info">' +
-        '<div class="monitor-name">' + (m.name || '') + '</div>' +
-        '<div class="monitor-meta"><span>' + (m.pkg || '') + '</span><span>' + (m.date || '') + '</span></div>' +
+        '<div class="monitor-name">' + escapeHtml(m.name || '') + '</div>' +
+        '<div class="monitor-meta"><span>' + escapeHtml(m.pkg || '') + '</span><span>' + escapeHtml(m.date || '') + '</span></div>' +
       '</div>' +
       pillHtml +
     '</div>';
@@ -662,10 +689,10 @@ function renderPackages(pkgs) {
   }
   el.innerHTML = pkgs.map(function (p) {
     return '<div class="monitor-row">' +
-      '<div class="report-icon ' + (p.color || 'ri-green') + '"><i class="ti ' + (p.icon || 'ti-package') + '" aria-hidden="true"></i></div>' +
+      '<div class="report-icon ' + sanitizeCssClass(p.color || 'ri-green') + '"><i class="ti ' + sanitizeCssClass(p.icon || 'ti-package') + '" aria-hidden="true"></i></div>' +
       '<div class="monitor-info">' +
-        '<div class="monitor-name">' + (p.name || '') + '</div>' +
-        '<div class="monitor-meta">' + (p.desc || '') + '</div>' +
+        '<div class="monitor-name">' + escapeHtml(p.name || '') + '</div>' +
+        '<div class="monitor-meta">' + escapeHtml(p.desc || '') + '</div>' +
       '</div>' +
       '<button class="topbar-btn" style="font-size:var(--font-size-sm);padding:var(--space-1) var(--space-5)">\u67E5\u770B\u8BE6\u60C5</button>' +
     '</div>';
@@ -683,11 +710,11 @@ function renderLogTable(logs) {
     var statusColor = l.status === '200' ? 'color:var(--color-brand)' : l.status === '429' ? 'color:#BA7517' : 'color:var(--color-text-danger)';
     var keyBadgeCls = l.key === '\u751F\u4EA7' ? 'key-badge-live' : 'key-badge-dev';
     return '<tr>' +
-      '<td style="padding:var(--space-4) var(--space-6);font-family:var(--font-mono);font-size:var(--font-size-sm)">' + (l.api || '') + '</td>' +
-      '<td style="padding:var(--space-4) var(--space-6)"><span style="' + statusColor + '">' + (l.status || '') + '</span></td>' +
-      '<td style="padding:var(--space-4) var(--space-6);color:var(--color-text-secondary)">' + (l.time || '') + '</td>' +
-      '<td style="padding:var(--space-4) var(--space-6);color:var(--color-text-secondary)">' + (l.ts || '') + '</td>' +
-      '<td style="padding:var(--space-4) var(--space-6)"><span class="key-badge ' + keyBadgeCls + '" style="font-size:var(--font-size-xs)">' + (l.key || '') + '</span></td>' +
+      '<td style="padding:var(--space-4) var(--space-6);font-family:var(--font-mono);font-size:var(--font-size-sm)">' + escapeHtml(l.api || '') + '</td>' +
+      '<td style="padding:var(--space-4) var(--space-6)"><span style="' + statusColor + '">' + escapeHtml(String(l.status || '')) + '</span></td>' +
+      '<td style="padding:var(--space-4) var(--space-6);color:var(--color-text-secondary)">' + escapeHtml(l.time || '') + '</td>' +
+      '<td style="padding:var(--space-4) var(--space-6);color:var(--color-text-secondary)">' + escapeHtml(l.ts || '') + '</td>' +
+      '<td style="padding:var(--space-4) var(--space-6)"><span class="key-badge ' + keyBadgeCls + '" style="font-size:var(--font-size-xs)">' + escapeHtml(l.key || '') + '</span></td>' +
     '</tr>';
   }).join('');
 }
@@ -715,6 +742,7 @@ function openCreateKeyModal() {
     '</div>';
   document.body.appendChild(overlay);
   __keyModal = overlay;
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeCreateKeyModal(); });
   setTimeout(function () {
     var inp = document.getElementById('new-key-name');
     if (inp) inp.focus();
@@ -806,10 +834,15 @@ function renderKeyCard(key, cardSelector, elId) {
     el.textContent = k.slice(0, 15) + '\u2022'.repeat(16) + k.slice(-4);
     var btns = el.parentNode.querySelectorAll('.icon-btn');
     if (btns.length >= 4) {
-      btns[0].setAttribute('onclick', "toggleKey('" + elId + "','" + k + "')");
-      btns[1].setAttribute('onclick', "copyKey('" + k + "')");
-      btns[2].setAttribute('onclick', "revokeApiKey('" + (key.id || key._id || '') + "')");
-      btns[3].setAttribute('onclick', "deleteApiKey('" + (key.id || key._id || '') + "')");
+      btns[0].setAttribute('data-action', 'toggle-key');
+      btns[0].setAttribute('data-el-id', elId);
+      btns[0].setAttribute('data-key-val', k);
+      btns[1].setAttribute('data-action', 'copy-key');
+      btns[1].setAttribute('data-key-val', k);
+      btns[2].setAttribute('data-action', 'revoke-key');
+      btns[2].setAttribute('data-key-id', (key.id || key._id || ''));
+      btns[3].setAttribute('data-action', 'delete-key');
+      btns[3].setAttribute('data-key-id', (key.id || key._id || ''));
     }
   }
   var usageLabel = document.querySelector(cardSelector + ' .usage-bar-label span:last-child');
@@ -869,7 +902,7 @@ function renderSubscription(sub) {
   var planRenew = document.getElementById('sub-renew-date');
   if (planName) planName.textContent = (sub.name || '--') + ' · 当前套餐';
   if (planDesc) planDesc.textContent = sub.description || '--';
-  if (planRenew) planRenew.innerHTML = '<i class="ti ti-calendar" style="font-size:var(--font-size-md)" aria-hidden="true"></i>' + (sub.renewDate || '--') + ' 续费';
+  if (planRenew) planRenew.innerHTML = '<i class="ti ti-calendar" style="font-size:var(--font-size-md)" aria-hidden="true"></i>' + escapeHtml(sub.renewDate || '--') + ' 续费';
 
   var planStatus = document.getElementById('sub-plan-status');
   var apiUsage = document.getElementById('sub-api-usage');
@@ -909,8 +942,8 @@ function renderSubscription(sub) {
     } else {
       billBody.innerHTML = bills.map(function (b) {
         return '<tr>' +
-          '<td style="padding:var(--space-4) var(--space-6)">' + (b.date || '') + '</td>' +
-          '<td style="padding:var(--space-4) var(--space-6)">' + (b.description || '') + '</td>' +
+          '<td style="padding:var(--space-4) var(--space-6)">' + escapeHtml(b.date || '') + '</td>' +
+          '<td style="padding:var(--space-4) var(--space-6)">' + escapeHtml(b.description || '') + '</td>' +
           '<td style="padding:var(--space-4) var(--space-6)">¥' + (b.amount || 0).toFixed(2) + '</td>' +
           '<td style="padding:var(--space-4) var(--space-6)"><span style="color:' + (b.status === 'paid' ? 'var(--color-brand)' : 'var(--color-text-danger)') + '">' + (b.status === 'paid' ? '已支付' : b.status === 'pending' ? '待支付' : b.status || '') + '</span></td>' +
         '</tr>';
@@ -943,6 +976,7 @@ function openCreateMonitorModal() {
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal('create-monitor-overlay'); });
   // 填充数据包选项
   var pkgSelect = document.getElementById('monitor-pkg');
   if (pkgSelect && __dashboardData && __dashboardData.subscribedPackages) {
@@ -958,6 +992,7 @@ function openCreateMonitorModal() {
 function createMonitor() {
   var name = document.getElementById('monitor-name');
   var pkg = document.getElementById('monitor-pkg');
+  var freq = document.getElementById('monitor-freq');
   if (!name || !name.value.trim()) {
     showToast('请输入监控名称');
     return;
@@ -966,10 +1001,26 @@ function createMonitor() {
     showToast('请选择数据包');
     return;
   }
+  var freqVal = freq ? freq.value : '15min';
+
   closeModal('create-monitor-overlay');
-  // 假设 API 有此端点
-  showToast('监控任务创建成功');
-  reloadDashboard();
+
+  fetch('/api/v1/dashboard/monitors', {
+    method: 'POST',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, typeof authHeaders === 'function' ? authHeaders() : {}),
+    body: JSON.stringify({ name: name.value.trim(), package: pkg.value, frequency: freqVal }),
+  }).then(function (res) {
+    return res.json();
+  }).then(function (data) {
+    if (data.success) {
+      showToast('监控任务已创建：' + name.value.trim());
+      reloadDashboard();
+    } else {
+      showToast(data.error && data.error.message ? data.error.message : '创建失败，请重试');
+    }
+  }).catch(function () {
+    showToast('创建失败，请检查网络后重试');
+  });
 }
 
 // ========== 邀请成员弹窗 ==========
@@ -998,6 +1049,7 @@ function openInviteMemberModal() {
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal('invite-member-overlay'); });
 }
 
 function inviteMember() {
@@ -1008,7 +1060,7 @@ function inviteMember() {
     return;
   }
   closeModal('invite-member-overlay');
-  showToast('邀请已发送至 ' + email.value.trim());
+  showToast('邀请已发送至 ' + escapeHtml(email.value.trim()));
   reloadDashboard();
 }
 
@@ -1030,8 +1082,10 @@ function saveSettings() {
     showToast('请输入邮箱地址');
     return;
   }
-  showToast('设置已保存');
-  // 实际可调用 API.user.updateProfile(...)
+  var safeName = escapeHtml(name.value.trim());
+  var safeEmail = escapeHtml(email.value.trim());
+  showToast('设置已保存：' + safeName);
+  // 实际可调用 API.user.updateProfile(safeName, safeEmail)
 }
 
 // ========== 通知渠道配置弹窗 ==========
@@ -1063,11 +1117,15 @@ function openNotifChannelModal() {
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal('notif-channel-overlay'); });
 }
 
 function saveNotifChannel() {
+  var webhookInput = document.getElementById('notif-webhook');
+  var safeWebhook = webhookInput ? escapeHtml(webhookInput.value.trim()) : '';
   closeModal('notif-channel-overlay');
   showToast('通知配置已保存');
+  // 实际可调用 API: { webhook: safeWebhook, ... }
 }
 
 // ========== 公共渲染函数 ==========
@@ -1113,15 +1171,42 @@ function initDashboard() {
   var contentArea = document.querySelector('.content');
   if (contentArea) contentArea.prepend(loadingEl);
 
+  var params = new URLSearchParams(window.location.search);
+  var subscribedFlag = params.get('subscribed') === '1';
+
+  // 订阅成功后：清除 URL 参数，防止刷新重复弹窗
+  if (subscribedFlag) {
+    var cleanUrl = window.location.pathname;
+    window.history.replaceState({}, '', cleanUrl);
+  }
+
   API.dashboard.stats().then(function (data) {
     __dashboardData = data;
     var loading = document.getElementById('dash-loading');
     if (loading) loading.remove();
     renderAll(data);
-    // 检测 URL 参数中的 tab
-    var params = new URLSearchParams(window.location.search);
+
+    // 补充真实订阅数据：调用 /subscriptions/current 获取最新状态
+    if (API.subscriptions && API.subscriptions.current) {
+      API.subscriptions.current().then(function (subData) {
+        if (subData && data) {
+          data.subscription = Object.assign(data.subscription || {}, subData);
+          renderSubscription(data.subscription);
+          renderPlan(subData.plan || data.plan);
+        }
+      }).catch(function (e) {
+        console.warn('[Dashboard] 加载订阅状态失败:', e);
+      });
+    }
+
+    // 检测 URL 参数中的 tab（优先使用 subscribed=1 后切换到订阅 tab）
     var tab = params.get('tab');
-    switchTab(tab || 'overview');
+    switchTab(subscribedFlag ? 'subscription' : (tab || 'overview'));
+
+    // subscribed=1 提示
+    if (subscribedFlag) {
+      showToast('订阅成功！您的套餐已激活');
+    }
   }).catch(function (err) {
     var loading = document.getElementById('dash-loading');
     if (loading) loading.remove();
@@ -1131,9 +1216,45 @@ function initDashboard() {
       return;
     }
     console.error('Dashboard init error:', err);
-    showToast('\u52A0\u8F7D\u5931\u8D25\uFF0C\u8BF7\u5237\u65B0\u91CD\u8BD5');
+    showToast('\u52A0\u8F7D\u593A\u5931\u8D25\uFF0C\u8BF7\u5237\u65B0\u91CD\u8BD5');
   });
 }
+
+// === 按钮事件委托（key-actions） ===
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest('.key-actions .icon-btn');
+  if (!btn) return;
+  var action = btn.getAttribute('data-action');
+  if (!action) return;
+
+  if (action === 'toggle-key') {
+    var elId = btn.getAttribute('data-el-id');
+    var keyVal = btn.getAttribute('data-key-val') || '';
+    var keyValEl = document.getElementById(elId);
+    if (keyValEl && keyValEl.getAttribute('data-visible') === '1') {
+      keyValEl.textContent = keyVal.slice(0, 6) + '••••••••' + keyVal.slice(-4);
+      keyValEl.removeAttribute('data-visible');
+      btn.innerHTML = '<i class="ti ti-eye" aria-hidden="true"></i>';
+    } else if (keyValEl) {
+      keyValEl.textContent = keyVal;
+      keyValEl.setAttribute('data-visible', '1');
+      btn.innerHTML = '<i class="ti ti-eye-off" aria-hidden="true"></i>';
+    }
+  } else if (action === 'copy-key') {
+    var keyVal = btn.getAttribute('data-key-val') || '';
+    if (keyVal && navigator.clipboard) {
+      navigator.clipboard.writeText(keyVal).then(function () {
+        showToast('Key 已复制到剪贴板');
+      });
+    }
+  } else if (action === 'revoke-key') {
+    var keyId = btn.getAttribute('data-key-id') || '';
+    if (keyId) revokeApiKey(keyId);
+  } else if (action === 'delete-key') {
+    var keyId = btn.getAttribute('data-key-id') || '';
+    if (keyId) deleteApiKey(keyId);
+  }
+});
 
 // === 启动 ===
 if (document.readyState === 'loading') {
@@ -1142,6 +1263,7 @@ if (document.readyState === 'loading') {
   initDashboard();
 }
 
+</script>
 <script src="assets/drawer.js"></script>
 </body>
 </html>

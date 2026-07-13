@@ -109,6 +109,18 @@
       logout: function () {
         clearToken();
       },
+      forgotPassword: function (email) {
+        return request('POST', '/auth/forgot-password', { email: email }).then(function (res) { return res.data; });
+      },
+      resetPassword: function (token, password) {
+        return request('POST', '/auth/reset-password', { token: token, password: password }).then(function (res) { return res.data; });
+      },
+      sendVerification: function () {
+        return request('POST', '/auth/send-verification').then(function (res) { return res.data; });
+      },
+      verifyEmail: function (token) {
+        return request('POST', '/auth/verify-email', { token: token }).then(function (res) { return res.data; });
+      },
       getToken: getToken,
       setToken: setToken,
       clearToken: clearToken,

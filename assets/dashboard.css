@@ -145,6 +145,11 @@
 .pkg-popular{border-color:var(--color-brand)}
 .pkg-popular-badge{font-size:var(--font-size-xs);background:var(--color-brand);color:var(--color-text-white);padding:var(--space-1) var(--space-4);border-radius:999px;align-self:flex-start}
 
+/* Modal overlay & box */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000;display:flex;justify-content:center;align-items:center}
+.modal-box{background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:32px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative}
+.modal-input:focus{border-color:var(--color-brand) !important;box-shadow:0 0 0 2px var(--color-brand-light)}
+
 /* Section tab content */
 .section{display:none}
 .section.active{display:block}

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>定价对比 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
@@ -146,20 +146,20 @@
       <div class="plan-head-name">个人版</div>
       <div class="plan-head-price" data-base="99">¥99</div>
       <div class="plan-head-unit">/ 月</div>
-      <button class="btn btn-ghost head-btn" onclick="location.href='checkout.html'">选择此套餐</button>
+      <button class="btn btn-ghost head-btn" onclick="location.href='checkout.html?plan=personal'">选择此套餐</button>
     </div>
     <div class="plan-head featured">
       <div class="badge">最受欢迎</div>
       <div class="plan-head-name">创业者版</div>
       <div class="plan-head-price" data-base="299">¥299</div>
       <div class="plan-head-unit">/ 月</div>
-      <button class="btn btn-primary head-btn" onclick="location.href='checkout.html'">选择此套餐</button>
+      <button class="btn btn-primary head-btn" onclick="location.href='checkout.html?plan=startup'">选择此套餐</button>
     </div>
     <div class="plan-head">
       <div class="plan-head-name">专业版</div>
       <div class="plan-head-price" data-base="999">¥999</div>
       <div class="plan-head-unit">/ 月</div>
-      <button class="btn btn-ghost head-btn" onclick="location.href='checkout.html'">选择此套餐</button>
+      <button class="btn btn-ghost head-btn" onclick="location.href='checkout.html?plan=pro'">选择此套餐</button>
     </div>
     <div class="plan-head">
       <div class="plan-head-name">企业版</div>
@@ -214,19 +214,21 @@ var matrix=[
   {label:'专属数据采购',vals:[false,false,false,false,true]}
 ];
 
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
 function renderCell(v){
   if(v===true) return '<i class="ti ti-check check-y" aria-hidden="true"></i>';
   if(v===false) return '<i class="ti ti-minus check-n" aria-hidden="true"></i>';
-  return v;
+  return escapeHtml(v);
 }
 
 function renderMatrix(){
   var html='';
   matrix.forEach(function(row){
     if(row.group){
-      html+='<tr class="group-row"><td colspan="6">'+row.group+'</td></tr>';
+      html+='<tr class="group-row"><td colspan="6">'+escapeHtml(row.group)+'</td></tr>';
     } else {
-      html+='<tr class="feat-row"><td>'+row.label+'</td>';
+      html+='<tr class="feat-row"><td>'+escapeHtml(row.label)+'</td>';
       row.vals.forEach(function(v,i){
         var cls=i===2?'col-featured':'';
         html+='<td class="'+cls+'">'+renderCell(v)+'</td>';

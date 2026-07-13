@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI 报告生成器 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
@@ -192,6 +192,8 @@
 </div>
 
 <script>
+function escapeHtml(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
 var chips=document.querySelectorAll('.chip[data-mod]');
 chips.forEach(function(c){c.addEventListener('click',function(){this.classList.toggle('active')})});
 
@@ -224,7 +226,7 @@ function generateReport(){
   document.getElementById('state-empty').style.display='none';
   document.getElementById('state-report').style.display='none';
   document.getElementById('state-loading').style.display='block';
-  document.getElementById('loading-title').innerHTML='正在分析「'+topic+'」<span class="streaming-cursor"></span>';
+  document.getElementById('loading-title').innerHTML='正在分析「'+escapeHtml(topic)+'」<span class="streaming-cursor"></span>';
 
   var done=0,active=0;
   renderSteps(done,active);
@@ -291,7 +293,7 @@ function showReport(topic){
   panel.innerHTML=
     '<div class="report-header">'+
       '<div class="report-title-block">'+
-        '<div class="report-title">'+topic+' — 商业分析报告</div>'+
+        '<div class="report-title">'+escapeHtml(topic)+' — 商业分析报告</div>'+
         '<div class="report-meta-row">'+
           '<span class="report-tag rt-green">创业商业情报包</span>'+
           '<span class="report-tag rt-gray">'+dateStr+'</span>'+

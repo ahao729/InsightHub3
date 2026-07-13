@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>API 文档中心 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
@@ -211,7 +211,207 @@ var endpoints=[
      params:[{name:'company_name',required:true,type:'string',desc:'企业全称'}],
      fields:[{name:'risk_score',type:'integer',desc:'综合风险评分 0–100'},{name:'risk_level',type:'string',desc:'风险等级：低/中/高'}],
      reqBody:'{\n  <span class="code-k">"company_name"</span>: <span class="code-s">"某科技有限公司"</span>\n}',
-     respBody:'{\n  <span class="code-k">"risk_score"</span>: <span class="code-f">12</span>,\n  <span class="code-k">"risk_level"</span>: <span class="code-s">"低"</span>\n}'}
+      respBody:'{\n  <span class="code-k">"risk_score"</span>: <span class="code-f">12</span>,\n  <span class="code-k">"risk_level"</span>: <span class="code-s">"低"</span>\n}'}
+  ]},
+  {group:'金融宏观数据包',items:[
+    {id:'fm-indicators',method:'GET',path:'/v1/finance/indicators',title:'查询宏观指标',desc:'查询 GDP、CPI、利率、汇率等宏观经济指标，支持按国家、指标类型和时间范围筛选。',
+     params:[
+       {name:'q',required:false,type:'string',desc:'关键词搜索，匹配指标名称和代码'},
+       {name:'country',required:false,type:'string',desc:'国家/地区，如「中国」「美国」'},
+       {name:'indicator',required:false,type:'string',desc:'指标名称或代码关键词，如「CPI」「GDP」'},
+       {name:'date_from',required:false,type:'string',desc:'起始日期（ISO 8601），如 2026-01-01'},
+       {name:'date_to',required:false,type:'string',desc:'截止日期（ISO 8601），如 2026-06-30'},
+       {name:'page',required:false,type:'integer',desc:'页码，默认 1'},
+       {name:'limit',required:false,type:'integer',desc:'每页条数，默认 20，最大 100'}
+     ],
+     fields:[
+       {name:'indicator_name',type:'string',desc:'指标名称'},
+       {name:'indicator_code',type:'string',desc:'指标代码'},
+       {name:'country',type:'string',desc:'国家/地区'},
+       {name:'value',type:'number',desc:'指标值'},
+       {name:'unit',type:'string',desc:'单位'},
+       {name:'period',type:'string',desc:'统计周期'},
+       {name:'frequency',type:'string',desc:'频率（daily/monthly/yearly）'},
+       {name:'source',type:'string',desc:'数据来源'},
+       {name:'published_at',type:'string',desc:'发布时间'}
+     ],
+     reqBody:'{\n  <span class="code-k">"country"</span>: <span class="code-s">"中国"</span>,\n  <span class="code-k">"indicator"</span>: <span class="code-s">"GDP"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    {\n      <span class="code-k">"indicator_name"</span>: <span class="code-s">"国内生产总值 (GDP) - 中国"</span>,\n      <span class="code-k">"indicator_code"</span>: <span class="code-s">"GDP.CN"</span>,\n      <span class="code-k">"country"</span>: <span class="code-s">"中国"</span>,\n      <span class="code-k">"value"</span>: <span class="code-f">181000</span>,\n      <span class="code-k">"unit"</span>: <span class="code-s">"十亿美元"</span>,\n      <span class="code-k">"period"</span>: <span class="code-s">"2025"</span>\n    }\n  ],\n  <span class="code-k">"meta"</span>: { <span class="code-k">"total"</span>: <span class="code-f">1</span>, <span class="code-k">"page"</span>: <span class="code-f">1</span>, <span class="code-k">"totalPages"</span>: <span class="code-f">1</span> }\n}'},
+    {id:'fm-currency',method:'GET',path:'/v1/finance/currency',title:'汇率与利率查询',desc:'查询主要货币汇率、LPR 利率、联邦基金利率等金融利率数据。',
+     params:[
+       {name:'q',required:false,type:'string',desc:'关键词搜索'},
+       {name:'country',required:false,type:'string',desc:'国家/地区'},
+       {name:'date_from',required:false,type:'string',desc:'起始日期'},
+       {name:'date_to',required:false,type:'string',desc:'截止日期'}
+     ],
+     fields:[{name:'indicator_name',type:'string',desc:'指标名称'},{name:'value',type:'number',desc:'当前值'},{name:'unit',type:'string',desc:'单位'}],
+     reqBody:'{\n  <span class="code-k">"country"</span>: <span class="code-s">"中国"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    {\n      <span class="code-k">"indicator_name"</span>: <span class="code-s">"人民币兑美元中间价"</span>,\n      <span class="code-k">"value"</span>: <span class="code-f">7.14</span>,\n      <span class="code-k">"unit"</span>: <span class="code-s">"CNY/USD"</span>\n    },\n    {\n      <span class="code-k">"indicator_name"</span>: <span class="code-s">"一年期LPR利率"</span>,\n      <span class="code-k">"value"</span>: <span class="code-f">3.45</span>,\n      <span class="code-k">"unit"</span>: <span class="code-s">"%"</span>\n    }\n  ]\n}'}
+  ]},
+  {group:'专利科技数据包',items:[
+    {id:'pt-search',method:'GET',path:'/v1/patent/search',title:'专利检索',desc:'按关键词、申请人、CPC 分类号和申请日期范围检索全球专利数据。',
+     params:[
+       {name:'q',required:false,type:'string',desc:'关键词搜索，匹配专利标题、摘要和专利号'},
+       {name:'assignee',required:false,type:'string',desc:'申请人/权利人名称'},
+       {name:'cpc_class',required:false,type:'string',desc:'CPC 分类号，如「G06N3/08」'},
+       {name:'date_from',required:false,type:'string',desc:'申请日期起始（ISO 8601）'},
+       {name:'date_to',required:false,type:'string',desc:'申请日期截止（ISO 8601）'},
+       {name:'page',required:false,type:'integer',desc:'页码，默认 1'},
+       {name:'limit',required:false,type:'integer',desc:'每页条数，默认 20，最大 100'}
+     ],
+     fields:[
+       {name:'patent_number',type:'string',desc:'专利号'},
+       {name:'title',type:'string',desc:'专利标题'},
+       {name:'abstract',type:'string',desc:'摘要'},
+       {name:'assignee',type:'string',desc:'申请人'},
+       {name:'inventors',type:'array',desc:'发明人列表'},
+       {name:'filing_date',type:'string',desc:'申请日期'},
+       {name:'publication_date',type:'string',desc:'公开日期'},
+       {name:'cpc_class',type:'string',desc:'CPC 分类号'},
+       {name:'status',type:'string',desc:'状态（公开/授权/审查中）'},
+       {name:'country',type:'string',desc:'国家/地区'},
+       {name:'claims_count',type:'integer',desc:'权利要求数量'},
+       {name:'citations_count',type:'integer',desc:'被引用次数'}
+     ],
+     reqBody:'{\n  <span class="code-k">"q"</span>: <span class="code-s">"深度学习"</span>,\n  <span class="code-k">"assignee"</span>: <span class="code-s">"华为"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    {\n      <span class="code-k">"patent_number"</span>: <span class="code-s">"CN114567890A"</span>,\n      <span class="code-k">"title"</span>: <span class="code-s">"一种基于深度学习的自然语言处理方法及系统"</span>,\n      <span class="code-k">"assignee"</span>: <span class="code-s">"华为技术有限公司"</span>,\n      <span class="code-k">"cpc_class"</span>: <span class="code-s">"G06N3/08"</span>,\n      <span class="code-k">"status"</span>: <span class="code-s">"公开"</span>\n    }\n  ],\n  <span class="code-k">"meta"</span>: { <span class="code-k">"total"</span>: <span class="code-f">3</span>, <span class="code-k">"page"</span>: <span class="code-f">1</span> }\n}'},
+    {id:'pt-assignee',method:'GET',path:'/v1/patent/assignee-analysis',title:'申请人专利分析',desc:'分析指定申请人的专利布局情况，包括技术领域分布和申请趋势。',
+     params:[{name:'assignee',required:true,type:'string',desc:'申请人名称关键词'}],
+     fields:[{name:'assignee',type:'string',desc:'申请人名称'},{name:'total_patents',type:'integer',desc:'专利总数'},{name:'top_classes',type:'array',desc:'核心技术领域'}],
+     reqBody:'{\n  <span class="code-k">"assignee"</span>: <span class="code-s">"华为"</span>\n}',
+     respBody:'{\n  <span class="code-k">"assignee"</span>: <span class="code-s">"华为技术有限公司"</span>,\n  <span class="code-k">"total_patents"</span>: <span class="code-f">2580</span>,\n  <span class="code-k">"top_classes"</span>: [\n    { <span class="code-k">"class"</span>: <span class="code-s">"G06N3/08"</span>, <span class="code-k">"count"</span>: <span class="code-f">320</span> },\n    { <span class="code-k">"class"</span>: <span class="code-s">"H04L9/32"</span>, <span class="code-k">"count"</span>: <span class="code-f">210</span> }\n  ]\n}'}
+  ]},
+  {group:'政策招投标数据包',items:[
+    {id:'pb-search',method:'GET',path:'/v1/policy/search',title:'政策与招标检索',desc:'检索政策文件、行业标准、招标公告等，支持按地区、类型和状态筛选。',
+     params:[
+       {name:'q',required:false,type:'string',desc:'关键词搜索，匹配标题、摘要和发文机构'},
+       {name:'region',required:false,type:'string',desc:'地区，如「北京」「上海」「全国」'},
+       {name:'type',required:false,type:'string',desc:'类型，如「政策文件」「招标公告」「地方法规」「行业标准」'},
+       {name:'status',required:false,type:'string',desc:'状态，如「现行有效」「招标中」「征求意见中」'},
+       {name:'page',required:false,type:'integer',desc:'页码，默认 1'},
+       {name:'limit',required:false,type:'integer',desc:'每页条数，默认 20，最大 100'}
+     ],
+     fields:[
+       {name:'title',type:'string',desc:'文件标题'},
+       {name:'document_number',type:'string',desc:'文号'},
+       {name:'issuing_body',type:'string',desc:'发文机构'},
+       {name:'region',type:'string',desc:'适用地区'},
+       {name:'type',type:'string',desc:'文件类型'},
+       {name:'status',type:'string',desc:'当前状态'},
+       {name:'publish_date',type:'string',desc:'发布日期'},
+       {name:'effective_date',type:'string',desc:'生效日期'},
+       {name:'summary',type:'string',desc:'摘要'},
+       {name:'category',type:'string',desc:'分类'},
+       {name:'bidding_deadline',type:'string',desc:'投标截止时间（仅招标类）'},
+       {name:'budget_amount',type:'number',desc:'预算金额（仅招标类，单位：元）'}
+     ],
+     reqBody:'{\n  <span class="code-k">"region"</span>: <span class="code-s">"上海"</span>,\n  <span class="code-k">"type"</span>: <span class="code-s">"招标公告"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    {\n      <span class="code-k">"title"</span>: <span class="code-s">"上海市2026年度人工智能算力平台建设项目招标公告"</span>,\n      <span class="code-k">"issuing_body"</span>: <span class="code-s">"上海市经济和信息化委员会"</span>,\n      <span class="code-k">"budget_amount"</span>: <span class="code-f">250000000</span>,\n      <span class="code-k">"bidding_deadline"</span>: <span class="code-s">"2026-07-10T17:00:00Z"</span>\n    }\n  ]\n}'},
+    {id:'pb-bidding',method:'GET',path:'/v1/policy/bidding-list',title:'活跃招标列表',desc:'获取当前进行中的招标项目，按投标截止日期排序。',
+     params:[{name:'region',required:false,type:'string',desc:'地区筛选'},{name:'category',required:false,type:'string',desc:'分类，如「信息化建设」「智慧交通」'}],
+     fields:[{name:'title',type:'string',desc:'招标标题'},{name:'budget_amount',type:'number',desc:'预算金额'},{name:'bidding_deadline',type:'string',desc:'投标截止时间'},{name:'contact_info',type:'string',desc:'联系方式'}],
+     reqBody:'{\n  <span class="code-k">"region"</span>: <span class="code-s">"深圳"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    {\n      <span class="code-k">"title"</span>: <span class="code-s">"深圳市城市交通数字化转型项目（一期）招标"</span>,\n      <span class="code-k">"budget_amount"</span>: <span class="code-f">180000000</span>,\n      <span class="code-k">"bidding_deadline"</span>: <span class="code-s">"2026-07-05T17:00:00Z"</span>,\n      <span class="code-k">"contact_info"</span>: <span class="code-s">"深圳市交通运输局科技处，电话：0755-83165123"</span>\n    }\n  ]\n}'}
+  ]},
+  {group:'教育数据包',items:[
+    {id:'edu-search',method:'GET',path:'/v1/education/search',title:'院校与项目检索',desc:'搜索全球高校及教育项目，支持按国家、学历层次和学科方向筛选。',
+     params:[
+       {name:'q',required:false,type:'string',desc:'关键词搜索，匹配院校名称、项目名称和描述'},
+       {name:'country',required:false,type:'string',desc:'国家/地区，如「中国」「美国」「英国」'},
+       {name:'level',required:false,type:'string',desc:'学历层次，如「高等教育」'},
+       {name:'subject',required:false,type:'string',desc:'学科方向，如「人工智能」「量子计算」「经济学」'},
+       {name:'page',required:false,type:'integer',desc:'页码，默认 1'},
+       {name:'limit',required:false,type:'integer',desc:'每页条数，默认 20，最大 100'}
+     ],
+     fields:[
+       {name:'institution_name',type:'string',desc:'院校名称'},
+       {name:'country',type:'string',desc:'国家/地区'},
+       {name:'region',type:'string',desc:'省份/州'},
+       {name:'level',type:'string',desc:'学历层次'},
+       {name:'subject',type:'string',desc:'学科方向'},
+       {name:'program_name',type:'string',desc:'项目名称'},
+       {name:'degree_type',type:'string',desc:'学位类型（学士/硕士/博士）'},
+       {name:'duration',type:'string',desc:'学制'},
+       {name:'tuition_fees',type:'number',desc:'学费'},
+       {name:'language',type:'string',desc:'授课语言'},
+       {name:'ranking',type:'integer',desc:'排名'},
+       {name:'application_deadline',type:'string',desc:'申请截止日期'}
+     ],
+     reqBody:'{\n  <span class="code-k">"country"</span>: <span class="code-s">"美国"</span>,\n  <span class="code-k">"subject"</span>: <span class="code-s">"人工智能"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    {\n      <span class="code-k">"institution_name"</span>: <span class="code-s">"Stanford University"</span>,\n      <span class="code-k">"program_name"</span>: <span class="code-s">"Master of Science in Artificial Intelligence"</span>,\n      <span class="code-k">"degree_type"</span>: <span class="code-s">"硕士"</span>,\n      <span class="code-k">"tuition_fees"</span>: <span class="code-f">65000</span>,\n      <span class="code-k">"language"</span>: <span class="code-s">"英语"</span>,\n      <span class="code-k">"ranking"</span>: <span class="code-f">3</span>\n    }\n  ]\n}'},
+    {id:'edu-ranking',method:'GET',path:'/v1/education/ranking',title:'院校排名查询',desc:'按学科方向和国家查询高校排名。',
+     params:[{name:'country',required:false,type:'string',desc:'国家/地区'},{name:'subject',required:false,type:'string',desc:'学科方向'}],
+     fields:[{name:'institution_name',type:'string',desc:'院校名称'},{name:'ranking',type:'integer',desc:'排名'},{name:'program_name',type:'string',desc:'优势项目'}],
+     reqBody:'{\n  <span class="code-k">"subject"</span>: <span class="code-s">"人工智能"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    { <span class="code-k">"institution_name"</span>: <span class="code-s">"MIT"</span>, <span class="code-k">"ranking"</span>: <span class="code-f">1</span>, <span class="code-k">"program_name"</span>: <span class="code-s">"PhD in Quantum Computing"</span> },\n    { <span class="code-k">"institution_name"</span>: <span class="code-s">"Stanford University"</span>, <span class="code-k">"ranking"</span>: <span class="code-f">3</span>, <span class="code-k">"program_name"</span>: <span class="code-s">"MS in Artificial Intelligence"</span> }\n  ]\n}'}
+  ]},
+  {group:'Web3 / Crypto 数据包',items:[
+    {id:'w3-tokens',method:'GET',path:'/v1/web3/tokens',title:'加密资产检索',desc:'搜索加密货币、DeFi 协议、Layer1/Layer2 项目等 Web3 资产数据。',
+     params:[
+       {name:'q',required:false,type:'string',desc:'关键词搜索，匹配名称、符号和描述'},
+       {name:'chain',required:false,type:'string',desc:'所属链，如「Ethereum」「Solana」「Bitcoin」'},
+       {name:'token',required:false,type:'string',desc:'代币名称或符号'},
+       {name:'date_from',required:false,type:'string',desc:'上线日期起始'},
+       {name:'date_to',required:false,type:'string',desc:'上线日期截止'},
+       {name:'page',required:false,type:'integer',desc:'页码，默认 1'},
+       {name:'limit',required:false,type:'integer',desc:'每页条数，默认 20，最大 100'}
+     ],
+     fields:[
+       {name:'name',type:'string',desc:'项目名称'},
+       {name:'symbol',type:'string',desc:'代币符号'},
+       {name:'type',type:'string',desc:'类型（加密货币/公链平台/DeFi协议/Layer2扩展/预言机等）'},
+       {name:'chain',type:'string',desc:'所属链'},
+       {name:'market_cap',type:'number',desc:'市值（美元）'},
+       {name:'price',type:'number',desc:'当前价格（美元）'},
+       {name:'volume_24h',type:'number',desc:'24小时交易量'},
+       {name:'circulating_supply',type:'number',desc:'流通供应量'},
+       {name:'description',type:'string',desc:'项目描述'},
+       {name:'tags',type:'array',desc:'标签列表'},
+       {name:'launched_date',type:'string',desc:'上线日期'},
+       {name:'risk_score',type:'string',desc:'风险等级（low/medium/high）'}
+     ],
+     reqBody:'{\n  <span class="code-k">"chain"</span>: <span class="code-s">"Ethereum"</span>,\n  <span class="code-k">"q"</span>: <span class="code-s">"DeFi"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    {\n      <span class="code-k">"name"</span>: <span class="code-s">"Uniswap"</span>,\n      <span class="code-k">"symbol"</span>: <span class="code-s">"UNI"</span>,\n      <span class="code-k">"type"</span>: <span class="code-s">"DeFi协议"</span>,\n      <span class="code-k">"market_cap"</span>: <span class="code-f">12500000000</span>,\n      <span class="code-k">"price"</span>: <span class="code-f">18.20</span>,\n      <span class="code-k">"tags"</span>: [<span class="code-s">"DEX"</span>, <span class="code-s">"AMM"</span>, <span class="code-s">"DeFi"</span>]\n    }\n  ]\n}'},
+    {id:'w3-defi',method:'GET',path:'/v1/web3/defi-overview',title:'DeFi 生态概览',desc:'查看 DeFi 协议的核心数据，包括 TVL、市值和风险评估。',
+     params:[{name:'chain',required:false,type:'string',desc:'公链筛选'}],
+     fields:[{name:'name',type:'string',desc:'协议名称'},{name:'type',type:'string',desc:'协议类型'},{name:'market_cap',type:'number',desc:'市值'},{name:'risk_score',type:'string',desc:'风险等级'}],
+     reqBody:'{\n  <span class="code-k">"chain"</span>: <span class="code-s">"Ethereum"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    { <span class="code-k">"name"</span>: <span class="code-s">"Uniswap"</span>, <span class="code-k">"type"</span>: <span class="code-s">"DeFi协议"</span>, <span class="code-k">"market_cap"</span>: <span class="code-f">12500000000</span> },\n    { <span class="code-k">"name"</span>: <span class="code-s">"Aave"</span>, <span class="code-k">"type"</span>: <span class="code-s">"DeFi协议"</span>, <span class="code-k">"market_cap"</span>: <span class="code-f">5800000000</span> }\n  ]\n}'}
+  ]},
+  {group:'跨境电商数据包',items:[
+    {id:'cb-search',method:'GET',path:'/v1/crossborder/search',title:'跨境电商数据检索',desc:'查询跨境电商市场情报、品类分析、物流成本、关税政策和竞品数据。',
+     params:[
+       {name:'q',required:false,type:'string',desc:'关键词搜索，匹配标题、摘要和标签'},
+       {name:'category',required:false,type:'string',desc:'数据类别（market-intel/product-analysis/logistics/tariffs/competitor/finance/platform-ops）'},
+       {name:'country',required:false,type:'string',desc:'国家/地区（匹配来源国和目的国）'},
+       {name:'platform',required:false,type:'string',desc:'电商平台，如「Amazon」「Shopee」「TikTok」'},
+       {name:'indicator',required:false,type:'string',desc:'指标类型，如「trade_volume」「shipping_cost」「tariff_rate」'},
+       {name:'page',required:false,type:'integer',desc:'页码，默认 1'},
+       {name:'limit',required:false,type:'integer',desc:'每页条数，默认 20，最大 100'}
+     ],
+     fields:[
+       {name:'title',type:'string',desc:'数据标题'},
+       {name:'category',type:'string',desc:'数据类别'},
+       {name:'subcategory',type:'string',desc:'子类别'},
+       {name:'source',type:'string',desc:'数据来源'},
+       {name:'summary',type:'string',desc:'摘要'},
+       {name:'value',type:'number',desc:'指标值'},
+       {name:'value_unit',type:'string',desc:'值单位'},
+       {name:'growth_rate',type:'number',desc:'增长率（%）'},
+       {name:'country_origin',type:'string',desc:'来源国'},
+       {name:'country_destination',type:'string',desc:'目的国'},
+       {name:'platform',type:'string',desc:'平台'},
+       {name:'indicator',type:'string',desc:'指标标识'},
+       {name:'confidence_score',type:'number',desc:'数据可信度（0-1）'},
+       {name:'tags',type:'array',desc:'标签列表'}
+     ],
+     reqBody:'{\n  <span class="code-k">"category"</span>: <span class="code-s">"logistics"</span>,\n  <span class="code-k">"country"</span>: <span class="code-s">"美国"</span>\n}',
+     respBody:'{\n  <span class="code-k">"success"</span>: <span class="code-f">true</span>,\n  <span class="code-k">"data"</span>: [\n    {\n      <span class="code-k">"title"</span>: <span class="code-s">"中美跨境物流价格指数（2026年6月）"</span>,\n      <span class="code-k">"category"</span>: <span class="code-s">"logistics"</span>,\n      <span class="code-k">"value"</span>: <span class="code-f">4280</span>,\n      <span class="code-k">"value_unit"</span>: <span class="code-s">"USD"</span>,\n      <span class="code-k">"growth_rate"</span>: <span class="code-f">-22.0</span>,\n      <span class="code-k">"confidence_score"</span>: <span class="code-f">0.93</span>\n    }\n  ]\n}'},
+    {id:'cb-categories',method:'GET',path:'/v1/crossborder/categories',title:'数据分类概览',desc:'获取跨境电商数据包中所有可用的数据类别和子类别列表。',
+     params:[],
+     fields:[{name:'category',type:'string',desc:'类别标识'},{name:'count',type:'integer',desc:'该类别下的数据条数'},{name:'subcategories',type:'array',desc:'子类别列表'}],
+     reqBody:'{}',
+     respBody:'{\n  <span class="code-k">"data"</span>: [\n    { <span class="code-k">"category"</span>: <span class="code-s">"market-intel"</span>, <span class="code-k">"count"</span>: <span class="code-f">4</span>, <span class="code-k">"subcategories"</span>: [<span class="code-s">"crossborder-volume"</span>, <span class="code-s">"platform-share"</span>, <span class="code-s">"consumer-trend"</span>] },\n    { <span class="code-k">"category"</span>: <span class="code-s">"logistics"</span>, <span class="code-k">"count"</span>: <span class="code-f">2</span>, <span class="code-k">"subcategories"</span>: [<span class="code-s">"shipping-rates"</span>, <span class="code-s">"last-mile"</span>] }\n  ]\n}'}
   ]}
 ];
 
@@ -230,15 +430,16 @@ var langSamples={
   }
 };
 
-function stripTags(s){return s.replace(/<[^>]*>/g,'')}
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function stripTags(s){return String(s).replace(/<[^>]+>/g,'')}
 
 function renderSidebar(){
   var html='';
   endpoints.forEach(function(g){
-    html+='<div class="sb-group-title">'+g.group+'</div>';
+    html+='<div class="sb-group-title">'+escapeHtml(g.group)+'</div>';
     g.items.forEach(function(it){
-      var methodHtml=it.method?'<span class="sb-method m-'+it.method.toLowerCase()+'">'+it.method+'</span>':'<span class="sb-method" style="background:transparent"></span>';
-      html+='<div class="sb-item'+(it.id===current.id?' active':'')+'" data-id="'+it.id+'" onclick="selectEndpoint(\''+it.id+'\')">'+methodHtml+'<span>'+it.title+'</span></div>';
+      var methodHtml=it.method?'<span class="sb-method m-'+it.method.toLowerCase()+'">'+escapeHtml(it.method)+'</span>':'<span class="sb-method" style="background:transparent"></span>';
+      html+='<div class="sb-item'+(it.id===current.id?' active':'')+'" data-id="'+escapeHtml(it.id)+'" onclick="selectEndpoint(\''+escapeHtml(it.id)+'\')">'+methodHtml+'<span>'+escapeHtml(it.title)+'</span></div>';
     });
   });
   document.getElementById('sidebar').innerHTML=html;
@@ -256,8 +457,8 @@ function renderMain(){
   var ep=current;
   if(!ep.method){
     document.getElementById('main').innerHTML=
-      '<div class="endpoint-title">'+ep.title+'</div>'+
-      '<div class="endpoint-desc">'+ep.desc+'</div>'+
+      '<div class="endpoint-title">'+escapeHtml(ep.title)+'</div>'+
+      '<div class="endpoint-desc">'+escapeHtml(ep.desc)+'</div>'+
       '<div class="section-label">请求头</div>'+
       '<table class="param-table"><tr><th>Header</th><th>说明</th></tr>'+
       '<tr><td class="param-name">Authorization</td><td class="param-desc">格式为 Bearer YOUR_API_KEY，在工作台「API Keys」中获取</td></tr>'+
@@ -273,18 +474,18 @@ function renderMain(){
   }
 
   var paramHtml=ep.params.map(function(p){
-    return '<tr><td><span class="param-name">'+p.name+'</span>'+(p.required?'<span class="param-required">必填</span>':'')+'</td><td class="param-type">'+p.type+'</td><td class="param-desc">'+p.desc+'</td></tr>';
+    return '<tr><td><span class="param-name">'+escapeHtml(p.name)+'</span>'+(p.required?'<span class="param-required">必填</span>':'')+'</td><td class="param-type">'+escapeHtml(p.type)+'</td><td class="param-desc">'+escapeHtml(p.desc)+'</td></tr>';
   }).join('');
 
   var fieldHtml=ep.fields.map(function(f){
-    return '<tr><td class="param-name">'+f.name+'</td><td class="field-type">'+f.type+'</td><td class="param-desc">'+f.desc+'</td></tr>';
+    return '<tr><td class="param-name">'+escapeHtml(f.name)+'</td><td class="field-type">'+escapeHtml(f.type)+'</td><td class="param-desc">'+escapeHtml(f.desc)+'</td></tr>';
   }).join('');
 
   document.getElementById('main').innerHTML=
     '<div class="endpoint-header">'+
-      '<div class="endpoint-path-row"><span class="endpoint-method m-'+ep.method.toLowerCase()+'">'+ep.method+'</span><span class="endpoint-path">'+ep.path+'</span></div>'+
-      '<div class="endpoint-title">'+ep.title+'</div>'+
-      '<div class="endpoint-desc">'+ep.desc+'</div>'+
+      '<div class="endpoint-path-row"><span class="endpoint-method m-'+ep.method.toLowerCase()+'">'+escapeHtml(ep.method)+'</span><span class="endpoint-path">'+escapeHtml(ep.path)+'</span></div>'+
+      '<div class="endpoint-title">'+escapeHtml(ep.title)+'</div>'+
+      '<div class="endpoint-desc">'+escapeHtml(ep.desc)+'</div>'+
     '</div>'+
     '<div class="section-label">请求参数</div>'+
     '<table class="param-table"><tr><th>参数</th><th>类型</th><th>说明</th></tr>'+paramHtml+'</table>'+

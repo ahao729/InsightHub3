@@ -6,7 +6,7 @@
 <title>管理后台 · InsightHub</title>
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/admin.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -63,7 +63,7 @@
       <div style="position:relative">
         <label>密码</label>
         <div class="pwd-wrap">
-          <input id="reg-password" type="password" placeholder="密码（至少 6 位）" autocomplete="new-password">
+          <input id="reg-password" type="password" placeholder="密码（至少 8 位）" autocomplete="new-password">
           <span class="toggle-pwd" tabindex="0" role="button" aria-label="切换密码可见性">
             <i class="ti ti-eye"></i>
           </span>
@@ -79,9 +79,9 @@
         </div>
       </div>
       <div style="position:relative">
-        <label>邀请码 <span style="font-size:var(--font-size-xs);color:var(--color-text-secondary)">（可选）</span></label>
+        <label>邀请码</label>
         <div class="pwd-wrap">
-          <input id="reg-invite" type="text" placeholder="管理员邀请码" autocomplete="off">
+          <input id="reg-invite" type="text" placeholder="请输入邀请码" autocomplete="off">
         </div>
       </div>
       <div class="login-error" id="reg-error"></div>
@@ -101,57 +101,40 @@
 </div>
 
 <div class="shell">
+  <div class="sidebar">
+    <div class="sb-logo" onclick="location.href='/'">
+      <div class="logo-dot"></div>
+      <span class="sb-logo-text">InsightHub</span>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="admin-avatar">A</div>
+      <div class="sb-name" id="admin-name">管理员</div>
+      <div class="sb-plan">管理后台</div>
+    </div>
 
+    <div class="sb-nav-section">
+      <div class="sb-nav-label">管理</div>
+      <div class="sb-nav-item active" data-section="overview"><i class="ti ti-dashboard"></i>系统概览</div>
+      <div class="sb-nav-item" data-section="users"><i class="ti ti-users"></i>用户管理</div>
+      <div class="sb-nav-item" data-section="apikeys"><i class="ti ti-key"></i>API 密钥</div>
+      <div class="sb-nav-item" data-section="subscriptions"><i class="ti ti-credit-card"></i>订阅管理</div>
+      <div class="sb-nav-item" data-section="logs"><i class="ti ti-clipboard-list"></i>操作日志</div>
+      <div class="sb-nav-item" data-section="health"><i class="ti ti-heartbeat"></i>健康状态</div>
+    </div>
 
-<!-- ===== TOP NAVIGATION ===== -->
-<div class="top-nav">
-  <a href="/" class="top-nav-logo">
-    <span class="logo-dot"></span>
-    <span class="sb-logo-text">InsightHub</span>
-  </a>
-
-  <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
-
-  <div class="top-nav-items">
-    <div class="sb-nav-item active" data-section="overview">
-      <i class="ti ti-dashboard"></i> 系统概览
-    </div>
-    <div class="sb-nav-item" data-section="users">
-      <i class="ti ti-users"></i> 用户管理
-    </div>
-    <div class="sb-nav-item" data-section="apikeys">
-      <i class="ti ti-key"></i> API 密钥
-    </div>
-    <div class="sb-nav-item" data-section="subscriptions">
-      <i class="ti ti-credit-card"></i> 订阅管理
-    </div>
-    <div class="sb-nav-item" data-section="logs">
-      <i class="ti ti-notes"></i> 操作日志
-    </div>
-    <div class="sb-nav-item" data-section="health">
-      <i class="ti ti-heartbeat"></i> 健康状态
+    <div class="sb-nav-section">
+      <div class="sb-nav-label">导航</div>
+      <div class="sb-nav-item" onclick="location.href='dashboard.html'"><i class="ti ti-arrow-left"></i>工作台</div>
+      <div class="sb-nav-item" onclick="handleLogout()"><i class="ti ti-logout"></i>退出登录</div>
     </div>
   </div>
-
-  <div class="top-nav-right">
-    <div class="top-nav-user">
-      <div class="top-nav-avatar" id="admin-avatar">A</div>
-      <div class="top-nav-name" id="admin-name">管理员</div>
-    </div>
-    <div class="top-nav-external" onclick="location.href='dashboard.html'">
-      <i class="ti ti-arrow-left"></i> 工作台
-    </div>
-    <div class="top-nav-logout" id="logout-btn">
-      <i class="ti ti-logout"></i> 退出
-    </div>
-  </div>
-</div>
 
 <!-- ===== MAIN ===== -->
 <div class="main">
   <div class="topbar">
+    <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
     <div class="topbar-title" id="page-title">系统概览</div>
     <div class="topbar-right">
       <button class="topbar-btn" onclick="refreshCurrent()"><i class="ti ti-refresh" style="font-size:var(--font-size-lg)"></i> 刷新</button>
@@ -186,12 +169,8 @@
         </div>
       </div>
 
-      <!-- Top 数据包 + 最近操作 双列 -->
+      <!-- 最近操作 -->
       <div class="overview-row">
-        <div class="overview-card">
-          <h3><i class="ti ti-package"></i> Top 数据包</h3>
-          <div id="top-packages"><div class="table-empty">加载中...</div></div>
-        </div>
         <div class="overview-card">
           <h3><i class="ti ti-history"></i> 最近操作</h3>
           <div id="recent-ops"><div class="table-empty">加载中...</div></div>
@@ -362,7 +341,7 @@
     <i class="ti ti-clipboard-list"></i> 操作日志
   </button>
   <button class="drawer-link" onclick="document.querySelector('.sb-nav-item[data-section=health]').click()">
-    <i class="ti ti-activity"></i> 健康状态
+    <i class="ti ti-heartbeat"></i> 健康状态
   </button>
   <div class="drawer-divider"></div>
   <button class="drawer-link" onclick="handleLogout()">
@@ -405,6 +384,7 @@
 </div>
 
 <!-- ===== SCRIPT ===== -->
+<script src="assets/drawer.js"></script>
 <script>
 // ========== state ==========
 var state = {
@@ -445,19 +425,6 @@ function loadOverviewStats() {
     document.getElementById('ov-active-users').textContent = (d.activeUsers ?? '—') + ' 个活跃用户';
     document.getElementById('ov-mrr').textContent = d.mrr ?? '—';
     document.getElementById('ov-total-revenue').textContent = d.totalRevenue ?? '—';
-
-    // --- Top Packages ---
-    var pkgsEl = document.getElementById('top-packages');
-    if (d.topPackages && d.topPackages.length) {
-      var html = '<table class="tbl"><thead><tr><th>数据包</th><th>调用次数</th><th>用户数</th></tr></thead><tbody>';
-      d.topPackages.forEach(function(p){
-        html += '<tr><td>' + escapeHtml(p.name) + '</td><td class="text-mono">' + (p.calls != null ? Number(p.calls).toLocaleString() : '—') + '</td><td class="text-mono">' + (p.users ?? '—') + '</td></tr>';
-      });
-      html += '</tbody></table>';
-      pkgsEl.innerHTML = html;
-    } else {
-      pkgsEl.innerHTML = '<div class="table-empty">暂无数据</div>';
-    }
 
     // --- Servers Health ---
     if (d.servers && d.servers.length) {
@@ -590,23 +557,23 @@ function loadUsers() {
     }
     var html = '';
     data.forEach(function(u){
-      var rolePill = u.plan === 'admin' ? '<span class="pill pill-red">admin</span>' : '<span class="pill pill-blue">user</span>';
+      var rolePill = u.role === 'admin' ? '<span class="pill pill-red">admin</span>' : '<span class="pill pill-blue">' + escapeHtml(u.role || 'user') + '</span>';
       var statusPill = '';
       if (u.status === 'active') statusPill = '<span class="pill pill-green">active</span>';
       else if (u.status === 'inactive') statusPill = '<span class="pill pill-gray">inactive</span>';
       else if (u.status === 'suspended') statusPill = '<span class="pill pill-red">suspended</span>';
-      else statusPill = '<span class="pill pill-gray">' + (u.status || '—') + '</span>';
+      else statusPill = '<span class="pill pill-gray">' + escapeHtml(u.status || '—') + '</span>';
       var quota = u.apiCalls !== undefined && u.apiCalls !== null ? u.apiCalls : '—';
       var registered = u.created ? new Date(u.created).toLocaleDateString('zh-CN') : '—';
       html += '<tr>'
-        + '<td class="text-mono">' + (u.id || '').slice(-6) + '</td>'
+        + '<td class="text-mono">' + escapeHtml((u.id || '').slice(-6)) + '</td>'
         + '<td><strong>' + escapeHtml(u.name || '') + '</strong></td>'
         + '<td class="text-secondary">' + escapeHtml(u.email || '') + '</td>'
         + '<td>' + rolePill + '</td>'
         + '<td>' + statusPill + '</td>'
-        + '<td>' + quota + '</td>'
+        + '<td>' + escapeHtml(String(quota)) + '</td>'
         + '<td class="text-secondary">' + registered + '</td>'
-        + '<td><button class="action-btn action-btn-sm" onclick="editUser(\'' + (u.id) + '\')">编辑</button></td>'
+        + '<td><button class="action-btn action-btn-sm" data-action="edit-user" data-user-id="' + escapeHtml(u.id || '') + '">编辑</button></td>'
         + '</tr>';
     });
     tbody.innerHTML = html;
@@ -627,7 +594,7 @@ function editUser(id) {
     document.getElementById('edit-user-id').value = u.id;
     document.getElementById('edit-username').value = u.name || '';
     document.getElementById('edit-email').value = u.email || '';
-    document.getElementById('edit-role').value = u.plan || 'user';
+    document.getElementById('edit-role').value = u.role || 'user';
     document.getElementById('edit-status').value = u.status || 'active';
     document.getElementById('edit-quota').value = u.apiCalls || '';
     document.getElementById('user-modal').classList.add('active');
@@ -669,10 +636,10 @@ function loadApiKeys() {
     data.forEach(function(k){
       var envPill = k.env === 'production' ? '<span class="pill pill-green">production</span>' : '<span class="pill pill-blue">development</span>';
       var statusPill = k.status === 'revoked' ? '<span class="pill pill-red">已吊销</span>' : '<span class="pill pill-green">有效</span>';
-      var usage = (k.usageCount || 0) + ' / ' + (k.usageLimit || '∞');
-      var created = k.createdAt ? new Date(k.createdAt).toLocaleDateString('zh-CN') : '—';
+      var usage = (k.used || 0) + ' / ' + (k.limit || '∞');
+      var created = k.created || '—';
       var keyDisplay = (k.key || '').substring(0, 12) + '••••';
-      var userName = k.user ? (k.user.username || k.user.email || k.user) : '—';
+      var userName = k.user || '—';
       html += '<tr>'
         + '<td class="text-mono truncate" title="' + escapeHtml(k.key || '') + '">' + escapeHtml(keyDisplay) + '</td>'
         + '<td>' + escapeHtml(k.name || '—') + '</td>'
@@ -683,8 +650,8 @@ function loadApiKeys() {
         + '<td class="text-secondary">' + created + '</td>'
         + '<td>'
         + (k.status === 'revoked'
-          ? '<button class="tb-btn" onclick="revokeApiKey(\'' + k.id + '\', false)" title="恢复密钥">恢复</button>'
-          : '<button class="tb-btn tb-btn-danger" onclick="revokeApiKey(\'' + k.id + '\', true)" title="吊销密钥">吊销</button>')
+          ? '<button class="tb-btn" data-action="restore-key" data-key-id="' + escapeHtml(k.id || '') + '" title="恢复密钥">恢复</button>'
+          : '<button class="tb-btn tb-btn-danger" data-action="revoke-key" data-key-id="' + escapeHtml(k.id || '') + '" title="吊销密钥">吊销</button>')
         + '</td>'
         + '</tr>';
     });
@@ -719,14 +686,14 @@ function loadSubscriptions() {
       if (s.status === 'active') statusPill = '<span class="pill pill-green">active</span>';
       else if (s.status === 'canceled') statusPill = '<span class="pill pill-red">canceled</span>';
       else if (s.status === 'incomplete') statusPill = '<span class="pill pill-amber">incomplete</span>';
-      else statusPill = '<span class="pill pill-gray">' + (s.status || '—') + '</span>';
-      var userName = s.user ? (s.user.username || s.user.email || s.user) : '—';
-      var periodStart = s.currentPeriodStart ? new Date(s.currentPeriodStart).toLocaleDateString('zh-CN') : '—';
-      var periodEnd = s.currentPeriodEnd ? new Date(s.currentPeriodEnd).toLocaleDateString('zh-CN') : '—';
+      else statusPill = '<span class="pill pill-gray">' + escapeHtml(s.status || '—') + '</span>';
+      var userName = s.user || '—';
+      var periodStart = s.startDate || '—';
+      var periodEnd = s.renewDate || '—';
       var canceledAt = s.canceledAt ? new Date(s.canceledAt).toLocaleDateString('zh-CN') : '—';
       html += '<tr>'
         + '<td>' + escapeHtml(userName) + '</td>'
-        + '<td>' + escapeHtml(s.planId || s.plan || '—') + '</td>'
+        + '<td>' + escapeHtml(s.plan || '—') + '</td>'
         + '<td>' + statusPill + '</td>'
         + '<td class="text-secondary">' + periodStart + '</td>'
         + '<td class="text-secondary">' + periodEnd + '</td>'
@@ -786,40 +753,62 @@ function pageLogs(dir) {
 }
 
 // ========== health ==========
+// Backend /admin/health returns:
+// { overall, database, uptime, memory: {rss,heapTotal,heapUsed,external}, timestamp, servers: [{name,status,uptime,load}] }
 function loadHealth() {
   var grid = document.getElementById('health-grid');
   API.admin.getHealth().then(function(d){
-    var services = (d && (d.services || d)) || {};
+    d = d || {};
     var html = '';
-    var names = { database:'数据库', mcpServer:'MCP Server', crawler:'Crawler 服务' };
-    Object.keys(services).forEach(function(key){
-      var svc = services[key];
-      if (typeof svc === 'object') {
-        var status = svc.status || 'unknown';
-        var dotClass = 'health-dot-down';
-        var statusText = '异常';
-        if (status === 'up' || status === 'ok' || status === true) {
-          dotClass = 'health-dot-up';
-          statusText = '正常';
-        } else if (status === 'degraded') {
-          dotClass = 'health-dot-degraded';
-          statusText = '降级';
-        }
-        var detail = svc.detail || svc.message || svc.error || '';
-        var uptime = svc.uptime !== undefined ? '<div class="health-stat">运行时长: ' + svc.uptime + 's</div>' : '';
+
+    // --- Overall status ---
+    var overall = d.overall || 'unknown';
+    var overallDot = overall === 'healthy' ? 'health-dot-up' : (overall === 'degraded' ? 'health-dot-degraded' : 'health-dot-down');
+    var overallText = overall === 'healthy' ? '正常' : (overall === 'degraded' ? '降级' : '异常');
+    html += '<div class="health-card">'
+      + '<div class="health-name"><span class="health-dot ' + overallDot + '"></span>系统总览 <span class="text-secondary" style="font-weight:400;font-size:var(--font-size-base)">(' + escapeHtml(overallText) + ')</span></div>'
+      + (d.timestamp ? '<div class="health-detail">检查时间: ' + escapeHtml(d.timestamp) + '</div>' : '')
+      + '</div>';
+
+    // --- Database ---
+    var dbStatus = d.database || 'unknown';
+    var dbOk = dbStatus === 'connected' || dbStatus === 'up' || dbStatus === 'ok';
+    html += '<div class="health-card">'
+      + '<div class="health-name"><span class="health-dot ' + (dbOk ? 'health-dot-up' : 'health-dot-down') + '"></span>数据库 <span class="text-secondary" style="font-weight:400;font-size:var(--font-size-base)">(' + escapeHtml(dbStatus) + ')</span></div>'
+      + '</div>';
+
+    // --- System uptime ---
+    if (d.uptime !== undefined) {
+      var hours = Math.floor(d.uptime / 3600);
+      var mins = Math.floor((d.uptime % 3600) / 60);
+      html += '<div class="health-card">'
+        + '<div class="health-name"><span class="health-dot health-dot-up"></span>系统运行时间 <span class="text-secondary" style="font-weight:400;font-size:var(--font-size-base)">(' + hours + 'h ' + mins + 'm)</span></div>'
+        + '</div>';
+    }
+
+    // --- Memory ---
+    if (d.memory && typeof d.memory === 'object') {
+      var memUsedMB = d.memory.heapUsed ? (d.memory.heapUsed / 1048576).toFixed(1) : '—';
+      var memTotalMB = d.memory.heapTotal ? (d.memory.heapTotal / 1048576).toFixed(1) : '—';
+      var rssMB = d.memory.rss ? (d.memory.rss / 1048576).toFixed(1) : '—';
+      html += '<div class="health-card">'
+        + '<div class="health-name"><span class="health-dot health-dot-up"></span>内存</div>'
+        + '<div class="health-detail">Heap: ' + memUsedMB + ' MB / ' + memTotalMB + ' MB · RSS: ' + rssMB + ' MB</div>'
+        + '</div>';
+    }
+
+    // --- Servers ---
+    if (d.servers && d.servers.length) {
+      d.servers.forEach(function(s){
+        var cls = s.status === 'healthy' ? 'health-dot-up' : (s.status === 'degraded' ? 'health-dot-degraded' : 'health-dot-down');
+        var st = s.status === 'healthy' ? '正常' : (s.status === 'degraded' ? '降级' : '异常');
         html += '<div class="health-card">'
-          + '<div class="health-name"><span class="health-dot ' + dotClass + '"></span>' + (names[key] || key) + ' <span class="text-secondary" style="font-weight:400;font-size:var(--font-size-base)">(' + statusText + ')</span></div>'
-          + uptime
-          + (detail ? '<div class="health-detail">' + escapeHtml(detail) + '</div>' : '')
+          + '<div class="health-name"><span class="health-dot ' + cls + '"></span>' + escapeHtml(s.name || '服务') + ' <span class="text-secondary" style="font-weight:400;font-size:var(--font-size-base)">(' + escapeHtml(st) + ')</span></div>'
+          + '<div class="health-detail">负载: ' + escapeHtml(s.load || '—') + (s.uptime ? ' · 运行时间: ' + escapeHtml(s.uptime) : '') + '</div>'
           + '</div>';
-      } else {
-        // simple string status
-        var ok = svc === 'up' || svc === 'ok' || svc === true;
-        html += '<div class="health-card">'
-          + '<div class="health-name"><span class="health-dot ' + (ok ? 'health-dot-up' : 'health-dot-down') + '"></span>' + (names[key] || key) + ' <span class="text-secondary" style="font-weight:400;font-size:var(--font-size-base)">(' + svc + ')</span></div>'
-          + '</div>';
-      }
-    });
+      });
+    }
+
     if (!html) html = '<div class="health-card"><div class="health-name">无健康数据</div></div>';
     grid.innerHTML = html;
   }).catch(function(e){
@@ -869,14 +858,14 @@ var authApi = {
       return res.data;
     });
   },
-  register: function(email, password, name, invite) {
-    return API.admin.register(email, password, name, invite).then(function(res) {
+  register: function(email, password, name, inviteCode) {
+    return API.admin.register(email, password, name, inviteCode).then(function(res) {
       if (!res.success) throw new Error(res.error && res.error.message || '注册失败');
       return res.data;
     });
   },
   checkAuth: function() {
-    var t = localStorage.getItem('admin_token') || localStorage.getItem('ih_token');
+    var t = localStorage.getItem('ih_token');
     if (!t) return Promise.resolve({ authenticated: false });
     // try to call a protected endpoint to verify token is still valid
     return API.admin.getStats().then(function() {
@@ -886,7 +875,6 @@ var authApi = {
     });
   },
   logout: function() {
-    localStorage.removeItem('admin_token');
     localStorage.removeItem('ih_token');
     try { API.admin.logout(); } catch(e) { /* ignore */ }
     return Promise.resolve();
@@ -896,7 +884,7 @@ var authApi = {
 // ========== auth ==========
 
 function checkAuth() {
-  var token = localStorage.getItem('admin_token') || localStorage.getItem('ih_token');
+  var token = localStorage.getItem('ih_token');
   if (token) {
     authApi.checkAuth()
       .then(function(res){
@@ -904,13 +892,11 @@ function checkAuth() {
           document.getElementById('login-overlay').classList.remove('active');
           loadOverviewStats();
         } else {
-          localStorage.removeItem('admin_token');
           localStorage.removeItem('ih_token');
           showLogin();
         }
       })
       .catch(function(){
-        localStorage.removeItem('admin_token');
         localStorage.removeItem('ih_token');
         showLogin();
       });
@@ -934,7 +920,7 @@ function handleLogin() {
   btn.textContent = '登录中...';
   authApi.login(email, password)
     .then(function(res){
-      localStorage.setItem('admin_token', res.token);
+      // Token already stored as 'ih_token' by api-client.js; no need to duplicate as 'admin_token'
       document.getElementById('login-overlay').classList.remove('active');
       loadOverviewStats();
     })
@@ -953,10 +939,10 @@ function handleRegister() {
   var password = document.getElementById('reg-password').value.trim();
   var confirmPwd = document.getElementById('reg-confirm').value.trim();
   var name = document.getElementById('reg-name').value.trim() || email.split('@')[0];
-  var invite = document.getElementById('reg-invite').value.trim();
+  var inviteCode = document.getElementById('reg-invite').value.trim();
   var errorEl = document.getElementById('reg-error');
-  if (!email || !password || !confirmPwd) {
-    errorEl.textContent = '请填写所有必填字段（邀请码可选）';
+  if (!email || !password || !confirmPwd || !inviteCode) {
+    errorEl.textContent = '请填写所有必填字段';
     errorEl.style.display = 'block';
     return;
   }
@@ -965,8 +951,8 @@ function handleRegister() {
     errorEl.style.display = 'block';
     return;
   }
-  if (password.length < 6) {
-    errorEl.textContent = '密码长度至少 6 位';
+  if (password.length < 8) {
+    errorEl.textContent = '密码长度至少 8 位';
     errorEl.style.display = 'block';
     return;
   }
@@ -974,10 +960,9 @@ function handleRegister() {
   var btn = document.getElementById('reg-btn');
   btn.disabled = true;
   btn.textContent = '注册中...';
-  authApi.register(email, password, name, invite || undefined)
+  authApi.register(email, password, name, inviteCode)
     .then(function(res){
-      // auto-login after register
-      localStorage.setItem('admin_token', res.token);
+      // auto-login after register — token already stored by api-client.js
       document.getElementById('login-overlay').classList.remove('active');
       loadOverviewStats();
     })
@@ -993,7 +978,6 @@ function handleRegister() {
 
 function handleLogout() {
   authApi.logout().catch(function(){ /* ignore */ });
-  localStorage.removeItem('admin_token');
   location.reload();
 }
 
@@ -1012,7 +996,13 @@ function showLogin() {
 }
 
 function showForgotPassword() {
-  // 预留：忘记密码功能
+  var email = prompt('请输入管理员注册邮箱，我们将发送密码重置链接：');
+  if (!email) return;
+  API.auth.forgotPassword(email).then(function(){
+    showToast('重置邮件已发送，请查收邮箱', 'success');
+  }).catch(function(e){
+    showToast(e.message || '发送失败，请稍后重试', 'error');
+  });
 }
 
 // toggle password visibility
@@ -1051,9 +1041,23 @@ document.getElementById('reg-confirm').addEventListener('keydown', function(e){
 document.getElementById('reg-btn').addEventListener('click', handleRegister);
 document.getElementById('login-btn').addEventListener('click', handleLogin);
 
-document.getElementById('logout-btn').addEventListener('click', handleLogout);
+// ========== event delegation for table buttons ==========
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('button');
+  if (!btn) return;
+  var action = btn.getAttribute('data-action');
+  if (!action) return;
 
-<script src="assets/drawer.js"></script>
+  if (action === 'edit-user') {
+    editUser(btn.getAttribute('data-user-id') || '');
+  } else if (action === 'toggle-status') {
+    toggleUserStatus(btn.getAttribute('data-user-id') || '', btn.getAttribute('data-user-status') || '');
+  } else if (action === 'revoke-key') {
+    revokeApiKey(btn.getAttribute('data-key-id') || '', true);
+  } else if (action === 'restore-key') {
+    revokeApiKey(btn.getAttribute('data-key-id') || '', false);
+  }
+});
 
 // ========== init ==========
 checkAuth();

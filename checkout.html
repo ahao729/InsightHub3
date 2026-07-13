@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>订阅结账 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
 <link rel="manifest" href="manifest.json">
@@ -206,21 +206,21 @@
     <div class="field-row">
       <div>
         <div class="field-label">姓名</div>
-        <input class="text-input" type="text" value="张小明" />
+        <input class="text-input" type="text" id="contact-name" value="" placeholder="您的姓名" />
       </div>
       <div>
         <div class="field-label">公司名称（选填）</div>
-        <input class="text-input" type="text" placeholder="如需开具发票请填写" />
+        <input class="text-input" type="text" id="contact-company" placeholder="如需开具发票请填写" />
       </div>
     </div>
     <div class="field-row" style="margin-bottom:20px">
       <div>
         <div class="field-label">邮箱</div>
-        <input class="text-input" type="text" value="zhang@example.com" />
+        <input class="text-input" type="text" id="contact-email" value="" placeholder="您的邮箱" />
       </div>
       <div>
         <div class="field-label">手机号</div>
-        <input class="text-input" type="text" placeholder="用于接收订阅通知" />
+        <input class="text-input" type="text" id="contact-phone" placeholder="用于接收订阅通知" />
       </div>
     </div>
 
@@ -272,7 +272,29 @@
 </div>
 
 <script>
-var state={plan:'startup',cycle:'monthly',method:'wechat',pkgs:['startup-intel','ai-geo']};
+/* ===== Auth guard ===== */
+(function(){
+  if(!API.auth.isAuthenticated()){
+    var here=encodeURIComponent(location.href);
+    location.href='auth.html?redirect='+here;
+    return;
+  }
+  /* Pre-fill contact info from user profile */
+  API.auth.me().then(function(u){
+    if(!u) return;
+    if(u.name) document.getElementById('contact-name').value=u.name;
+    if(u.email) document.getElementById('contact-email').value=u.email;
+  }).catch(function(){});
+})();
+
+function escapeHtml(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+/* ===== State ===== */
+var urlParams=new URLSearchParams(location.search);
+var validPlans=['personal','startup','pro'];
+var initPlan=urlParams.get('plan');
+if(validPlans.indexOf(initPlan)<0) initPlan='startup';
+var state={plan:initPlan,cycle:'monthly',method:'wechat',pkgs:['startup-intel','ai-geo']};
 
 var planInfo={
   personal:{name:'个人版',price:99,limit:1},
@@ -287,6 +309,7 @@ var pkgNames={
 };
 
 function selectPlan(plan){
+  if(!/^[a-z-]+$/.test(plan)||validPlans.indexOf(plan)<0) return;
   state.plan=plan;
   document.querySelectorAll('.plan-card').forEach(function(c){c.classList.remove('selected')});
   document.querySelector('[data-plan="'+plan+'"]').classList.add('selected');
@@ -303,6 +326,7 @@ function selectPlan(plan){
 }
 
 function togglePkg(pkg){
+  if(Object.keys(pkgNames).indexOf(pkg)<0) return;
   var card=document.querySelector('[data-pkg="'+pkg+'"]');
   var idx=state.pkgs.indexOf(pkg);
   var limit=planInfo[state.plan].limit;
@@ -323,6 +347,7 @@ function togglePkg(pkg){
 }
 
 function selectCycle(cycle){
+  if(cycle!=='monthly'&&cycle!=='yearly') return;
   state.cycle=cycle;
   document.querySelectorAll('.bt-option').forEach(function(c){c.classList.remove('selected')});
   document.querySelector('[data-cycle="'+cycle+'"]').classList.add('selected');
@@ -330,6 +355,7 @@ function selectCycle(cycle){
 }
 
 function selectMethod(method){
+  if(method!=='wechat'&&method!=='alipay'&&method!=='card') return;
   state.method=method;
   document.querySelectorAll('.pay-method').forEach(function(c){c.classList.remove('selected')});
   document.querySelector('[data-method="'+method+'"]').classList.add('selected');
@@ -341,7 +367,7 @@ function updateSummary(){
   document.getElementById('sum-cycle').textContent=state.cycle==='monthly'?'按月':'按年';
 
   var pkgListHtml=state.pkgs.map(function(p){
-    return '<div class="summary-pkg-item"><i class="ti ti-circle-check" aria-hidden="true"></i>'+pkgNames[p]+'</div>';
+    return '<div class="summary-pkg-item"><i class="ti ti-circle-check" aria-hidden="true"></i>'+escapeHtml(pkgNames[p])+'</div>';
   }).join('');
   document.getElementById('sum-pkg-list').innerHTML=pkgListHtml||'<div class="summary-pkg-item" style="color:var(--color-text-tertiary)">未选择数据包</div>';
 
@@ -366,19 +392,46 @@ function updateSummary(){
 
 function handlePay(){
   var btn=document.getElementById('pay-btn');
+  var errBox=document.getElementById('pay-error');
+  if(errBox) errBox.style.display='none';
+  var agree=document.getElementById('agree-check');
+  if(!agree||!agree.checked){
+    if(errBox){errBox.style.display='block';errBox.textContent='请先同意服务条款'}
+    return;
+  }
   var original=btn.textContent;
-  btn.textContent='处理中…';
+  btn.textContent='正在创建订阅…';
   btn.disabled=true;
-  setTimeout(function(){
-    btn.textContent='支付成功 ✓';
-    setTimeout(function(){
-      location.href='dashboard.html';
-    },800);
-  },1200);
+
+  API.subscriptions.subscribe(state.plan).then(function(res){
+    if(res&&res.checkout_url){
+      /* Real payment gateway redirect */
+      location.href=res.checkout_url;
+    } else {
+      /* Stub mode or direct activation */
+      btn.textContent='订阅成功 ✓';
+      btn.style.background='var(--color-text-success)';
+      setTimeout(function(){
+        location.href='dashboard.html?subscribed=1';
+      },800);
+    }
+  }).catch(function(e){
+    btn.textContent=original;
+    btn.disabled=false;
+    if(errBox){
+      errBox.style.display='block';
+      errBox.textContent=e.message||'订阅创建失败，请重试';
+    }
+  });
 }
 
-updateSummary();
+/* ===== Init: pre-select plan from URL ===== */
+(function(){
+  selectPlan(state.plan);
+  updateSummary();
+})();
 </script>
+<div id="pay-error" style="display:none;padding:10px 12px;border-radius:var(--border-radius-md);background:var(--color-background-danger);color:var(--color-text-danger);font-size:12px;margin-bottom:12px"></div>
 </div>
 </body>
 </html>

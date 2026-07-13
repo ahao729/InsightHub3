@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>数据产品市场 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
 <link rel="manifest" href="manifest.json">
@@ -173,6 +173,9 @@
 </div>
 
 <script>
+function escapeHtml(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function sanitizeCssClass(s){return String(s||'').replace(/[^a-zA-Z0-9_-]/g,'');}
+
 const packages = [
   {name:'创业商业情报',icon:'ti-rocket',color:'ic-green',status:'live',statusLabel:'已上线',cat:'商业情报',desc:'行业趋势、竞品分析、项目评估、MVP 建议、AI 创业报告',apis:6,update:'每日',price:99,link:'package-startup-intel.html'},
   {name:'AI / GEO 分析',icon:'ti-brand-google',color:'ic-blue',status:'live',statusLabel:'已上线',cat:'内容与搜索',desc:'网站 AI 可见度评分、品牌内容覆盖、GEO 优化建议',apis:6,update:'每日',price:99,link:'package-ai-geo.html'},
@@ -202,18 +205,18 @@ function render(list) {
 
   grid.innerHTML = list.map(p => {
     const tagCls = p.status === 'live' ? (p.statusLabel === '热门' ? 'tag-hot' : 'tag-live') : 'tag-soon';
-    return '<div class="pkg-card" onclick="location.href=\'' + p.link + '\'">' +
+    return '<div class="pkg-card" onclick="location.href=\'' + escapeHtml(p.link) + '\'">' +
       '<div class="pkg-top">' +
         '<div class="pkg-icon ' + p.color + '"><i class="ti ' + p.icon + '" aria-hidden="true"></i></div>' +
-        '<span class="pkg-tag ' + tagCls + '">' + p.statusLabel + '</span>' +
+        '<span class="pkg-tag ' + tagCls + '">' + escapeHtml(p.statusLabel) + '</span>' +
       '</div>' +
-      '<div class="pkg-name">' + p.name + '</div>' +
-      '<div class="cat-pills"><span class="cat-pill">' + p.cat + '</span></div>' +
-      '<div class="pkg-desc">' + p.desc + '</div>' +
+      '<div class="pkg-name">' + escapeHtml(p.name) + '</div>' +
+      '<div class="cat-pills"><span class="cat-pill">' + escapeHtml(p.cat) + '</span></div>' +
+      '<div class="pkg-desc">' + escapeHtml(p.desc) + '</div>' +
       '<div class="pkg-foot">' +
         '<div class="pkg-foot-meta">' +
           '<span><i class="ti ti-api" style="font-size:13px" aria-hidden="true"></i>' + p.apis + ' 接口</span>' +
-          '<span><i class="ti ti-refresh" style="font-size:13px" aria-hidden="true"></i>' + p.update + '</span>' +
+          '<span><i class="ti ti-refresh" style="font-size:13px" aria-hidden="true"></i>' + escapeHtml(p.update) + '</span>' +
         '</div>' +
         '<div style="text-align:right"><div class="pkg-price-from">起</div><div class="pkg-price">¥' + p.price + '/月</div></div>' +
       '</div>' +

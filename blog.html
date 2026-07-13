@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>博客 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="assets/api-client.js"></script>
 <script src="assets/stub-runtime.js"></script>
 <link rel="manifest" href="manifest.json">
@@ -268,6 +268,8 @@ var articles = [
   }
 ];
 
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
 var ITEMS_PER_PAGE = 6;
 var currentCat = 'all';
 var currentPage = 1;
@@ -307,17 +309,17 @@ function render() {
 
   grid.innerHTML = pageItems.map(function(a) {
     var catClassMap = { product: 'product', insight: 'insight', tutorial: 'tutorial', case: 'case' };
-    return '<div class="blog-card" onclick="location.href=\'posts/' + a.id + '.html\'">'
-      + '<div class="blog-card-img"><img src="posts/images/' + a.id + '.svg" alt="' + a.title + '" loading="lazy"></div>'
+    return '<div class="blog-card" onclick="location.href=\'posts/' + escapeHtml(a.id) + '.html\'">'
+      + '<div class="blog-card-img"><img src="posts/images/' + escapeHtml(a.id) + '.svg" alt="' + escapeHtml(a.title) + '" loading="lazy"></div>'
       + '<div class="blog-card-body">'
       + '<div class="blog-card-meta">'
-      + '<span class="blog-card-cat ' + (catClassMap[a.cat] || '') + '">' + a.catLabel + '</span>'
-      + '<span class="blog-card-date">' + a.date + '</span>'
+      + '<span class="blog-card-cat ' + (catClassMap[a.cat] || '') + '">' + escapeHtml(a.catLabel) + '</span>'
+      + '<span class="blog-card-date">' + escapeHtml(a.date) + '</span>'
       + '</div>'
-      + '<div class="blog-card-title">' + a.title + '</div>'
-      + '<div class="blog-card-excerpt">' + a.excerpt + '</div>'
+      + '<div class="blog-card-title">' + escapeHtml(a.title) + '</div>'
+      + '<div class="blog-card-excerpt">' + escapeHtml(a.excerpt) + '</div>'
       + '<div class="blog-card-foot">'
-      + '<span class="blog-card-author"><i class="ti ti-user"></i>' + a.author + '</span>'
+      + '<span class="blog-card-author"><i class="ti ti-user"></i>' + escapeHtml(a.author) + '</span>'
       + '<span class="blog-card-read">阅读全文 <i class="ti ti-arrow-right"></i></span>'
       + '</div>'
       + '</div>'

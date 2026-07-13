@@ -6,12 +6,12 @@
   var closeBtn = document.getElementById('drawer-close');
   function openDrawer() {
     drawer.classList.add('open');
-    backdrop.classList.add('active');
+    backdrop.classList.add('open');
     btn.setAttribute('aria-expanded', 'true');
   }
   function closeDrawer() {
     drawer.classList.remove('open');
-    backdrop.classList.remove('active');
+    backdrop.classList.remove('open');
     btn.setAttribute('aria-expanded', 'false');
   }
   if (btn) btn.addEventListener('click', openDrawer);
