@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const { query } = require('../db/pool');
 const { authenticate } = require('../middleware/auth');
+const { loginRateLimit, registerRateLimit } = require('../middleware/authRateLimit');
 const config = require('../config');
 const tokenUsage = require('../services/tokenUsage');
 const llmService = require('../services/llmService');
@@ -17,16 +18,20 @@ const adminStore = [];
 
 async function seedDefaultAdmin() {
   if (adminStore.find(a => a.email === 'admin@insighthub.data')) return;
-  const hashed = await bcrypt.hash('admin123456', 10);
+  const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'admin123456';
+  if (!process.env.ADMIN_DEFAULT_PASSWORD) {
+    console.warn('[Admin] ⚠️  未设置 ADMIN_DEFAULT_PASSWORD 环境变量，使用默认密码。生产环境请务必设置！');
+  }
+  const hashed = await bcrypt.hash(defaultPassword, 10);
   adminStore.push({
-    id: 'admin-' + uuidv4().slice(0, 8),
+    id: 'admin-seed-01',
     email: 'admin@insighthub.data',
     password: hashed,
     name: '管理员',
     role: 'admin',
     createdAt: new Date().toISOString(),
   });
-  console.log('[Admin] Default admin seeded: admin@insighthub.data / admin123456');
+  console.log('[Admin] 默认管理员账号已初始化：admin@insighthub.data');
 }
 seedDefaultAdmin();
 
@@ -110,7 +115,7 @@ const fallbackAuditLogs = [
  * POST /api/v1/admin/login
  * Authenticate with email + password, returns JWT
  */
-router.post('/login', async (req, res) => {
+router.post('/login', loginRateLimit, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -162,13 +167,35 @@ router.post('/login', async (req, res) => {
  * POST /api/v1/admin/register
  * Create a new admin account
  */
-router.post('/register', async (req, res) => {
+router.post('/register', registerRateLimit, async (req, res) => {
   try {
     const { email, password, name, inviteCode } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({
         success: false,
         error: { code: 'INVALID_INPUT', message: '请提供邮箱、密码和管理员名称。' }
+      });
+    }
+
+    // 邮箱格式校验
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_INPUT', message: '邮箱格式不正确。' }
+      });
+    }
+
+    // 密码强度校验
+    if (typeof password !== 'string' || password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'WEAK_PASSWORD', message: '密码长度不能少于 8 位。' }
+      });
+    }
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'WEAK_PASSWORD', message: '密码必须包含大写字母、小写字母和数字。' }
       });
     }
 

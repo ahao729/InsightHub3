@@ -291,7 +291,11 @@ async function runMigration() {
       [adminEmail]
     );
     if (existingAdmin.rows.length === 0) {
-      const adminPasswordHash = await bcrypt.hash('admin123456', 10);
+      const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'admin123456';
+      if (!process.env.ADMIN_DEFAULT_PASSWORD) {
+        console.warn('[Migrate] ⚠️  未设置 ADMIN_DEFAULT_PASSWORD，使用默认密码。生产环境请务必设置！');
+      }
+      const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
       await pool.query(
         'INSERT INTO users (email, name, password_hash) VALUES ($1, $2, $3)',
         [adminEmail, '管理员', adminPasswordHash]

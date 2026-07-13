@@ -6,7 +6,14 @@ const config = {
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: '7d',
   corsOrigins: process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001,http://localhost:5173',
-  adminInviteCode: process.env.ADMIN_INVITE_CODE || (process.env.NODE_ENV === 'production' ? '' : 'INSIGHTHUB2024'),
+  adminInviteCode: (() => {
+    const code = process.env.ADMIN_INVITE_CODE;
+    if (code) return code;
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[Config] 生产环境必须设置 ADMIN_INVITE_CODE 环境变量！');
+    }
+    return 'INSIGHTHUB2024';
+  })(),
   nodeEnv: process.env.NODE_ENV || 'development',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
 
