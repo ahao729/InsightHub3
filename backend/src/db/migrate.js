@@ -70,29 +70,198 @@ async function runMigration() {
       END $$;
     `);
 
-    // 2. Create token_usage table if not exists
+    // 2. Create token_usage table if not exists (aligned with init.sql / tokenUsage.js)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS token_usage (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        api_key_id UUID REFERENCES api_keys(id) ON DELETE SET NULL,
         user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-        model VARCHAR(100) NOT NULL,
-        provider VARCHAR(50) NOT NULL DEFAULT 'openai',
-        prompt_tokens INTEGER NOT NULL DEFAULT 0,
-        completion_tokens INTEGER NOT NULL DEFAULT 0,
+        model VARCHAR(255) NOT NULL,
+        input_tokens INTEGER NOT NULL DEFAULT 0,
+        output_tokens INTEGER NOT NULL DEFAULT 0,
         total_tokens INTEGER NOT NULL DEFAULT 0,
-        cost NUMERIC(10,6) NOT NULL DEFAULT 0,
-        endpoint VARCHAR(255),
-        metadata JSONB DEFAULT '{}',
-        created_at TIMESTAMPTZ DEFAULT NOW()
+        cost_usd DECIMAL(12,6) NOT NULL DEFAULT 0,
+        task_type VARCHAR(100) DEFAULT 'general',
+        package_code VARCHAR(50),
+        timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
       )
+    `);
+
+    // 2b. Migrate old token_usage schema to new columns (idempotent)
+    await pool.query(`
+      DO $$
+      BEGIN
+        -- Add new columns if missing
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'input_tokens'
+        ) THEN
+          ALTER TABLE token_usage ADD COLUMN input_tokens INTEGER NOT NULL DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'output_tokens'
+        ) THEN
+          ALTER TABLE token_usage ADD COLUMN output_tokens INTEGER NOT NULL DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'cost_usd'
+        ) THEN
+          ALTER TABLE token_usage ADD COLUMN cost_usd DECIMAL(12,6) NOT NULL DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'task_type'
+        ) THEN
+          ALTER TABLE token_usage ADD COLUMN task_type VARCHAR(100) DEFAULT 'general';
+        END IF;
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'package_code'
+        ) THEN
+          ALTER TABLE token_usage ADD COLUMN package_code VARCHAR(50);
+        END IF;
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'timestamp'
+        ) THEN
+          ALTER TABLE token_usage ADD COLUMN timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW();
+        END IF;
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'updated_at'
+        ) THEN
+          ALTER TABLE token_usage ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+        END IF;
+        -- Backfill from old columns if they exist
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'prompt_tokens'
+        ) THEN
+          UPDATE token_usage SET input_tokens = prompt_tokens WHERE input_tokens = 0 AND prompt_tokens > 0;
+        END IF;
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'completion_tokens'
+        ) THEN
+          UPDATE token_usage SET output_tokens = completion_tokens WHERE output_tokens = 0 AND completion_tokens > 0;
+        END IF;
+        -- Drop old columns
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'api_key_id'
+        ) THEN
+          ALTER TABLE token_usage DROP COLUMN api_key_id;
+        END IF;
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'provider'
+        ) THEN
+          ALTER TABLE token_usage DROP COLUMN provider;
+        END IF;
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'prompt_tokens'
+        ) THEN
+          ALTER TABLE token_usage DROP COLUMN prompt_tokens;
+        END IF;
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'completion_tokens'
+        ) THEN
+          ALTER TABLE token_usage DROP COLUMN completion_tokens;
+        END IF;
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'cost'
+        ) THEN
+          ALTER TABLE token_usage DROP COLUMN cost;
+        END IF;
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'endpoint'
+        ) THEN
+          ALTER TABLE token_usage DROP COLUMN endpoint;
+        END IF;
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'token_usage' AND column_name = 'metadata'
+        ) THEN
+          ALTER TABLE token_usage DROP COLUMN metadata;
+        END IF;
+      END $$;
     `);
 
     // 3. Create indexes for token_usage (idempotent)
     await pool.query(`
-      CREATE INDEX IF NOT EXISTS idx_token_usage_api_key_id ON token_usage(api_key_id);
       CREATE INDEX IF NOT EXISTS idx_token_usage_user_id ON token_usage(user_id);
-      CREATE INDEX IF NOT EXISTS idx_token_usage_created_at ON token_usage(created_at);
+      CREATE INDEX IF NOT EXISTS idx_token_usage_timestamp ON token_usage(timestamp);
+      CREATE INDEX IF NOT EXISTS idx_token_usage_task_type ON token_usage(task_type);
+      CREATE INDEX IF NOT EXISTS idx_token_usage_package ON token_usage(package_code);
+      -- Drop old indexes if they exist
+      DROP INDEX IF EXISTS idx_token_usage_api_key_id;
+      DROP INDEX IF EXISTS idx_token_usage_created_at;
+    `);
+
+    // 4. Add email_verified and verification_token to users if missing
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'users' AND column_name = 'email_verified'
+        ) THEN
+          ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE;
+        END IF;
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'users' AND column_name = 'verification_token'
+        ) THEN
+          ALTER TABLE users ADD COLUMN verification_token VARCHAR(255);
+        END IF;
+      END $$;
+    `);
+
+    // 5. Create password_resets table if not exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMPTZ NOT NULL,
+        used BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
+      CREATE INDEX IF NOT EXISTS idx_password_resets_user_id ON password_resets(user_id);
+    `);
+
+    // 6. Add role column to users if missing
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'users' AND column_name = 'role'
+        ) THEN
+          ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'user';
+        END IF;
+      END $$;
+    `);
+
+    // 7. Mark admin user as email-verified
+    await pool.query(`
+      UPDATE users SET email_verified = TRUE WHERE email_verified IS NULL OR email_verified = FALSE;
+    `);
+
+    // 8. Set admin user role to 'admin'
+    await pool.query(`
+      UPDATE users SET role = 'admin' WHERE email = 'admin@insighthub.data';
     `);
 
     console.log('[Migrate] Incremental migrations applied.');

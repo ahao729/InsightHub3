@@ -55,19 +55,23 @@ const fallbackStats = {
     { name: 'AI / GEO 分析', calls: 72300, users: 48 },
     { name: '企业情报与风控', calls: 54100, users: 36 },
     { name: '金融宏观数据', calls: 38700, users: 22 },
-    { name: '行业研究报告', calls: 21200, users: 15 },
+    { name: '专利科技', calls: 21200, users: 15 },
+    { name: '政策招投标', calls: 18600, users: 13 },
+    { name: '教育', calls: 14300, users: 10 },
+    { name: 'Web3 / Crypto', calls: 11800, users: 8 },
+    { name: '跨境电商', calls: 9500, users: 6 },
   ],
 };
 
 const fallbackUsers = [
-  { id: 'u-001', name: '张小明', email: 'zhangxm@example.com', plan: '创业者版', status: 'active', created: '2026-01-15', apiCalls: 3284, lastActive: '2026-06-14 16:32' },
-  { id: 'u-002', name: '李婷婷', email: 'litt@example.com', plan: '企业版', status: 'active', created: '2025-11-03', apiCalls: 12560, lastActive: '2026-06-14 15:20' },
-  { id: 'u-003', name: '王伟', email: 'wangw@example.com', plan: '免费版', status: 'suspended', created: '2026-03-20', apiCalls: 142, lastActive: '2026-05-28 09:15' },
-  { id: 'u-004', name: '陈思涵', email: 'chensh@example.com', plan: '企业版', status: 'active', created: '2025-08-12', apiCalls: 28900, lastActive: '2026-06-14 17:01' },
-  { id: 'u-005', name: '赵雷', email: 'zhaolei@example.com', plan: '创业者版', status: 'active', created: '2026-04-01', apiCalls: 4870, lastActive: '2026-06-13 14:44' },
-  { id: 'u-006', name: '刘雨桐', email: 'liuyt@example.com', plan: '免费版', status: 'active', created: '2026-06-01', apiCalls: 56, lastActive: '2026-06-12 10:30' },
-  { id: 'u-007', name: '测试账号', email: 'test@example.com', plan: '免费版', status: 'suspended', created: '2026-02-10', apiCalls: 0, lastActive: '—' },
-  { id: 'u-008', name: '孙浩然', email: 'sunhr@example.com', plan: '企业版', status: 'active', created: '2025-07-22', apiCalls: 45200, lastActive: '2026-06-14 16:58' },
+  { id: 'u-001', name: '张小明', email: 'zhangxm@example.com', plan: '创业者版', role: 'admin', status: 'active', created: '2026-01-15', apiCalls: 3284, lastActive: '2026-06-14 16:32' },
+  { id: 'u-002', name: '李婷婷', email: 'litt@example.com', plan: '企业版', role: 'user', status: 'active', created: '2025-11-03', apiCalls: 12560, lastActive: '2026-06-14 15:20' },
+  { id: 'u-003', name: '王伟', email: 'wangw@example.com', plan: '免费版', role: 'user', status: 'suspended', created: '2026-03-20', apiCalls: 142, lastActive: '2026-05-28 09:15' },
+  { id: 'u-004', name: '陈思涵', email: 'chensh@example.com', plan: '企业版', role: 'admin', status: 'active', created: '2025-08-12', apiCalls: 28900, lastActive: '2026-06-14 17:01' },
+  { id: 'u-005', name: '赵雷', email: 'zhaolei@example.com', plan: '创业者版', role: 'user', status: 'active', created: '2026-04-01', apiCalls: 4870, lastActive: '2026-06-13 14:44' },
+  { id: 'u-006', name: '刘雨桐', email: 'liuyt@example.com', plan: '免费版', role: 'user', status: 'active', created: '2026-06-01', apiCalls: 56, lastActive: '2026-06-12 10:30' },
+  { id: 'u-007', name: '测试账号', email: 'test@example.com', plan: '免费版', role: 'user', status: 'suspended', created: '2026-02-10', apiCalls: 0, lastActive: '—' },
+  { id: 'u-008', name: '孙浩然', email: 'sunhr@example.com', plan: '企业版', role: 'admin', status: 'active', created: '2025-07-22', apiCalls: 45200, lastActive: '2026-06-14 16:58' },
 ];
 
 const fallbackAllApiKeys = [
@@ -168,11 +172,11 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // 管理员注册需要有效的邀请码
+    // 邀请码校验：需要与配置中的 adminInviteCode 匹配
     if (!inviteCode || inviteCode !== config.adminInviteCode) {
       return res.status(403).json({
         success: false,
-        error: { code: 'INVALID_INVITE_CODE', message: '请提供有效的管理员邀请码。' }
+        error: { code: 'INVALID_INVITE', message: '邀请码无效。' }
       });
     }
 
@@ -242,8 +246,8 @@ router.get('/stats', authenticate, requireAdmin, async (req, res, next) => {
   try {
     try {
       // Attempt DB — aggregate real data
-      const userResult = await query('SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE deleted_at IS NULL) as active FROM users');
-      const apiCallResult = await query('SELECT COUNT(*) as total FROM usage_logs WHERE created_at >= NOW() - INTERVAL \'30 days\'');
+      const userResult = await query('SELECT COUNT(*) as total FROM users');
+      const apiCallResult = await query('SELECT COUNT(*) as total FROM usage_logs WHERE timestamp >= NOW() - INTERVAL \'30 days\'');
       const reportResult = await query('SELECT COUNT(*) as total FROM reports WHERE created_at >= NOW() - INTERVAL \'30 days\'');
 
       // Token usage stats (non-fatal)
@@ -258,7 +262,7 @@ router.get('/stats', authenticate, requireAdmin, async (req, res, next) => {
         success: true,
         data: {
           totalUsers: parseInt(userResult.rows[0].total, 10),
-          activeUsers: parseInt(userResult.rows[0].active, 10),
+          activeUsers: parseInt(userResult.rows[0].total, 10),
           totalApiKeys: fallbackStats.totalApiKeys,
           totalApiCalls: parseInt(apiCallResult.rows[0].total, 10),
           totalReports: parseInt(reportResult.rows[0].total, 10),
@@ -322,7 +326,7 @@ router.get('/users', authenticate, requireAdmin, async (req, res, next) => {
 
       // 2) Data query with plan and apiCalls
       let dataSql = `
-        SELECT u.id, u.email, u.name, u.created_at, u.updated_at,
+        SELECT u.id, u.email, u.name, u.created_at, u.updated_at, u.role,
                COALESCE(sp.name, '免费版') AS plan_name,
                COUNT(DISTINCT ul.id) AS api_call_count
         FROM users u
@@ -363,6 +367,7 @@ router.get('/users', authenticate, requireAdmin, async (req, res, next) => {
           name: u.name,
           email: u.email,
           plan: u.plan_name || '免费版',
+          role: u.role || 'user',
           status: 'active',  // status inferred from subscription exists
           created: u.created_at ? u.created_at.toISOString().slice(0, 10) : '—',
           apiCalls: parseInt(u.api_call_count || '0', 10),
@@ -400,8 +405,17 @@ router.get('/users/:id', authenticate, requireAdmin, async (req, res, next) => {
   try {
     try {
       const result = await query(
-        `SELECT id, email, name, plan, created_at, updated_at
-         FROM users WHERE id = $1`,
+        `SELECT u.id, u.email, u.name, u.role, u.created_at, u.updated_at,
+                COALESCE(sp.name, '免费版') AS plan_name,
+                s.status AS sub_status
+         FROM users u
+         LEFT JOIN LATERAL (
+           SELECT s.plan_id, s.status FROM subscriptions s
+           WHERE s.user_id = u.id AND s.status = 'active'
+           ORDER BY s.created_at DESC LIMIT 1
+         ) s ON true
+         LEFT JOIN subscription_plans sp ON sp.id = s.plan_id
+         WHERE u.id = $1`,
         [req.params.id]
       );
       if (result.rows.length === 0) {
@@ -415,8 +429,9 @@ router.get('/users/:id', authenticate, requireAdmin, async (req, res, next) => {
         success: true,
         data: {
           id: u.id, name: u.name, email: u.email,
-          plan: u.plan || '免费版',
-          status: u.deleted_at ? 'suspended' : 'active',
+          plan: u.plan_name || '免费版',
+          role: u.role || 'user',
+          status: u.sub_status === 'active' ? 'active' : 'inactive',
           created: u.created_at,
           lastActive: u.updated_at,
         }
@@ -450,47 +465,45 @@ router.patch('/users/:id', authenticate, requireAdmin, async (req, res, next) =>
       const params = [req.params.id];
       let idx = 2;
 
-      if (status === 'suspended') {
-        updates.push(`deleted_at = NOW()`);
-      } else if (status === 'active') {
-        updates.push(`deleted_at = NULL`);
-      }
-      if (plan) {
-        updates.push(`plan = $${idx}`);
-        params.push(plan);
-        idx++;
-      }
       if (role) {
         updates.push(`role = $${idx}`);
         params.push(role);
         idx++;
       }
-      if (quotaMonthly !== undefined) {
-        updates.push(`quota_monthly = $${idx}`);
-        params.push(quotaMonthly);
-        idx++;
+
+      if (updates.length > 0) {
+        await query(
+          `UPDATE users SET ${updates.join(', ')}, updated_at = NOW() WHERE id = $1`,
+          params
+        );
       }
 
-      if (updates.length === 0) {
-        return res.status(400).json({
-          success: false,
-          error: { code: 'VALIDATION_ERROR', message: '未指定需要更新的字段。' }
-        });
+      // Handle status changes via subscriptions table
+      if (status === 'suspended') {
+        await query(
+          `UPDATE subscriptions SET status = 'inactive' WHERE user_id = $1 AND status = 'active'`,
+          [req.params.id]
+        );
+      } else if (status === 'active') {
+        // Reactivate: only if there's an inactive subscription to reactivate
+        // (no-op if user has no subscription yet — they're already "active" by default)
       }
 
-      const result = await query(
-        `UPDATE users SET ${updates.join(', ')} WHERE id = $1 RETURNING id, email, name, plan`,
-        params
+      // Verify the user exists
+      const verifyResult = await query(
+        `SELECT id, email, name, role FROM users WHERE id = $1`,
+        [req.params.id]
       );
 
-      if (result.rows.length === 0) {
+      if (verifyResult.rows.length === 0) {
         return res.status(404).json({
           success: false,
           error: { code: 'NOT_FOUND', message: '用户不存在。' }
         });
       }
 
-      return res.json({ success: true, data: result.rows[0] });
+      const u = verifyResult.rows[0];
+      return res.json({ success: true, data: { id: u.id, name: u.name, email: u.email, role: u.role, status: status || 'active' } });
     } catch (dbErr) {
       // Fallback
       const user = fallbackUsers.find(u => u.id === req.params.id);

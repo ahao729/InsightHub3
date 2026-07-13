@@ -6,7 +6,9 @@ require('dotenv').config();
 
 const config = require('./config');
 const { testConnection } = require('./db/pool');
-const { errorHandler } = require('./middleware/errorHandler');
+const errorHandlerModule = require('./middleware/errorHandler');
+errorHandlerModule.init();
+const { errorHandler } = errorHandlerModule;
 const { rateLimit } = require('./middleware/rateLimit');
 
 // Route imports
@@ -32,8 +34,14 @@ app.use(helmet({
 }));
 
 // CORS - allow frontend dev server
+// Defensive: filter out 'null', 'undefined', empty strings to prevent origin spoofing
+const allowedOrigins = config.corsOrigins
+  .split(',')
+  .map(s => s.trim())
+  .filter(s => s && s !== 'null' && s !== 'undefined' && s.startsWith('http'));
+
 app.use(cors({
-  origin: config.corsOrigins.split(',').map(s => s.trim()),
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Requested-With'],

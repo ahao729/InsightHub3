@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) DEFAULT 'user',
+    email_verified BOOLEAN DEFAULT FALSE,
+    verification_token VARCHAR(255),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -56,6 +59,7 @@ CREATE TABLE IF NOT EXISTS usage_logs (
     endpoint VARCHAR(255) NOT NULL,
     method VARCHAR(10) NOT NULL,
     status_code INTEGER NOT NULL,
+    duration_ms INTEGER DEFAULT 0,
     timestamp TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -192,6 +196,21 @@ CREATE TABLE IF NOT EXISTS educational_data (
     intake_year INTEGER,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Monitors: User-created monitoring tasks
+CREATE TABLE IF NOT EXISTS monitors (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    package VARCHAR(100) NOT NULL,
+    frequency VARCHAR(50) DEFAULT '15min',
+    status VARCHAR(50) DEFAULT 'active',
+    last_checked_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_monitors_user_id ON monitors(user_id);
 
 -- Web3 Crypto: Web3 & Crypto Data
 CREATE TABLE IF NOT EXISTS web3_data (

@@ -6,7 +6,7 @@ const config = {
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: '7d',
   corsOrigins: process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001,http://localhost:5173',
-  adminInviteCode: process.env.ADMIN_INVITE_CODE || 'INSIGHTHUB2024',
+  adminInviteCode: process.env.ADMIN_INVITE_CODE || (process.env.NODE_ENV === 'production' ? '' : 'INSIGHTHUB2024'),
   nodeEnv: process.env.NODE_ENV || 'development',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
 
@@ -50,6 +50,27 @@ const config = {
       models: ['glm-4-plus', 'glm-4', 'glm-4-flash'],
       fallbackModel: 'glm-4-flash',
     },
+  },
+
+  // ============================================================
+  // Email Configuration
+  // ============================================================
+  email: {
+    host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+    port: parseInt(process.env.SMTP_PORT, 10) || 587,
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    from: process.env.EMAIL_FROM || 'InsightHub <no-reply@insighthub.data>',
+    devMode: process.env.NODE_ENV !== 'production',
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3001',
+  },
+
+  // ============================================================
+  // Password Reset
+  // ============================================================
+  passwordReset: {
+    expiryMinutes: parseInt(process.env.RESET_TOKEN_EXPIRY, 10) || 30,
   },
 
   // Task → model mapping for llmService routing

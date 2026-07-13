@@ -22,6 +22,14 @@ class EmbeddingService {
   async init() {
     if (this.initialized) return;
 
+    // Force mock mode when LLM_MOCK_MODE=true (e.g. no API credits yet)
+    if (process.env.LLM_MOCK_MODE === 'true') {
+      console.log('[Embedding] LLM_MOCK_MODE=true — using mock embeddings');
+      this.mockMode = true;
+      this.initialized = true;
+      return;
+    }
+
     if (!config.openaiApiKey || config.openaiApiKey === '') {
       console.warn('[Embedding] No OPENAI_API_KEY configured — using mock embeddings');
       this.mockMode = true;

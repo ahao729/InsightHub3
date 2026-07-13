@@ -12,7 +12,7 @@ const requestLogs = new Map();
 
 // Plan rate limits (requests per minute)
 const PLAN_LIMITS = {
-  free: 10,
+  free: 200,
   pro: 100,
   enterprise: 1000,
 };
@@ -103,11 +103,26 @@ function getMonthKey() {
 }
 
 // Reset monthly tracking at midnight (simple approach)
-setInterval(() => {
+const _cleanupTimer = setInterval(() => {
   const now = new Date();
   if (now.getHours() === 0 && now.getMinutes() === 0) {
     monthlyUsage.clear();
+    // Also purge stale per-user timestamps older than 2 minutes
+    const cutoff = Date.now() - 2 * 60 * 1000;
+    for (const [userId, timestamps] of requestLogs) {
+      const recent = timestamps.filter(t => t >= cutoff);
+      if (recent.length === 0) {
+        requestLogs.delete(userId);
+      } else {
+        requestLogs.set(userId, recent);
+      }
+    }
   }
 }, 60 * 1000);
+
+// Ensure timer does not keep the process alive on shutdown
+if (_cleanupTimer.unref) {
+  _cleanupTimer.unref();
+}
 
 module.exports = { rateLimit, PLAN_LIMITS, PLAN_MONTHLY_LIMITS };

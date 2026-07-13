@@ -64,9 +64,15 @@ const fallbackApiKeys = [
 ];
 
 const fallbackPackages = [
-  { name: '创业商业情报', icon: 'ti-rocket', color: 'ri-green', desc: '行业趋势、竞品分析、项目评估、MVP 建议' },
-  { name: 'AI / GEO 分析', icon: 'ti-brand-google', color: 'ri-blue', desc: '网站 AI 可见度评分、品牌内容覆盖、GEO 优化建议' },
-  { name: '企业情报与风控', icon: 'ti-building', color: 'ri-amber', desc: '企业查询、风险评分、关系图谱、招投标' },
+  { name: '创业商业情报', icon: 'ti-rocket', color: 'ri-green', desc: '行业趋势、竞品分析、项目评估、MVP 建议', link: 'package-startup-intel.html' },
+  { name: 'AI / GEO 分析', icon: 'ti-brand-google', color: 'ri-blue', desc: '网站 AI 可见度评分、品牌内容覆盖、GEO 优化建议', link: 'package-ai-geo.html' },
+  { name: '企业情报与风控', icon: 'ti-building', color: 'ri-amber', desc: '企业查询、风险评分、关系图谱、招投标', link: 'package-enterprise-risk.html' },
+  { name: '金融宏观数据', icon: 'ti-chart-line', color: 'ri-purple', desc: 'GDP、CPI、利率汇率等宏观经济指标查询', link: 'package-finance-macro.html' },
+  { name: '跨境电商', icon: 'ti-truck', color: 'ri-indigo', desc: '跨境市场情报、品类分析、物流成本、关税政策', link: 'package-crossborder-ecommerce.html' },
+  { name: 'Web3 / Crypto', icon: 'ti-crypto', color: 'ri-violet', desc: '加密资产、DeFi 协议、链上数据分析', link: 'package-web3-crypto.html' },
+  { name: '政策招投标', icon: 'ti-notes', color: 'ri-orange', desc: '政策文件、招标公告、投标截止提醒', link: 'package-policy-bidding.html' },
+  { name: '专利科技', icon: 'ti-bulb', color: 'ri-cyan', desc: '全球专利检索、申请人分析、技术趋势追踪', link: 'package-patent-tech.html' },
+  { name: '教育', icon: 'ti-school', color: 'ri-teal', desc: '院校检索、学科排名、留学项目对比', link: 'package-education.html' },
 ];
 
 // ──────────────────────────────────────────────
@@ -80,21 +86,21 @@ router.get('/stats', authenticate, async (req, res, next) => {
       // For now, return fallback — a real implementation would aggregate
       // from usage_logs, reports, monitors, etc.
       const usageResult = await query(
-        `SELECT DATE(created_at) as date, COUNT(*) as calls
+        `SELECT DATE(timestamp) as date, COUNT(*) as calls
          FROM usage_logs
          WHERE user_id = $1
-           AND created_at >= NOW() - INTERVAL '14 days'
-         GROUP BY DATE(created_at)
+           AND timestamp >= NOW() - INTERVAL '14 days'
+         GROUP BY DATE(timestamp)
          ORDER BY date ASC`,
         [req.user.id]
       );
 
       const logResult = await query(
-        `SELECT ul.api_path as api, ul.status, ul.duration_ms as time, ul.created_at as timestamp, ak.name as key_name
+        `SELECT ul.endpoint as api, ul.status_code as status, ul.duration_ms as time, ul.timestamp as ts, ak.name as key_name
          FROM usage_logs ul
          LEFT JOIN api_keys ak ON ak.id = ul.api_key_id
          WHERE ul.user_id = $1
-         ORDER BY ul.created_at DESC
+         ORDER BY ul.timestamp DESC
          LIMIT 10`,
         [req.user.id]
       );
@@ -128,7 +134,7 @@ router.get('/stats', authenticate, async (req, res, next) => {
                 api: r.api,
                 status: String(r.status),
                 time: r.time + 'ms',
-                ts: r.timestamp,
+                ts: r.ts,
                 key: r.key_name || '未知',
               }))
             : fallbackRecentLogs,
@@ -155,6 +161,108 @@ router.get('/stats', authenticate, async (req, res, next) => {
           recentLogs: fallbackRecentLogs,
         },
       });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/v1/dashboard/monitors — 创建监控任务
+router.post('/monitors', authenticate, async (req, res, next) => {
+  try {
+    const { name, package: pkg, frequency } = req.body;
+
+    if (!name || !pkg) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'name and package are required' },
+      });
+    }
+
+    try {
+      const result = await query(
+        `INSERT INTO monitors (user_id, name, package, frequency, status, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, 'active', NOW(), NOW())
+         RETURNING id, name, package, frequency, status, created_at, updated_at`,
+        [req.user.id, name, pkg, frequency || '15min']
+      );
+
+      return res.status(201).json({
+        success: true,
+        data: result.rows[0],
+      });
+    } catch (dbErr) {
+      // DB unavailable — simulate success with generated id
+      const fallback = {
+        id: 'mon_' + Date.now(),
+        name,
+        package: pkg,
+        frequency: frequency || '15min',
+        status: 'active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      return res.status(201).json({ success: true, data: fallback });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/v1/dashboard/monitors/:id — 删除监控任务
+router.delete('/monitors/:id', authenticate, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    try {
+      const result = await query(
+        'DELETE FROM monitors WHERE id = $1 AND user_id = $2 RETURNING id',
+        [id, req.user.id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Monitor not found' } });
+      }
+
+      return res.json({ success: true, data: { id } });
+    } catch (dbErr) {
+      // DB unavailable — simulate success
+      return res.json({ success: true, data: { id } });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/v1/dashboard/monitors/:id — 更新监控任务状态
+router.patch('/monitors/:id', authenticate, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status || !['active', 'paused', 'alert'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Valid status is required (active|paused|alert)' },
+      });
+    }
+
+    try {
+      const result = await query(
+        `UPDATE monitors SET status = $1, updated_at = NOW()
+         WHERE id = $2 AND user_id = $3
+         RETURNING id, name, package, frequency, status, created_at, updated_at`,
+        [status, id, req.user.id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Monitor not found' } });
+      }
+
+      return res.json({ success: true, data: result.rows[0] });
+    } catch (dbErr) {
+      // DB unavailable — simulate success
+      return res.json({ success: true, data: { id, status, updated_at: new Date().toISOString() } });
     }
   } catch (err) {
     next(err);

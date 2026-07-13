@@ -22,6 +22,14 @@ class LLMService {
   async init() {
     if (this.initialized) return;
 
+    // Force mock mode when LLM_MOCK_MODE=true (e.g. no API credits yet)
+    if (process.env.LLM_MOCK_MODE === 'true') {
+      console.log('[LLM] LLM_MOCK_MODE=true — using mock responses');
+      this.mockMode = true;
+      this.initialized = true;
+      return;
+    }
+
     // Check if any LLM provider has an API key configured
     const hasApiKey = Object.values(config.llmProviders || {}).some(
       p => p.apiKey && p.apiKey !== ''

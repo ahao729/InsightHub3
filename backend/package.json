@@ -21,11 +21,13 @@
     "jsonwebtoken": "^9.0.2",
     "langfuse": "^3.38.20",
     "morgan": "^1.10.0",
+    "nodemailer": "^9.0.3",
     "openai": "^6.45.0",
     "pg": "^8.11.3",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@types/nodemailer": "^8.0.1",
     "jest": "^30.4.2",
     "supertest": "^7.2.2"
   }
