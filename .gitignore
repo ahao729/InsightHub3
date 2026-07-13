@@ -50,9 +50,18 @@ build/
 coverage/
 .nyc_output/
 
+# ── Python virtual environment ────────────────────────────────
+.venv/
+venv/
+ENV/
+
+# ── Crawler output ────────────────────────────────────────────
+output/
+
 # ── Local artifacts / dev notes ──────────────────────────────
 backups/
 posts/
 screenshots/
 dogfood-screenshots/
 存档-*.md
+交付文件/

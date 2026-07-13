@@ -41,6 +41,39 @@ services:
       DATABASE_URL: postgresql://insighthub:${DB_PASSWORD}@db:5432/insighthub
       JWT_SECRET: ${JWT_SECRET}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:80}
+
+      # ── LLM Mock Mode (强制 mock，适合无额度的开发环境) ──
+      LLM_MOCK_MODE: ${LLM_MOCK_MODE:-}
+
+      # ── LLM Provider ──
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      ZHIPU_BASE_URL: ${ZHIPU_BASE_URL:-}
+
+      # ── 模型路由 ──
+      FAST_MODEL: ${FAST_MODEL:-gpt-4o-mini}
+      ANALYSIS_MODEL: ${ANALYSIS_MODEL:-gpt-4o}
+      REASONING_MODEL: ${REASONING_MODEL:-deepseek-chat}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-1536}
+
+      # ── 可观测性 ──
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+      LANGFUSE_BASE_URL: ${LANGFUSE_BASE_URL:-}
+
+      # ── Token 限速 ──
+      TOKEN_TRACKING_ENABLED: ${TOKEN_TRACKING_ENABLED:-true}
+      DAILY_TOKEN_LIMIT: ${DAILY_TOKEN_LIMIT:-1000000}
+      USER_DAILY_TOKEN_LIMIT: ${USER_DAILY_TOKEN_LIMIT:-100000}
+
+      # ── 其他 ──
+      ADMIN_INVITE_CODE: ${ADMIN_INVITE_CODE:-}
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/api/health"]
       interval: 30s
