@@ -24,7 +24,8 @@ function mockFetch(url, opts) {
     ok: mockFetchResponse.ok ?? true,
     status: mockFetchResponse.status ?? 200,
     statusText: mockFetchResponse.statusText ?? "OK",
-    json: () => Promise.resolve(mockFetchResponse.body ?? { success: true, data: {} }),
+    json: () =>
+      Promise.resolve(mockFetchResponse.body ?? { success: true, data: {} }),
     text: () => Promise.resolve(mockFetchResponse.text ?? ""),
   });
 }
@@ -32,15 +33,15 @@ function mockFetch(url, opts) {
 // ── Apply mock before importing the module under test ──
 globalThis.fetch = mockFetch;
 
-const {
-  buildToolDefinitions,
-  callBackend,
-  handleToolCall,
-  PACKAGES,
-} = await import("./index.js");
+const { buildToolDefinitions, callBackend, handleToolCall, PACKAGES } =
+  await import("./index.js");
 
 beforeEach(() => {
-  mockFetchResponse = { ok: true, status: 200, body: { success: true, data: { results: [] } } };
+  mockFetchResponse = {
+    ok: true,
+    status: 200,
+    body: { success: true, data: { results: [] } },
+  };
   lastFetchUrl = null;
 });
 
@@ -93,15 +94,15 @@ describe("buildToolDefinitions", () => {
     for (const pkg of PACKAGES) {
       assert.ok(
         toolNames.includes(`${pkg.id}-search`),
-        `Missing ${pkg.id}-search`
+        `Missing ${pkg.id}-search`,
       );
       assert.ok(
         toolNames.includes(`${pkg.id}-detail`),
-        `Missing ${pkg.id}-detail`
+        `Missing ${pkg.id}-detail`,
       );
       assert.ok(
         toolNames.includes(`${pkg.id}-stats`),
-        `Missing ${pkg.id}-stats`
+        `Missing ${pkg.id}-stats`,
       );
     }
   });
@@ -237,10 +238,9 @@ describe("callBackend", () => {
       text: "endpoint not found",
     };
 
-    await assert.rejects(
-      () => callBackend("ai-geo", "stats", {}),
-      { message: /Backend API error: 404/ }
-    );
+    await assert.rejects(() => callBackend("ai-geo", "stats", {}), {
+      message: /Backend API error: 404/,
+    });
   });
 
   it("throws on backend success=false response", async () => {
@@ -252,19 +252,17 @@ describe("callBackend", () => {
       },
     };
 
-    await assert.rejects(
-      () => callBackend("ai-geo", "stats", {}),
-      { message: /Backend error: FORBIDDEN/ }
-    );
+    await assert.rejects(() => callBackend("ai-geo", "stats", {}), {
+      message: /Backend error: FORBIDDEN/,
+    });
   });
 
   it("handles network errors", async () => {
     mockFetchResponse = new Error("ECONNREFUSED");
 
-    await assert.rejects(
-      () => callBackend("ai-geo", "stats", {}),
-      { message: /ECONNREFUSED/ }
-    );
+    await assert.rejects(() => callBackend("ai-geo", "stats", {}), {
+      message: /ECONNREFUSED/,
+    });
   });
 });
 
@@ -322,7 +320,7 @@ describe("handleToolCall", () => {
       (err) => {
         assert.equal(err.code, -32601); // MethodNotFound
         return true;
-      }
+      },
     );
   });
 
@@ -333,7 +331,7 @@ describe("handleToolCall", () => {
         assert.equal(err.code, -32601);
         assert.ok(err.message.includes("nonexistent"));
         return true;
-      }
+      },
     );
   });
 
@@ -344,7 +342,7 @@ describe("handleToolCall", () => {
         assert.equal(err.code, -32601);
         assert.ok(err.message.includes("batch"));
         return true;
-      }
+      },
     );
   });
 
@@ -452,7 +450,12 @@ describe("URL encoding", () => {
    ══════════════════════════════════════════════ */
 describe("error result format", () => {
   it("error result has isError=true and text content", async () => {
-    mockFetchResponse = { ok: false, status: 403, statusText: "Forbidden", text: "denied" };
+    mockFetchResponse = {
+      ok: false,
+      status: 403,
+      statusText: "Forbidden",
+      text: "denied",
+    };
 
     const result = await handleToolCall("education-stats", {});
     assert.equal(result.isError, true);
@@ -471,5 +474,3 @@ describe("error result format", () => {
     assert.equal(result.isError, false);
   });
 });
-
-
