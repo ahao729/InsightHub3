@@ -669,4 +669,9 @@ router.post('/verify-email', async (req, res, next) => {
   }
 });
 
+// Test-only: clear fallback in-memory stores between tests
+router._clearFallbackUsers = () => {
+  fallbackUsers.clear();
+};
+
 module.exports = router;

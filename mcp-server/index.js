@@ -279,6 +279,12 @@ async function handleToolCall(name, args) {
 }
 
 // ---------------------------------------------------------------------------
+// 导出（供测试和外部模块使用）
+// ---------------------------------------------------------------------------
+
+export { PACKAGES, buildToolDefinitions, callBackend, handleToolCall };
+
+// ---------------------------------------------------------------------------
 // 主入口
 // ---------------------------------------------------------------------------
 
@@ -318,7 +324,12 @@ async function main() {
   console.error(`  Backend: ${BACKEND_BASE}`);
 }
 
-main().catch((err) => {
-  console.error("Fatal error:", err);
-  process.exit(1);
-});
+// 仅在直接运行时启动 stdio server，导入时不启动
+// process.argv[1] 在直接运行时等于当前文件路径
+const _selfPath = new URL(import.meta.url).pathname;
+if (process.argv[1] && process.argv[1] === _selfPath) {
+  main().catch((err) => {
+    console.error("Fatal error:", err);
+    process.exit(1);
+  });
+}
