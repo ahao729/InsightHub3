@@ -260,7 +260,7 @@
       <div class="field-wrap">
         <div class="field-label">密码</div>
         <div class="pwd-wrap">
-          <input class="text-input" type="password" id="reg-pwd" placeholder="至少 8 位，包含数字" oninput="checkStrength()" />
+           <input class="text-input" type="password" id="reg-pwd" placeholder="至少 8 位，含大写、小写和数字" oninput="checkStrength()" />
           <button class="pwd-toggle" aria-label="显示密码" onclick="togglePwd('reg-pwd',this)"><i class="ti ti-eye" aria-hidden="true"></i></button>
         </div>
         <div class="strength-row" id="strength-row">
@@ -432,6 +432,7 @@ function handleRegister(){
   var btn=document.getElementById('reg-btn');
   if(!name||!email||!pwd){errEl.style.display='block';errEl.textContent='请填写所有字段';return}
   if(pwd.length<8){errEl.style.display='block';errEl.textContent='密码至少 8 位';return}
+  if(!/[A-Z]/.test(pwd)||!/[a-z]/.test(pwd)||!/[0-9]/.test(pwd)){errEl.style.display='block';errEl.textContent='密码必须包含大写字母、小写字母和数字';return}
   errEl.style.display='none';
   btn.disabled=true;btn.textContent='注册中...';
   API.auth.register(email,pwd,name).then(function(){
@@ -486,7 +487,8 @@ function handleResetPassword(){
   var sucEl=document.getElementById('reset-success');
   var btn=document.getElementById('reset-btn');
   if(!pwd){errEl.style.display='block';errEl.textContent='请输入新密码';sucEl.style.display='none';return}
-  if(pwd.length<6){errEl.style.display='block';errEl.textContent='密码至少 6 位';sucEl.style.display='none';return}
+  if(pwd.length<8){errEl.style.display='block';errEl.textContent='密码至少 8 位';sucEl.style.display='none';return}
+  if(!/[A-Z]/.test(pwd)||!/[a-z]/.test(pwd)||!/[0-9]/.test(pwd)){errEl.style.display='block';errEl.textContent='密码必须包含大写字母、小写字母和数字';sucEl.style.display='none';return}
   if(pwd!==pwd2){errEl.style.display='block';errEl.textContent='两次密码不一致';sucEl.style.display='none';return}
   errEl.style.display='none';sucEl.style.display='none';
   btn.disabled=true;btn.textContent='重置中...';
