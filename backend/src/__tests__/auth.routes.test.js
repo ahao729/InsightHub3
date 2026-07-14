@@ -46,11 +46,11 @@ jest.mock('../middleware/auth', () => ({
 /* ── Imports ── */
 const request = require('supertest');
 const express = require('express');
+const authRoutes = require('../routes/auth');
 
 function buildApp() {
   const app = express();
   app.use(express.json());
-  const authRoutes = require('../routes/auth');
   app.use('/api/v1/auth', authRoutes);
   return app;
 }
@@ -70,7 +70,11 @@ function mockDbOk(rows) {
    POST /api/v1/auth/register
    ══════════════════════════════════════════════ */
 describe('POST /api/v1/auth/register', () => {
-  beforeEach(() => { jest.clearAllMocks(); jest.resetModules(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockQuery.mockReset();
+    authRoutes._clearFallbackUsers();
+  });
 
   test('201 — successful registration via DB', async () => {
     mockDbOk([{ id: 'user-1', email: 'new@test.com', name: 'New User', created_at: '2026-01-01T00:00:00Z' }]);
@@ -166,19 +170,12 @@ describe('POST /api/v1/auth/register', () => {
     const app = buildApp();
 
     // Fill fallback store to cap (MAX_FALLBACK_USERS = 500)
-    // Since we can't easily add 500 unique emails, let's fill the internal Map
-    const authMod = require('../routes/auth');
-    // Access the fallbackUsers via module internals — it's not exported,
-    // but we can fill it through repeated registrations until we hit the cap
-    // This approach is slow; instead we verify the 503 path by reaching the cap
-    // For efficiency, we'll just verify the message once by filling partially
-    // Actually, let's just do the first 499 + test the 500th, then test 501st
-    // Since each call makes a new app, we need to share the Map
-    // The Map is module-level, so repeated registrations fill it
     for (let i = 0; i < 500; i++) {
-      await request(app)
+      const fillRes = await request(app)
         .post('/api/v1/auth/register')
         .send({ email: `cap${i}@test.com`, password: 'secret123', name: `User${i}` });
+      expect(fillRes.status).toBe(201);
+      expect(fillRes.body.success).toBe(true);
     }
 
     const res = await request(app)
@@ -186,6 +183,10 @@ describe('POST /api/v1/auth/register', () => {
       .send({ email: 'cap500@test.com', password: 'secret123', name: 'OverCap' });
     expect(res.status).toBe(503);
     expect(res.body.error.code).toBe('SERVICE_UNAVAILABLE');
+    expect(res.body.success).toBe(false);
+
+    // Cleanup
+    authRoutes._clearFallbackUsers();
   }, 30000);
 });
 
@@ -193,7 +194,11 @@ describe('POST /api/v1/auth/register', () => {
    POST /api/v1/auth/login
    ══════════════════════════════════════════════ */
 describe('POST /api/v1/auth/login', () => {
-  beforeEach(() => { jest.clearAllMocks(); jest.resetModules(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockQuery.mockReset();
+    authRoutes._clearFallbackUsers();
+  });
 
   test('200 — successful login via DB', async () => {
     mockDbOk([{ id: 'user-1', email: 'user@test.com', name: 'Some User', password_hash: 'hashed_mypass' }]);
@@ -247,8 +252,8 @@ describe('POST /api/v1/auth/login', () => {
 
   test('200 — fallback login with valid credentials', async () => {
     mockDbUnavailable();
-    // First register a user in fallback store
     const app = buildApp();
+    // First register a user in fallback store
     await request(app)
       .post('/api/v1/auth/register')
       .send({ email: 'fblogin@test.com', password: 'secret123', name: 'FB User' });
@@ -288,7 +293,11 @@ describe('POST /api/v1/auth/login', () => {
    GET /api/v1/auth/me
    ══════════════════════════════════════════════ */
 describe('GET /api/v1/auth/me', () => {
-  beforeEach(() => { jest.clearAllMocks(); jest.resetModules(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockQuery.mockReset();
+    authRoutes._clearFallbackUsers();
+  });
 
   test('200 — returns current user from DB', async () => {
     mockDbOk([{ id: 'u1', email: 'u1@test.com', name: 'User One', email_verified: true, created_at: '2026-01-01', updated_at: '2026-01-01' }]);
@@ -350,7 +359,11 @@ describe('GET /api/v1/auth/me', () => {
    PUT /api/v1/auth/me
    ══════════════════════════════════════════════ */
 describe('PUT /api/v1/auth/me', () => {
-  beforeEach(() => { jest.clearAllMocks(); jest.resetModules(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockQuery.mockReset();
+    authRoutes._clearFallbackUsers();
+  });
 
   test('400 — no fields provided', async () => {
     const app = buildApp();
@@ -439,7 +452,11 @@ describe('PUT /api/v1/auth/me', () => {
    POST /api/v1/auth/forgot-password
    ══════════════════════════════════════════════ */
 describe('POST /api/v1/auth/forgot-password', () => {
-  beforeEach(() => { jest.clearAllMocks(); jest.resetModules(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockQuery.mockReset();
+    authRoutes._clearFallbackUsers();
+  });
 
   test('400 — missing email', async () => {
     const app = buildApp();
@@ -461,7 +478,6 @@ describe('POST /api/v1/auth/forgot-password', () => {
   });
 
   test('200 — sends reset email when user exists', async () => {
-    mockDbOk([{ id: 'u1', email: 'u1@test.com', name: 'User' }]);
     // subsequent queries for invalidation and insert
     mockQuery
       .mockResolvedValueOnce({ rows: [{ id: 'u1', email: 'u1@test.com', name: 'User' }] })
@@ -496,7 +512,11 @@ describe('POST /api/v1/auth/forgot-password', () => {
    POST /api/v1/auth/reset-password
    ══════════════════════════════════════════════ */
 describe('POST /api/v1/auth/reset-password', () => {
-  beforeEach(() => { jest.clearAllMocks(); jest.resetModules(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockQuery.mockReset();
+    authRoutes._clearFallbackUsers();
+  });
 
   test('400 — missing token', async () => {
     const app = buildApp();
@@ -602,7 +622,11 @@ describe('POST /api/v1/auth/reset-password', () => {
    POST /api/v1/auth/verify-email
    ══════════════════════════════════════════════ */
 describe('POST /api/v1/auth/verify-email', () => {
-  beforeEach(() => { jest.clearAllMocks(); jest.resetModules(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockQuery.mockReset();
+    authRoutes._clearFallbackUsers();
+  });
 
   test('400 — missing token', async () => {
     const app = buildApp();
@@ -655,7 +679,11 @@ describe('POST /api/v1/auth/verify-email', () => {
    POST /api/v1/auth/send-verification
    ══════════════════════════════════════════════ */
 describe('POST /api/v1/auth/send-verification', () => {
-  beforeEach(() => { jest.clearAllMocks(); jest.resetModules(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockQuery.mockReset();
+    authRoutes._clearFallbackUsers();
+  });
 
   test('401 — unauthenticated', async () => {
     const app = buildApp();
