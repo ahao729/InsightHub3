@@ -1,5 +1,28 @@
 require('dotenv').config();
 
+// ============================================================
+// Production environment variable validation
+// ============================================================
+function validateEnv() {
+  if (process.env.NODE_ENV !== 'production') return;
+  const missing = [];
+
+  if (!process.env.JWT_SECRET) {
+    missing.push('JWT_SECRET');
+  }
+  if (!process.env.DATABASE_URL) {
+    missing.push('DATABASE_URL');
+  }
+
+  if (missing.length > 0) {
+    throw new Error(
+      `[Config] 生产环境缺少必需的環境變量: ${missing.join(', ')}。请在 .env 或部署平台设置这些变量。`
+    );
+  }
+}
+
+validateEnv();
+
 const config = {
   port: parseInt(process.env.PORT, 10) || 4000,
   databaseUrl: process.env.DATABASE_URL || 'postgresql://localhost:5432/insighthub',

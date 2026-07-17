@@ -19,6 +19,7 @@ const dataPackageRoutes = require('./routes/dataPackages');
 const dashboardRoutes = require('./routes/dashboard');
 const adminRoutes = require('./routes/admin');
 const analyzeRoutes = require('./routes/analyze');
+const contactRoutes = require('./routes/contact');
 
 const app = express();
 const PORT = config.port;
@@ -92,6 +93,7 @@ apiRouter.use('/data', dataPackageRoutes);
 apiRouter.use('/dashboard', dashboardRoutes);
 apiRouter.use('/admin', adminRoutes);
 apiRouter.use('/analyze', analyzeRoutes);
+apiRouter.use('/contact', contactRoutes);
 
 // Mount all API routes under /api/v1
 app.use('/api/v1', apiRouter);

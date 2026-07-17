@@ -49,12 +49,16 @@ describe('config', () => {
 
   test('production throws if ADMIN_INVITE_CODE is not set', () => {
     process.env.NODE_ENV = 'production';
+    process.env.JWT_SECRET = 'test-secret';
+    process.env.DATABASE_URL = 'postgresql://test:pass@host:5432/db';
     expect(() => require('../config')).toThrow('生产环境必须设置 ADMIN_INVITE_CODE 环境变量');
   });
 
   test('production works if ADMIN_INVITE_CODE is set', () => {
     process.env.NODE_ENV = 'production';
     process.env.ADMIN_INVITE_CODE = 'prod-code-123';
+    process.env.JWT_SECRET = 'test-secret';
+    process.env.DATABASE_URL = 'postgresql://test:pass@host:5432/db';
     const config = require('../config');
     expect(config.adminInviteCode).toBe('prod-code-123');
     expect(config.isDev).toBe(false);
@@ -122,6 +126,50 @@ describe('config', () => {
     expect(config.embeddingDimensions).toBe(1536);
   });
 
+  // ── Production env validation ──
+
+  test('production throws if JWT_SECRET is missing', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.ADMIN_INVITE_CODE = 'test';
+    process.env.DATABASE_URL = 'postgresql://valid:url@host:5432/db';
+    // JWT_SECRET intentionally left unset (cleared in beforeEach)
+    expect(() => require('../config')).toThrow('JWT_SECRET');
+  });
+
+  test('production throws if DATABASE_URL is missing', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.ADMIN_INVITE_CODE = 'test';
+    process.env.JWT_SECRET = 'my-secret';
+    // DATABASE_URL intentionally left unset (cleared in beforeEach)
+    expect(() => require('../config')).toThrow('DATABASE_URL');
+  });
+
+  test('production throws if multiple env vars are missing', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.ADMIN_INVITE_CODE = 'test';
+    // Both JWT_SECRET and DATABASE_URL left unset
+    expect(() => require('../config')).toThrow('JWT_SECRET');
+    expect(() => require('../config')).toThrow('DATABASE_URL');
+  });
+
+  test('production works if all required env vars are set', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.ADMIN_INVITE_CODE = 'prod-code-123';
+    process.env.JWT_SECRET = 'prod-jwt-secret';
+    process.env.DATABASE_URL = 'postgresql://prod:pass@prod-host:5432/proddb';
+    const config = require('../config');
+    expect(config.isDev).toBe(false);
+    expect(config.jwtSecret).toBe('prod-jwt-secret');
+    expect(config.databaseUrl).toBe('postgresql://prod:pass@prod-host:5432/proddb');
+  });
+
+  test('non-production does not throw validation errors', () => {
+    process.env.NODE_ENV = 'development';
+    delete process.env.JWT_SECRET;
+    delete process.env.DATABASE_URL;
+    expect(() => require('../config')).not.toThrow();
+  });
+
   test('PORT of "not-a-number" falls back to 4000', () => {
     process.env.PORT = 'not-a-number';
     const config = require('../config');
@@ -131,6 +179,8 @@ describe('config', () => {
   test('isDev is false in production', () => {
     process.env.NODE_ENV = 'production';
     process.env.ADMIN_INVITE_CODE = 'test';
+    process.env.JWT_SECRET = 'test-secret';
+    process.env.DATABASE_URL = 'postgresql://test:pass@host:5432/db';
     const config = require('../config');
     expect(config.isDev).toBe(false);
   });

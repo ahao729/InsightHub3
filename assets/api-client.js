@@ -185,6 +185,13 @@
       },
     },
 
+    // === 联系/需求提交 ===
+    contact: {
+      send: function (name, email, description) {
+        return request('POST', '/contact', { name: name, email: email, description: description });
+      },
+    },
+
     // === 管理后台 ===
     admin: {
       // ---- 管理员认证 ----
