@@ -121,6 +121,9 @@
       verifyEmail: function (token) {
         return request('POST', '/auth/verify-email', { token: token }).then(function (res) { return res.data; });
       },
+      updateProfile: function (name, email) {
+        return request('PUT', '/auth/me', { name: name, email: email }).then(function (res) { return res.data; });
+      },
       getToken: getToken,
       setToken: setToken,
       clearToken: clearToken,

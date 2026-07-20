@@ -37,7 +37,7 @@ import {
 // 配置
 // ---------------------------------------------------------------------------
 
-const BACKEND_BASE = "http://localhost:4000/api/v1/data";
+const BACKEND_BASE = process.env.INSIGHTHUB_BACKEND_URL || "http://localhost:4000/api/v1/data";
 
 const PACKAGES = [
   {
@@ -221,17 +221,26 @@ async function callBackend(packageName, action, params) {
 
 async function handleToolCall(name, args) {
   // 解析 package name 和 action
-  // 格式: {package}-{action}
-  const dashIdx = name.lastIndexOf("-");
-  if (dashIdx === -1) {
-    throw new McpError(
-      ErrorCode.MethodNotFound,
-      `Unknown tool: ${name}`,
-    );
+  // 工具名格式: {package}-{action}，action ∈ {search, detail, stats}
+  const validActions = ["search", "detail", "stats"];
+  let packageName = null;
+  let action = null;
+
+  // Try matching from the end: find the last dash and check if suffix is a valid action
+  for (const act of validActions) {
+    if (name.endsWith(`-${act}`)) {
+      packageName = name.slice(0, name.length - act.length - 1);
+      action = act;
+      break;
+    }
   }
 
-  const packageName = name.slice(0, dashIdx);
-  const action = name.slice(dashIdx + 1);
+  if (!packageName || !action) {
+    throw new McpError(
+      ErrorCode.MethodNotFound,
+      `Unknown tool: ${name}. Expected format: {package}-{search|detail|stats}`,
+    );
+  }
 
   // 验证 package 存在
   const pkg = PACKAGES.find((p) => p.id === packageName);
@@ -239,15 +248,6 @@ async function handleToolCall(name, args) {
     throw new McpError(
       ErrorCode.MethodNotFound,
       `Unknown data package: ${packageName}`,
-    );
-  }
-
-  // 验证 action
-  const validActions = ["search", "detail", "stats"];
-  if (!validActions.includes(action)) {
-    throw new McpError(
-      ErrorCode.MethodNotFound,
-      `Unknown action "${action}" for package "${packageName}"`,
     );
   }
 
