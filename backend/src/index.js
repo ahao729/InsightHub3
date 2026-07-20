@@ -4,8 +4,23 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
+// ============================================================
+// Global Exception Handlers — must be registered before anything else
+// ============================================================
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Promise Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught Exception:', err);
+  // Give handlers time to flush logs before exiting
+  setTimeout(() => process.exit(1), 1000);
+});
+
 const config = require('./config');
+const { validateConfig } = require('./config');
 const { testConnection } = require('./db/pool');
+validateConfig();
 const errorHandlerModule = require('./middleware/errorHandler');
 errorHandlerModule.init();
 const { errorHandler } = errorHandlerModule;
@@ -119,8 +134,10 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // ============================================================
-// Start Server
+// Start Server + Graceful Shutdown
 // ============================================================
+
+let server = null;
 
 async function startServer() {
   // Test database connection
@@ -132,7 +149,7 @@ async function startServer() {
     console.warn('[Server] Running in fallback mode with in-memory data.');
   }
 
-  app.listen(PORT, () => {
+  server = app.listen(PORT, () => {
     console.log(`\n========================================`);
     console.log(`  InsightHub API Server v1.0.0`);
     console.log(`  Running on http://localhost:${PORT}`);
@@ -143,11 +160,46 @@ async function startServer() {
   });
 }
 
+// Graceful shutdown handler
+function gracefulShutdown(signal) {
+  console.log(`\n[Server] Received ${signal}. Starting graceful shutdown...`);
+
+  if (server) {
+    server.close(() => {
+      console.log('[Server] HTTP server closed.');
+
+      // Drain database pool
+      const { getPool } = require('./db/pool');
+      const pool = getPool();
+      pool.end()
+        .then(() => {
+          console.log('[Server] Database pool drained. Exiting.');
+          process.exit(0);
+        })
+        .catch((err) => {
+          console.error('[Server] Error draining pool:', err.message);
+          process.exit(1);
+        });
+    });
+
+    // Force exit after 10 seconds if graceful shutdown hangs
+    setTimeout(() => {
+      console.error('[Server] Graceful shutdown timed out (10s). Forcing exit.');
+      process.exit(1);
+    }, 10000).unref();
+  } else {
+    process.exit(0);
+  }
+}
+
 if (process.env.NODE_ENV !== 'test') {
   startServer().catch((err) => {
     console.error('[Server] Failed to start:', err);
     process.exit(1);
   });
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
 module.exports = app;

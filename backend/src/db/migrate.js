@@ -1,6 +1,6 @@
 /**
  * Migration Runner
- * Reads schema.sql and executes it, then seeds initial data.
+ * Reads init.sql and executes it, then seeds initial data.
  * Run: node src/db/migrate.js
  */
 
@@ -41,10 +41,10 @@ async function runMigration() {
   const pool = new Pool({ connectionString: config.databaseUrl });
 
   try {
-    const schemaPath = path.join(__dirname, '../../db/schema.sql');
+    const schemaPath = path.join(__dirname, 'init.sql');
     const schemaSql = fs.readFileSync(schemaPath, 'utf8');
 
-    console.log('[Migrate] Executing schema.sql...');
+    console.log('[Migrate] Executing init.sql...');
     await pool.query(schemaSql);
     console.log('[Migrate] Schema applied successfully.');
   } catch (err) {

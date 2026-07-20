@@ -471,3 +471,20 @@ INSERT INTO web3_data (id, name, symbol, type, chain, token_address, market_cap,
     ('00000000-0000-0000-0000-000000000011', 'Lido', 'LDO', '流动性质押', 'Ethereum', '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32', 3800000000, 3.80, 420000000, 1000000000, 1000000000, 'Lido是最大的ETH流动性质押协议，用户通过质押ETH获得stETH。', 'https://lido.fi', '["流动性质押", "stETH", "ETH质押", "DeFi"]', '2020-12-18', 'low', '2026-06-20T00:00:00Z'),
     ('00000000-0000-0000-0000-000000000012', 'Worldcoin', 'WLD', '身份协议', 'Ethereum', '0x163f8C2467924be0ae7B5347228CABF260318753', 8500000000, 8.50, 1850000000, 1000000000, 10000000000, 'Worldcoin由Sam Altman联合创立，通过虹膜扫描技术提供全球唯一的数字身份证明。', 'https://worldcoin.org', '["数字身份", "World ID", "零知识证明", "隐私"]', '2023-07-24', 'high', '2026-06-20T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================
+-- Seed Data: Default Admin User
+-- ============================================================
+-- The admin password hash is for 'admin123456'.
+-- In production, override by setting ADMIN_DEFAULT_PASSWORD env var
+-- and re-running the migration (the seed is idempotent).
+INSERT INTO users (email, name, password_hash, role, email_verified)
+SELECT
+  'admin@insighthub.data',
+  '管理员',
+  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  'admin',
+  TRUE
+WHERE NOT EXISTS (
+  SELECT 1 FROM users WHERE email = 'admin@insighthub.data'
+);

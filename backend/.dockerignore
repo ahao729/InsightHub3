@@ -6,3 +6,9 @@ npm-debug.log
 .gitignore
 *.md
 .DS_Store
+coverage
+.nyc_output
+__tests__
+tests
+*.test.js
+*.spec.js
