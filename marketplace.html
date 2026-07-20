@@ -297,12 +297,22 @@ function submitCustomReq(){
   var desc=document.getElementById('req-desc').value.trim();
   if(!email){ alert('请输入邮箱地址'); return; }
   if(!desc){ alert('请描述你的数据需求'); return; }
-  // TODO: POST to backend
-  alert('感谢提交！我们将在 48 小时内通过邮件回复你的需求。');
-  closeCustomReq();
-  document.getElementById('req-name').value='';
-  document.getElementById('req-email').value='';
-  document.getElementById('req-desc').value='';
+  var btn=document.querySelector('#custom-req-overlay .btn-primary');
+  btn.disabled=true; btn.textContent='提交中…';
+  (typeof API !== 'undefined' ? API.contact.send(name, email, desc) : Promise.reject(new Error('API client not loaded')))
+    .then(function(res){
+      alert(res.data && res.data.message || '感谢提交！我们将在 48 小时内通过邮件回复你的需求。');
+      closeCustomReq();
+      document.getElementById('req-name').value='';
+      document.getElementById('req-email').value='';
+      document.getElementById('req-desc').value='';
+    })
+    .catch(function(err){
+      alert(err.message || '提交失败，请稍后重试。');
+    })
+    .finally(function(){
+      btn.disabled=false; btn.textContent='提交需求';
+    });
 }
 </script>
 </body>

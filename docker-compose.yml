@@ -32,6 +32,7 @@ services:
       dockerfile: Dockerfile
     container_name: insighthub-api
     restart: unless-stopped
+    stop_grace_period: 10s
     depends_on:
       db:
         condition: service_healthy
@@ -41,6 +42,8 @@ services:
       DATABASE_URL: postgresql://insighthub:${DB_PASSWORD}@db:5432/insighthub
       JWT_SECRET: ${JWT_SECRET}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:80}
+      ADMIN_INVITE_CODE: ${ADMIN_INVITE_CODE:-}
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-}
 
       # ── LLM Mock Mode (强制 mock，适合无额度的开发环境) ──
       LLM_MOCK_MODE: ${LLM_MOCK_MODE:-}
@@ -73,7 +76,6 @@ services:
       USER_DAILY_TOKEN_LIMIT: ${USER_DAILY_TOKEN_LIMIT:-100000}
 
       # ── 其他 ──
-      ADMIN_INVITE_CODE: ${ADMIN_INVITE_CODE:-}
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/api/health"]
       interval: 30s

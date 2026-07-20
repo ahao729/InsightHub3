@@ -471,6 +471,43 @@ docker compose down -v
 
 ---
 
+## Production Deployment
+
+### Quick Start
+```bash
+# 1. Clone and install
+git clone <repo-url> && cd InsightHub3
+cp .env.example .env  # Edit with your values
+
+# 2. Start with Docker
+docker compose up -d
+
+# 3. Initialize database
+docker compose exec backend node src/db/migrate.js
+```
+
+### MCP Server Setup (for AI Agents)
+```bash
+cd mcp-server
+npm install
+# Configure in Claude Desktop / Cursor settings:
+# command: "node"
+# args: ["/path/to/mcp-server/index.js"]
+# env: { "INSIGHTHUB_BACKEND_URL": "http://your-backend:4000/api/v1/data" }
+```
+
+### Environment Variables
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `JWT_SECRET` | Yes (prod) | Min 32 chars, used for auth tokens |
+| `ADMIN_DEFAULT_PASSWORD` | Recommended | Override default admin password |
+| `ADMIN_INVITE_CODE` | Yes (prod) | Code for admin registration |
+| `SMTP_HOST/USER/PASS` | Recommended | Email service for password reset |
+| `INSIGHTHUB_BACKEND_URL` | No | MCP server backend URL (default: localhost:4000) |
+
+---
+
 ## 许可证
 
 ISC

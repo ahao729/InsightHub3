@@ -121,6 +121,9 @@
       verifyEmail: function (token) {
         return request('POST', '/auth/verify-email', { token: token }).then(function (res) { return res.data; });
       },
+      updateProfile: function (name, email) {
+        return request('PUT', '/auth/me', { name: name, email: email }).then(function (res) { return res.data; });
+      },
       getToken: getToken,
       setToken: setToken,
       clearToken: clearToken,
@@ -182,6 +185,13 @@
     dashboard: {
       stats: function () {
         return request('GET', '/dashboard/stats').then(function (res) { return res.data; });
+      },
+    },
+
+    // === 联系/需求提交 ===
+    contact: {
+      send: function (name, email, description) {
+        return request('POST', '/contact', { name: name, email: email, description: description });
       },
     },
 

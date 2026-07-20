@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { readdirSync, copyFileSync, existsSync, mkdirSync } from 'fs';
+import { readdirSync, copyFileSync, cpSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -26,8 +26,7 @@ export default defineConfig({
     {
       name: 'copy-non-module-assets',
       closeBundle() {
-        // 非 module 脚本（stub-runtime.js, api-client.js）Vite 不处理
-        // 手动复制到 dist/assets/ 确保部署后可用
+        // 1. 复制非 module 脚本（stub-runtime.js, api-client.js）
         const srcDir = resolve(__dirname, 'assets');
         const dstDir = resolve(__dirname, 'dist', 'assets');
         if (!existsSync(dstDir)) {
@@ -40,6 +39,14 @@ export default defineConfig({
             copyFileSync(src, dst);
             console.log(`  ✅ Copied: ${file} → dist/assets/`);
           }
+        }
+
+        // 2. 复制 posts/ 目录（博客文章 + 图片等静态资源）
+        const postsSrc = resolve(__dirname, 'posts');
+        const postsDst = resolve(__dirname, 'dist', 'posts');
+        if (existsSync(postsSrc)) {
+          cpSync(postsSrc, postsDst, { recursive: true });
+          console.log(`  ✅ Copied: posts/ → dist/posts/`);
         }
       },
     },

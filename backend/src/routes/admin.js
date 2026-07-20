@@ -39,7 +39,7 @@ seedDefaultAdmin();
 // In-memory fallback data
 // ──────────────────────────────────────────────
 
-const fallbackStats = {
+const fallbackStats = { isDemo: true,
   totalUsers: 128,
   activeUsers: 87,
   totalApiKeys: 342,
@@ -78,6 +78,7 @@ const fallbackUsers = [
   { id: 'u-007', name: '测试账号', email: 'test@example.com', plan: '免费版', role: 'user', status: 'suspended', created: '2026-02-10', apiCalls: 0, lastActive: '—' },
   { id: 'u-008', name: '孙浩然', email: 'sunhr@example.com', plan: '企业版', role: 'admin', status: 'active', created: '2025-07-22', apiCalls: 45200, lastActive: '2026-06-14 16:58' },
 ];
+fallbackUsers.forEach(u => u.isDemo = true);
 
 const fallbackAllApiKeys = [
   { id: 'key-001', name: '生产环境 Key', key: 'ihd_live_sk_Xk9mPqL2rN8vTs4w3a9f', user: '张小明', userName: 'zhangxm@example.com', env: 'production', used: 3284, limit: 5000, created: '2026-05-02', status: 'active' },
@@ -86,6 +87,7 @@ const fallbackAllApiKeys = [
   { id: 'key-004', name: 'CI/CD Key', key: 'ihd_ci_sk_Z9y8X7w6V5u4T3s2R1q0', user: '陈思涵', userName: 'chensh@example.com', env: 'production', used: 8920, limit: 10000, created: '2025-08-15', status: 'active' },
   { id: 'key-005', name: '测试 Key', key: 'ihd_test_sk_M4n5B6v7C8x9L0p1Q2w3', user: '王伟', userName: 'wangw@example.com', env: 'development', used: 142, limit: 500, created: '2026-03-20', status: 'revoked' },
 ];
+fallbackAllApiKeys.forEach(k => k.isDemo = true);
 
 const fallbackAllSubscriptions = [
   { id: 'sub-001', user: '张小明', email: 'zhangxm@example.com', plan: '创业者版', status: 'active', price: '¥199/月', startDate: '2026-01-15', renewDate: '2026-07-01', gateway: '支付宝' },
@@ -95,6 +97,7 @@ const fallbackAllSubscriptions = [
   { id: 'sub-005', user: '赵雷', email: 'zhaolei@example.com', plan: '创业者版', status: 'active', price: '¥199/月', startDate: '2026-04-01', renewDate: '2026-07-01', gateway: '支付宝' },
   { id: 'sub-006', user: '孙浩然', email: 'sunhr@example.com', plan: '企业版', status: 'active', price: '¥999/月', startDate: '2025-07-22', renewDate: '2025-07-22', gateway: '微信支付' },
 ];
+fallbackAllSubscriptions.forEach(s => s.isDemo = true);
 
 const fallbackAuditLogs = [
   { action: '用户登录', user: '张小明', email: 'zhangxm@example.com', ip: '192.168.1.100', ts: '2026-06-14 16:32:10', detail: '来自 Chrome 浏览器' },
@@ -106,6 +109,7 @@ const fallbackAuditLogs = [
   { action: '新用户注册', user: '刘雨桐', email: 'liuyt@example.com', ip: '10.0.0.88', ts: '2026-06-01 08:12:05', detail: '注册来源: 官网引流' },
   { action: '账户停用', user: '管理员', email: 'admin@insighthub.data', ip: '192.168.1.1', ts: '2026-05-28 09:15:00', detail: '停用用户: 王伟 (逾期未付费)' },
 ];
+fallbackAuditLogs.forEach(l => l.isDemo = true);
 
 // ──────────────────────────────────────────────
 // Admin Authentication Routes
@@ -115,51 +119,48 @@ const fallbackAuditLogs = [
  * POST /api/v1/admin/login
  * Authenticate with email + password, returns JWT
  */
-router.post('/login', loginRateLimit, async (req, res) => {
+router.post('/login', loginRateLimit, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        error: { code: 'INVALID_INPUT', message: '请提供邮箱和密码。' }
-      });
+      return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: '请提供邮箱和密码。' } });
     }
 
-    const admin = adminStore.find(a => a.email === email);
+    let admin = null;
+    let source = 'memory';
+
+    // 1) Try DB first
+    try {
+      const result = await query('SELECT id, email, name, password_hash, role FROM users WHERE email = $1 AND role = $2', [email.toLowerCase(), 'admin']);
+      if (result.rows.length > 0) {
+        admin = result.rows[0];
+        admin.password = admin.password_hash;
+        source = 'database';
+      }
+    } catch (dbErr) {
+      console.warn('[Admin] DB query failed, falling back to memory:', dbErr.message);
+    }
+
+    // 2) Fallback to in-memory
     if (!admin) {
-      return res.status(401).json({
-        success: false,
-        error: { code: 'INVALID_CREDENTIALS', message: '邮箱或密码错误。' }
-      });
+      admin = adminStore.find(a => a.email === email.toLowerCase());
+    }
+
+    if (!admin) {
+      return res.status(401).json({ success: false, error: { code: 'AUTH_ERROR', message: '邮箱或密码错误。' } });
     }
 
     const valid = await bcrypt.compare(password, admin.password);
     if (!valid) {
-      return res.status(401).json({
-        success: false,
-        error: { code: 'INVALID_CREDENTIALS', message: '邮箱或密码错误。' }
-      });
+      return res.status(401).json({ success: false, error: { code: 'AUTH_ERROR', message: '邮箱或密码错误。' } });
     }
 
-    const token = jwt.sign(
-      { sub: admin.id, email: admin.email, name: admin.name, role: 'admin' },
-      config.jwtSecret,
-      { expiresIn: '24h' }
-    );
+    const token = jwt.sign({ sub: admin.id, email: admin.email, name: admin.name, role: admin.role || 'admin' }, config.jwtSecret, { expiresIn: '24h' });
 
-    res.json({
-      success: true,
-      data: {
-        token,
-        admin: { id: admin.id, email: admin.email, name: admin.name }
-      }
-    });
+    console.log(`[Admin] Login success: ${admin.email} (source: ${source})`);
+    return res.json({ success: true, data: { admin: { id: admin.id, email: admin.email, name: admin.name, role: admin.role || 'admin' }, token } });
   } catch (err) {
-    console.error('[Admin] Login error:', err);
-    res.status(500).json({
-      success: false,
-      error: { code: 'INTERNAL_ERROR', message: '登录失败，请稍后重试。' }
-    });
+    next(err);
   }
 });
 
@@ -207,7 +208,17 @@ router.post('/register', registerRateLimit, async (req, res) => {
       });
     }
 
-    if (adminStore.find(a => a.email === email)) {
+    // Check DB first, then fallback to in-memory for duplicate email
+    let emailExists = false;
+    try {
+      const dupCheck = await query('SELECT id FROM users WHERE email = $1 AND role = $2', [email.toLowerCase(), 'admin']);
+      if (dupCheck.rows.length > 0) emailExists = true;
+    } catch (dbErr) {
+      console.warn('[Admin] Register DB check failed, using memory fallback:', dbErr.message);
+      if (adminStore.find(a => a.email === email)) emailExists = true;
+    }
+
+    if (emailExists) {
       return res.status(409).json({
         success: false,
         error: { code: 'ALREADY_EXISTS', message: '该邮箱已被注册。' }
@@ -215,6 +226,22 @@ router.post('/register', registerRateLimit, async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
+
+    // Try DB first, fallback to memory
+    try {
+      const result = await query(
+        `INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, 'admin') RETURNING id, email, name, role`,
+        [email.toLowerCase(), hashed, name]
+      );
+      const dbAdmin = result.rows[0];
+      const token = jwt.sign({ sub: dbAdmin.id, email: dbAdmin.email, name: dbAdmin.name, role: dbAdmin.role }, config.jwtSecret, { expiresIn: '24h' });
+      console.log(`[Admin] Register success (DB): ${email}`);
+      return res.status(201).json({ success: true, data: { token, admin: { id: dbAdmin.id, email: dbAdmin.email, name: dbAdmin.name } } });
+    } catch (dbErr) {
+      console.warn('[Admin] Register DB write failed, using memory:', dbErr.message);
+    }
+
+    // Fallback: in-memory
     const admin = {
       id: 'admin-' + uuidv4().slice(0, 8),
       email,

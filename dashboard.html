@@ -1082,10 +1082,32 @@ function saveSettings() {
     showToast('请输入邮箱地址');
     return;
   }
-  var safeName = escapeHtml(name.value.trim());
-  var safeEmail = escapeHtml(email.value.trim());
-  showToast('设置已保存：' + safeName);
-  // 实际可调用 API.user.updateProfile(safeName, safeEmail)
+  var newName = name.value.trim();
+  var newEmail = email.value.trim();
+
+  if (!API || !API.auth || !API.auth.updateProfile) {
+    showToast('API 未就绪，请刷新后重试');
+    return;
+  }
+
+  API.auth.updateProfile(newName, newEmail)
+    .then(function (user) {
+      showToast('设置已保存');
+      // 同步更新侧边栏
+      var sbName = document.getElementById('sb-name');
+      var sbAvatar = document.getElementById('sb-avatar');
+      if (sbName) sbName.textContent = newName;
+      if (sbAvatar) sbAvatar.textContent = newName.charAt(0).toUpperCase();
+      // 同步更新移动端抽屉
+      var drawerName = document.getElementById('drawer-name');
+      var drawerAvatar = document.getElementById('drawer-avatar');
+      if (drawerName) drawerName.textContent = newName;
+      if (drawerAvatar) drawerAvatar.textContent = newName.charAt(0).toUpperCase();
+    })
+    .catch(function (err) {
+      var msg = (err && err.message) ? err.message : '保存失败，请重试';
+      showToast(msg);
+    });
 }
 
 // ========== 通知渠道配置弹窗 ==========
