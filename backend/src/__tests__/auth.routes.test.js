@@ -169,14 +169,8 @@ describe('POST /api/v1/auth/register', () => {
     mockDbUnavailable();
     const app = buildApp();
 
-    // Fill fallback store to cap (MAX_FALLBACK_USERS = 500)
-    for (let i = 0; i < 500; i++) {
-      const fillRes = await request(app)
-        .post('/api/v1/auth/register')
-        .send({ email: `cap${i}@test.com`, password: 'secret123', name: `User${i}` });
-      expect(fillRes.status).toBe(201);
-      expect(fillRes.body.success).toBe(true);
-    }
+    // Seed fallback store to cap (MAX_FALLBACK_USERS = 500) — avoids 500 HTTP round-trips
+    authRoutes._seedFallbackUsers(500);
 
     const res = await request(app)
       .post('/api/v1/auth/register')
@@ -187,7 +181,7 @@ describe('POST /api/v1/auth/register', () => {
 
     // Cleanup
     authRoutes._clearFallbackUsers();
-  }, 30000);
+  });
 });
 
 /* ══════════════════════════════════════════════

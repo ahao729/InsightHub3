@@ -674,4 +674,20 @@ router._clearFallbackUsers = () => {
   fallbackUsers.clear();
 };
 
+// Test-only: seed fallback store to a given size (avoids 500 HTTP requests in tests)
+router._seedFallbackUsers = (count) => {
+  for (let i = fallbackUsers.size; i < count; i++) {
+    const email = `seed${i}@test.com`;
+    fallbackUsers.set(email, {
+      id: `seed-uuid-${i}`,
+      email,
+      name: `Seed User ${i}`,
+      password_hash: 'hashed_seed',
+      email_verified: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
+};
+
 module.exports = router;
