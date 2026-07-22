@@ -17,8 +17,6 @@ services:
     buildCommand: npm ci --omit=dev
     startCommand: node src/index.js
     healthCheckPath: /api/health
-    healthCheckPolicy:
-      responseTimeoutSeconds: 30
     envVars:
       # ── Node ──
       - key: NODE_ENV
