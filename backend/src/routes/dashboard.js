@@ -5,6 +5,23 @@ const { authenticate } = require('../middleware/auth');
 const router = express.Router();
 
 // ──────────────────────────────────────────────
+// Helpers
+// ──────────────────────────────────────────────
+
+function timeAgo(date) {
+  if (!date) return '—';
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return '刚刚';
+  if (mins < 60) return `${mins} 分钟前`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} 小时前`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days} 天前`;
+  return new Date(date).toISOString().slice(0, 10);
+}
+
+// ──────────────────────────────────────────────
 // In-memory fallback data
 // ──────────────────────────────────────────────
 
@@ -82,34 +99,152 @@ const fallbackPackages = [
 router.get('/stats', authenticate, async (req, res, next) => {
   try {
     try {
-      // Attempt DB query first
-      // For now, return fallback — a real implementation would aggregate
-      // from usage_logs, reports, monitors, etc.
-      const usageResult = await query(
-        `SELECT DATE(timestamp) as date, COUNT(*) as calls
-         FROM usage_logs
-         WHERE user_id = $1
-           AND timestamp >= NOW() - INTERVAL '14 days'
-         GROUP BY DATE(timestamp)
-         ORDER BY date ASC`,
-        [req.user.id]
-      );
+      // ── Parallel DB queries for all dashboard sections ──
+      const userId = req.user.id;
 
-      const logResult = await query(
-        `SELECT ul.endpoint as api, ul.status_code as status, ul.duration_ms as time, ul.timestamp as ts, ak.name as key_name
-         FROM usage_logs ul
-         LEFT JOIN api_keys ak ON ak.id = ul.api_key_id
-         WHERE ul.user_id = $1
-         ORDER BY ul.timestamp DESC
-         LIMIT 10`,
-        [req.user.id]
-      );
+      const [usageResult, logResult, planResult, apiKeyResult, monitorResult, monthlyCallsResult, reportCountResult] = await Promise.all([
+        // Trend: 14-day API call counts
+        query(
+          `SELECT DATE(timestamp) as date, COUNT(*) as calls
+           FROM usage_logs
+           WHERE user_id = $1
+             AND timestamp >= NOW() - INTERVAL '14 days'
+           GROUP BY DATE(timestamp)
+           ORDER BY date ASC`,
+          [userId]
+        ),
+        // Recent logs
+        query(
+          `SELECT ul.endpoint as api, ul.status_code as status, ul.duration_ms as time, ul.timestamp as ts, ak.name as key_name
+           FROM usage_logs ul
+           LEFT JOIN api_keys ak ON ak.id = ul.api_key_id
+           WHERE ul.user_id = $1
+           ORDER BY ul.timestamp DESC
+           LIMIT 10`,
+          [userId]
+        ),
+        // Subscription plan
+        query(
+          `SELECT sp.name, sp.price_monthly, sp.requests_per_month, sp.features,
+                  s.current_period_end
+           FROM subscriptions s
+           JOIN subscription_plans sp ON sp.id = s.plan_id
+           WHERE s.user_id = $1 AND s.status = 'active'
+           ORDER BY s.created_at DESC LIMIT 1`,
+          [userId]
+        ),
+        // API keys
+        query(
+          `SELECT id, name, key, revoked, created_at, last_used_at
+           FROM api_keys
+           WHERE user_id = $1
+           ORDER BY created_at DESC`,
+          [userId]
+        ),
+        // Monitors
+        query(
+          `SELECT id, name, status, created_at
+           FROM monitors
+           WHERE user_id = $1
+           ORDER BY created_at DESC
+           LIMIT 20`,
+          [userId]
+        ),
+        // Monthly API call count + limit
+        query(
+          `SELECT COUNT(*) as calls
+           FROM usage_logs
+           WHERE user_id = $1
+             AND timestamp >= NOW() - INTERVAL '30 days'`,
+          [userId]
+        ),
+        // Monthly report count
+        query(
+          `SELECT COUNT(DISTINCT endpoint) as report_count
+           FROM usage_logs
+           WHERE user_id = $1
+             AND endpoint LIKE '%/reports%'
+             AND timestamp >= NOW() - INTERVAL '30 days'`,
+          [userId]
+        ),
+      ]);
 
-      // Build response from DB data where available + fallback for rest
+      // ── Build plan from DB or fallback ──
+      const planRow = planResult.rows[0];
+      const plan = planRow
+        ? {
+            name: planRow.name,
+            description: `${planRow.requests_per_month ?? '—'} 次/月`,
+            renewDate: planRow.current_period_end
+              ? new Date(planRow.current_period_end).toISOString().slice(0, 10) + ' 续费'
+              : fallbackPlan.renewDate,
+          }
+        : fallbackPlan;
+
+      // ── Build metrics from DB or fallback ──
+      const monthlyCalls = parseInt(monthlyCallsResult.rows[0]?.calls, 10) || 0;
+      const apiLimit = planRow?.requests_per_month || fallbackMetrics.apiLimit;
+      const apiKeys = apiKeyResult.rows.filter(k => !k.revoked);
+      const monitors = monitorResult.rows;
+      const reportCount = parseInt(reportCountResult.rows[0]?.report_count, 10) || 0;
+
+      const metrics = {
+        apiCalls: monthlyCalls,
+        apiLimit,
+        reports: reportCount,
+        reportLimit: fallbackMetrics.reportLimit,
+        activeMonitors: monitors.length,
+        monitorLimit: fallbackMetrics.monitorLimit,
+        alerts: 0,
+      };
+
+      // ── Build trend ──
       const trendData = usageResult.rows.map(r => ({
         date: r.date.toISOString ? r.date.toISOString().slice(5, 10) : r.date,
         calls: parseInt(r.calls, 10),
       }));
+
+      // ── Build API keys list ──
+      const apiKeysList = apiKeys.length > 0
+        ? apiKeys.map(k => ({
+            name: k.name,
+            key: k.key ? k.key.slice(0, 12) + '***' + k.key.slice(-4) : '***',
+            env: k.name?.toLowerCase().includes('测试') || k.name?.toLowerCase().includes('test') ? 'development' : 'production',
+            used: 0,
+            limit: apiLimit,
+            created: k.created_at ? new Date(k.created_at).toISOString().slice(0, 10) : '—',
+            lastCall: k.last_used_at ? timeAgo(k.last_used_at) : '从未',
+            scope: '全部数据包权限',
+          }))
+        : fallbackApiKeys;
+
+      // ── Build monitors list ──
+      const monitorsList = monitors.length > 0
+        ? monitors.map(m => {
+            const statusCls = m.status === 'alert' ? 'ms-alert' : m.status === 'paused' ? 'ms-pause' : 'ms-active';
+            const pill = m.status === 'alert' ? '新告警' : m.status === 'paused' ? '暂停' : '正常';
+            const pillCls = m.status === 'alert' ? 'alert-pill' : '';
+            return {
+              status: statusCls,
+              name: m.name,
+              pkg: '—',
+              date: m.created_at ? timeAgo(m.created_at) : '—',
+              pill,
+              pillCls,
+            };
+          })
+        : fallbackMonitors;
+
+      // ── Build recent logs ──
+      const recentLogs = logResult.rows.length > 0
+        ? logResult.rows.map(r => ({
+            api: r.api,
+            status: String(r.status),
+            time: r.time + 'ms',
+            ts: r.ts,
+            key: r.key_name || '未知',
+          }))
+        : fallbackRecentLogs;
 
       return res.json({
         success: true,
@@ -119,25 +254,17 @@ router.get('/stats', authenticate, async (req, res, next) => {
             email: req.user.email || '',
             avatar: req.user.avatar || null,
           },
-          plan: fallbackPlan,
-          metrics: fallbackMetrics,
+          plan,
+          metrics,
           trend: {
             labels: trendData.length > 0 ? trendData.map(t => t.date) : fallbackTrend.labels,
             values: trendData.length > 0 ? trendData.map(t => t.calls) : fallbackTrend.values,
           },
-          recentReports: fallbackReports,
-          monitors: fallbackMonitors,
-          subscribedPackages: fallbackPackages,
-          apiKeys: fallbackApiKeys,
-          recentLogs: logResult.rows.length > 0
-            ? logResult.rows.map(r => ({
-                api: r.api,
-                status: String(r.status),
-                time: r.time + 'ms',
-                ts: r.ts,
-                key: r.key_name || '未知',
-              }))
-            : fallbackRecentLogs,
+          recentReports: fallbackReports,   // no reports table yet
+          monitors: monitorsList,
+          subscribedPackages: fallbackPackages, // no subscription_items table yet
+          apiKeys: apiKeysList,
+          recentLogs,
         },
       });
     } catch (dbErr) {
