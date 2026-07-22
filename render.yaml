@@ -36,7 +36,6 @@ services:
 
       # ── CORS（实际前端域名）──
       - key: CORS_ORIGINS
-        sync: false
         value: "https://insight-hub3.vercel.app"
 
       # ── LLM Provider（在 Render Dashboard 中手动设置）──
@@ -97,7 +96,6 @@ services:
       - key: EMAIL_FROM
         value: "InsightHub <no-reply@insighthub.data>"
       - key: FRONTEND_URL
-        sync: false
         value: "https://insight-hub3.vercel.app"
 
       # ── Langfuse 可观测性（可选）──
