@@ -12,8 +12,8 @@ const requestLogs = new Map();
 
 // Plan rate limits (requests per minute)
 const PLAN_LIMITS = {
-  free: 200,
-  pro: 100,
+  free: 60,
+  pro: 200,
   enterprise: 1000,
 };
 

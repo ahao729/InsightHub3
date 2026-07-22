@@ -88,22 +88,16 @@ describe("rateLimit — per-minute limiting", () => {
     const mod = require("../middleware/rateLimit");
     const middleware = mod.rateLimit("free");
 
-    // The free plan has 200/min and 1000/monthly
-    // We can't easily hit 1000 without hitting 200/min first
+    // The free plan has 60/min and 1000/monthly
+    // We can't easily hit 1000 without hitting 60/min first
     // So we use a trick: make 199 requests (just under per-minute limit),
     // then clear the minute timestamps to allow more, until monthly is exhausted.
     // A simpler approach: directly test with a unique userId per batch to avoid minute limit,
     // but monthly limit is per-user too. The per-minute check runs first.
     //
-    // Best approach: use the internal store to manipulate timestamps.
-    // Since we can't access it directly, let's create many unique user IDs
-    // to avoid per-minute collision but share the monthly counter...
-    // Actually monthly is per-user too, so each unique user gets its own monthly counter.
-    //
-    // The only reliable way: create requests fast enough that the minute window
-    // hasn't expired, but we need 1000 for free. Per-minute is 200.
-    // After 200 requests, the oldest is at most 60s old.
-    // We can't reach 1000 in one minute on free plan.
+    // The free plan has 60/min and 1000/monthly.
+    // Per-minute limit (60) triggers well before the monthly limit (1000),
+    // so we can test both paths: the minute limit fires first.
     //
     // Solution: use enterprise plan (1000/min, 500000/monthly) but that's too high too.
     // Let's test the logic by verifying the flow with a lower bound.
@@ -115,26 +109,14 @@ describe("rateLimit — per-minute limiting", () => {
     // So let's just verify the code path exists by checking the structure.
 
     // Simplest approach: create a plan dynamically by importing PLAN_MONTHLY_LIMITS
-    // and making requests. For 'free' plan with monthly=1000, the per-minute limit (200)
-    // blocks first. So let's just verify the response structure when monthly IS exceeded
-    // by using a mock approach.
-
-    // Actually, the rate limiter's internal stores persist across calls.
-    // Let's make 200 requests for userId 'monthly-user-1' (hits per-minute limit).
-    // Then we need to wait or clear timestamps. Since we can't, let's just verify
-    // the 429 response for per-minute and trust the monthly path based on code review.
-    //
-    // Better approach: make requests that each use just enough timestamps
-    // and verify the code structure handles it.
-    //
-    // FINAL approach: just verify that when we DO get a 429, the code paths exist.
-    // The monthly check is tested indirectly. Let's test what we CAN test directly.
-    for (let i = 0; i < 200; i++) {
+    // Free plan: 60/min, 1000/monthly. The per-minute limit (60) fires first.
+    // Fill the minute window with 60 successful calls, then verify the next call is rejected.
+    for (let i = 0; i < 60; i++) {
       const r = mockRes();
       middleware(mockReq("monthly-user-1"), r, jest.fn());
     }
 
-    // Now the per-minute limit should trigger (200 requests)
+    // Now the per-minute limit should trigger (61st request)
     const res = mockRes();
     middleware(mockReq("monthly-user-1"), res, jest.fn());
     expect(res._status).toBe(429);
