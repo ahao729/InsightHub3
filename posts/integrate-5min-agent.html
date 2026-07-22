@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>如何在 5 分钟内将 InsightHub 接入你的 AI Agent · InsightHub 博客</title>
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+<script src="../assets/api-client.js"></script>
+<script src="../assets/stub-runtime.js"></script>
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+
+<style>
+/* Article styles */
+.article-nav{padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.article-nav-inner{display:flex;align-items:center;justify-content:space-between}
+.article-breadcrumb{font-size:12px;color:var(--color-text-secondary)}
+.article-breadcrumb span{cursor:pointer}
+.article-breadcrumb span:hover{color:var(--color-text-primary)}
+.article-breadcrumb .sep{margin:0 8px}
+.article-wrap{max-width:720px;margin:0 auto;padding:40px 32px 48px}
+.article-header{margin-bottom:32px}
+.article-meta{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;font-size:12px;color:var(--color-text-tertiary)}
+.article-cat-badge{font-size:10px;padding:2px 8px;border-radius:999px;background:var(--color-background-secondary);color:var(--color-text-secondary);font-weight:500}
+.article-cat-badge.product{background:var(--color-brand-light);color:var(--color-text-success)}
+.article-cat-badge.insight{background:#E6F1FB;color:#185FA5}
+.article-cat-badge.tutorial{background:#EEEDFE;color:#534AB7}
+.article-cat-badge.case{background:#FAECE7;color:#993C1D}
+.article-title{font-size:26px;font-weight:500;line-height:1.35;margin-bottom:12px}
+.article-author{font-size:12px;color:var(--color-text-secondary)}
+.article-feature-img{width:100%;aspect-ratio:16/9;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);margin-bottom:32px;display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--color-text-tertiary);overflow:hidden}
+.article-body{font-size:14px;line-height:1.85;color:var(--color-text-primary)}
+.article-body p{margin-bottom:18px}
+.article-body h2{font-size:18px;font-weight:500;margin:32px 0 14px}
+.article-body h3{font-size:15px;font-weight:500;margin:24px 0 10px}
+.article-body ul,.article-body ol{padding-left:20px;margin-bottom:18px}
+.article-body li{margin-bottom:6px}
+.article-body blockquote{border-left:3px solid var(--color-brand);padding:12px 16px;margin:18px 0;background:var(--color-background-secondary);border-radius:0 var(--border-radius-sm) var(--border-radius-sm) 0;font-style:normal;color:var(--color-text-secondary)}
+.article-body code{font-family:var(--font-mono);font-size:12px;background:var(--color-background-secondary);padding:2px 6px;border-radius:3px}
+.article-body pre{background:var(--color-background-secondary);padding:16px;border-radius:var(--border-radius-md);overflow-x:auto;margin-bottom:18px;font-size:12px;line-height:1.6;border:0.5px solid var(--color-border-tertiary)}
+.article-body pre code{background:none;padding:0}
+.article-body strong{font-weight:500}
+.article-tags{display:flex;gap:8px;margin-top:32px;flex-wrap:wrap}
+.article-tag{font-size:11px;padding:4px 10px;border-radius:999px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.article-divider{height:0.5px;background:var(--color-border-tertiary);margin:32px 0}
+.article-cta{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:24px;text-align:center;margin-top:24px}
+.article-cta h3{font-size:15px;font-weight:500;margin-bottom:6px}
+.article-cta p{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px}
+.article-related{margin-top:40px}
+.article-related h3{font-size:15px;font-weight:500;margin-bottom:16px}
+.related-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.related-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;cursor:pointer;transition:border-color var(--transition-fast)}
+.related-card:hover{border-color:var(--color-border-primary)}
+.related-card-title{font-size:13px;font-weight:500;margin-bottom:4px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.related-card-date{font-size:11px;color:var(--color-text-tertiary)}
+@media(max-width:768px){.article-wrap{padding:24px 16px 32px}.related-grid{grid-template-columns:1fr}.article-nav{padding:12px 16px}}
+</style>
+
+<nav>
+  <div class="article-nav">
+    <div class="article-nav-inner">
+      <div class="article-breadcrumb">
+        <span onclick="location.href='../index.html'">InsightHub Data</span>
+        <span class="sep">/</span>
+        <span onclick="location.href='../blog.html'">博客</span>
+        <span class="sep">/</span>
+        <span style="color:var(--color-text-primary)">当前文章</span>
+      </div>
+      <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile drawer -->
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-header">
+    <span class="drawer-logo"><div class="logo-dot"></div>InsightHub Data</span>
+    <button class="drawer-close" id="drawer-close" aria-label="关闭菜单"><i class="ti ti-x"></i></button>
+  </div>
+  <a class="drawer-link" href="../marketplace.html"><i class="ti ti-package"></i>数据产品</a>
+  <a class="drawer-link" href="../api-docs.html"><i class="ti ti-file-code"></i>API 文档</a>
+  <a class="drawer-link" href="../pricing.html"><i class="ti ti-currency-yen"></i>定价</a>
+  <a class="drawer-link" href="../solutions.html"><i class="ti ti-briefcase"></i>解决方案</a>
+  <a class="drawer-link" href="../blog.html"><i class="ti ti-news"></i>博客</a>
+  <div class="drawer-divider"></div>
+  <a class="drawer-link" href="../auth.html"><i class="ti ti-user"></i>登录 / 注册</a>
+</div>
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+<style>
+.mobile-drawer{display:none;position:fixed;top:0;right:-280px;width:280px;max-width:80vw;height:100vh;background:var(--color-background-primary);border-left:0.5px solid var(--color-border-tertiary);z-index:1050;flex-direction:column;padding:20px 8px 8px;transition:right .3s;box-shadow:0 4px 24px rgba(0,0,0,0.12);overflow-y:auto}
+.mobile-drawer.open{right:0}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px}
+.drawer-logo{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.drawer-close{width:28px;height:28px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);border-radius:var(--border-radius-sm)}
+.drawer-close:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.drawer-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-primary);text-decoration:none;transition:background var(--transition-fast)}
+.drawer-link:hover{background:var(--color-background-secondary)}
+.drawer-link i{font-size:16px;color:var(--color-text-secondary);width:20px;text-align:center}
+.drawer-link.active{background:var(--color-brand-light);color:var(--color-brand)}
+.drawer-link.active i{color:var(--color-brand)}
+.drawer-divider{height:0.5px;background:var(--color-border-tertiary);margin:8px 12px}
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1040}
+.drawer-backdrop.active{display:block}
+@media(max-width:768px){.hamburger{display:flex}.drawer-backdrop.active{display:block}.mobile-drawer{display:flex}}
+@media(min-width:769px){.hamburger{display:none}}
+</style>
+
+<div class="article-wrap">
+  <div class="article-header">
+    <div class="article-meta">
+      <span class="article-cat-badge tutorial">技术教程</span>
+      <span>2026-06-10</span>
+      <span>·</span>
+      <span>开发者社区</span>
+    </div>
+    <h1 class="article-title">如何在 5 分钟内将 InsightHub 接入你的 AI Agent</h1>
+  </div>
+
+  <div class="article-feature-img">
+    <img src="images/integrate-5min-agent.svg" alt="如何在 5 分钟内将 InsightHub 接入你的 AI Agent">
+  </div>
+
+  <div class="article-body">
+    <p>InsightHub 全面支持 MCP（Model Context Protocol）协议，这意味着你可以将 InsightHub 的数据能力直接接入任何支持 MCP 的 AI 工具或 Agent 框架，让 AI 模型实时查询和分析商业数据。本文将在 5 分钟内带你完成从注册到数据查询的完整配置流程。</p>
+
+    <h2>前提条件</h2>
+    <ul>
+      <li>一个 InsightHub 账号（<a href="../auth.html">免费注册</a>）</li>
+      <li>支持 MCP 客户端的 AI 工具，如 Claude Desktop、VS Code 中的 AI 插件，或自定义的 MCP Agent 框架</li>
+      <li>基本的 JSON 编辑能力与终端操作经验</li>
+    </ul>
+
+    <h2>第一步：获取 API Key</h2>
+    <p>登录 InsightHub 控制台，在左侧导航栏中找到"API 密钥"页面。点击"创建新密钥"，为你的密钥命名（例如"My AI Agent"），选择所需的数据权限范围（建议初始使用"只读"权限），然后点击确认。系统会生成一串以 <code>ih_</code> 开头的 API Key。</p>
+    <p><strong>注意：</strong>请将密钥保存在安全位置，离开此页面后将无法再次查看完整密钥内容。如果密钥泄露，可以在控制台中随时撤销并重新生成。</p>
+
+    <h2>第二步：配置 MCP Server</h2>
+    <p>在你的 AI 工具的 MCP 配置文件中添加 InsightHub 数据源。以下是一个标准的 MCP 配置示例：</p>
+
+    <pre><code>{
+  "mcpServers": {
+    "insighthub": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@insighthub/mcp-server"
+      ],
+      "env": {
+        "INSIGHTHUB_API_KEY": "ih_your_api_key_here",
+        "INSIGHTHUB_BASE_URL": "https://api.insighthub.io"
+      }
+    }
+  }
+}</code></pre>
+
+    <p>将配置中的 <code>INSIGHTHUB_API_KEY</code> 替换为你在第一步中获取的实际密钥。如果你的 AI 工具运行在企业网络环境中，还可以通过 <code>INSIGHTHUB_BASE_URL</code> 指定自定义的 API 网关地址或私有化部署端点。</p>
+
+    <h2>第三步：在 AI 工具中使用</h2>
+    <p>完成配置后，保存配置文件并重启你的 AI 工具。现在，你可以直接在对话中通过自然语言查询 InsightHub 的数据了。例如：</p>
+    <ul>
+      <li>"查询 2026 年第二季度电商行业的投融资数据"</li>
+      <li>"对比过去三个月新能源汽车品牌的社交媒体声量趋势"</li>
+      <li>"帮我分析最近一周专利申请量增长最快的技术领域"</li>
+      <li>"列出 2026 年融资额最高的 10 家 AI 应用层创业公司"</li>
+    </ul>
+    <p>AI 工具会自动调用 InsightHub 的 MCP 工具，将数据查询结果纳入上下文进行智能回答。无需手动切换平台或编写 API 调用代码，所有数据查询在对话流中自然完成。</p>
+    <p>整个配置过程通常不超过 5 分钟。如果你希望了解更多高级配置选项，包括自定义工具函数、数据过滤规则和结果缓存策略，请查阅我们的完整 MCP 集成文档与最佳实践指南。</p>
+  </div>
+
+  <div class="article-divider"></div>
+
+  <div class="article-cta">
+    <h3>用数据驱动决策</h3>
+    <p>立即注册 InsightHub，获取你需要的商业情报</p>
+    <button class="btn btn-primary" onclick="location.href='../auth.html'">免费注册 →</button>
+  </div>
+
+  <div class="article-related">
+    <h3>相关文章</h3>
+    <div class="related-grid">
+      <div class="related-card" onclick="location.href='../posts/mcp-protocol-deep-dive.html'">
+        <div class="related-card-title">MCP 协议详解：让 AI 模型直接调用你的数据</div>
+        <div class="related-card-date">2026-05-28</div>
+      </div>
+      <div class="related-card" onclick="location.href='../posts/geo-optimization-guide.html'">
+        <div class="related-card-title">地理空间数据优化指南：提升位置分析精度</div>
+        <div class="related-card-date">2026-05-15</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">© 2026 InsightHub Data. All rights reserved.</div>
+    <div class="footer-links">
+      <span onclick="location.href='../blog.html'">博客</span>
+      <span onclick="location.href='../privacy.html'">隐私政策</span>
+      <span onclick="location.href='../terms.html'">服务条款</span>
+      <span onclick="location.href='../status.html'">系统状态</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+.footer-inner{padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-left{font-size:13px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px;font-size:12px;color:var(--color-text-secondary)}
+.footer-links span{cursor:pointer}
+.footer-links span:hover{color:var(--color-text-primary)}
+</style>
+
+</div>
+
+<script>
+// Mobile drawer
+(function(){var btn=document.getElementById('hamburger-btn');var drawer=document.getElementById('mobile-drawer');var backdrop=document.getElementById('drawer-backdrop');var closeBtn=document.getElementById('drawer-close');function openDrawer(){drawer.classList.add('open');backdrop.classList.add('active');btn.setAttribute('aria-expanded','true')}function closeDrawer(){drawer.classList.remove('open');backdrop.classList.remove('active');btn.setAttribute('aria-expanded','false')}if(btn)btn.addEventListener('click',openDrawer);if(backdrop)backdrop.addEventListener('click',closeDrawer);if(closeBtn)closeBtn.addEventListener('click',closeDrawer);document.querySelectorAll('.drawer-link').forEach(function(l){l.addEventListener('click',closeDrawer)})})();
+</script>
+
+</body>
+</html>

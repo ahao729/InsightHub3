@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsightHub 平台更新：新增 AI 报告自动生成 · InsightHub 博客</title>
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+<script src="../assets/api-client.js"></script>
+<script src="../assets/stub-runtime.js"></script>
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+
+<style>
+/* Article styles */
+.article-nav{padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.article-nav-inner{display:flex;align-items:center;justify-content:space-between}
+.article-breadcrumb{font-size:12px;color:var(--color-text-secondary)}
+.article-breadcrumb span{cursor:pointer}
+.article-breadcrumb span:hover{color:var(--color-text-primary)}
+.article-breadcrumb .sep{margin:0 8px}
+.article-wrap{max-width:720px;margin:0 auto;padding:40px 32px 48px}
+.article-header{margin-bottom:32px}
+.article-meta{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;font-size:12px;color:var(--color-text-tertiary)}
+.article-cat-badge{font-size:10px;padding:2px 8px;border-radius:999px;background:var(--color-background-secondary);color:var(--color-text-secondary);font-weight:500}
+.article-cat-badge.product{background:var(--color-brand-light);color:var(--color-text-success)}
+.article-cat-badge.insight{background:#E6F1FB;color:#185FA5}
+.article-cat-badge.tutorial{background:#EEEDFE;color:#534AB7}
+.article-cat-badge.case{background:#FAECE7;color:#993C1D}
+.article-title{font-size:26px;font-weight:500;line-height:1.35;margin-bottom:12px}
+.article-author{font-size:12px;color:var(--color-text-secondary)}
+.article-feature-img{width:100%;aspect-ratio:16/9;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);margin-bottom:32px;display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--color-text-tertiary);overflow:hidden}
+.article-body{font-size:14px;line-height:1.85;color:var(--color-text-primary)}
+.article-body p{margin-bottom:18px}
+.article-body h2{font-size:18px;font-weight:500;margin:32px 0 14px}
+.article-body h3{font-size:15px;font-weight:500;margin:24px 0 10px}
+.article-body ul,.article-body ol{padding-left:20px;margin-bottom:18px}
+.article-body li{margin-bottom:6px}
+.article-body blockquote{border-left:3px solid var(--color-brand);padding:12px 16px;margin:18px 0;background:var(--color-background-secondary);border-radius:0 var(--border-radius-sm) var(--border-radius-sm) 0;font-style:normal;color:var(--color-text-secondary)}
+.article-body code{font-family:var(--font-mono);font-size:12px;background:var(--color-background-secondary);padding:2px 6px;border-radius:3px}
+.article-body pre{background:var(--color-background-secondary);padding:16px;border-radius:var(--border-radius-md);overflow-x:auto;margin-bottom:18px;font-size:12px;line-height:1.6;border:0.5px solid var(--color-border-tertiary)}
+.article-body pre code{background:none;padding:0}
+.article-body strong{font-weight:500}
+.article-tags{display:flex;gap:8px;margin-top:32px;flex-wrap:wrap}
+.article-tag{font-size:11px;padding:4px 10px;border-radius:999px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.article-divider{height:0.5px;background:var(--color-border-tertiary);margin:32px 0}
+.article-cta{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:24px;text-align:center;margin-top:24px}
+.article-cta h3{font-size:15px;font-weight:500;margin-bottom:6px}
+.article-cta p{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px}
+.article-related{margin-top:40px}
+.article-related h3{font-size:15px;font-weight:500;margin-bottom:16px}
+.related-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.related-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;cursor:pointer;transition:border-color var(--transition-fast)}
+.related-card:hover{border-color:var(--color-border-primary)}
+.related-card-title{font-size:13px;font-weight:500;margin-bottom:4px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.related-card-date{font-size:11px;color:var(--color-text-tertiary)}
+@media(max-width:768px){.article-wrap{padding:24px 16px 32px}.related-grid{grid-template-columns:1fr}.article-nav{padding:12px 16px}}
+</style>
+
+<nav>
+  <div class="article-nav">
+    <div class="article-nav-inner">
+      <div class="article-breadcrumb">
+        <span onclick="location.href='../index.html'">InsightHub Data</span>
+        <span class="sep">/</span>
+        <span onclick="location.href='../blog.html'">博客</span>
+        <span class="sep">/</span>
+        <span style="color:var(--color-text-primary)">当前文章</span>
+      </div>
+      <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile drawer -->
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-header">
+    <span class="drawer-logo"><div class="logo-dot"></div>InsightHub Data</span>
+    <button class="drawer-close" id="drawer-close" aria-label="关闭菜单"><i class="ti ti-x"></i></button>
+  </div>
+  <a class="drawer-link" href="../marketplace.html"><i class="ti ti-package"></i>数据产品</a>
+  <a class="drawer-link" href="../api-docs.html"><i class="ti ti-file-code"></i>API 文档</a>
+  <a class="drawer-link" href="../pricing.html"><i class="ti ti-currency-yen"></i>定价</a>
+  <a class="drawer-link" href="../solutions.html"><i class="ti ti-briefcase"></i>解决方案</a>
+  <a class="drawer-link" href="../blog.html"><i class="ti ti-news"></i>博客</a>
+  <div class="drawer-divider"></div>
+  <a class="drawer-link" href="../auth.html"><i class="ti ti-user"></i>登录 / 注册</a>
+</div>
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+<style>
+.mobile-drawer{display:none;position:fixed;top:0;right:-280px;width:280px;max-width:80vw;height:100vh;background:var(--color-background-primary);border-left:0.5px solid var(--color-border-tertiary);z-index:1050;flex-direction:column;padding:20px 8px 8px;transition:right .3s;box-shadow:0 4px 24px rgba(0,0,0,0.12);overflow-y:auto}
+.mobile-drawer.open{right:0}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px}
+.drawer-logo{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.drawer-close{width:28px;height:28px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);border-radius:var(--border-radius-sm)}
+.drawer-close:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.drawer-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-primary);text-decoration:none;transition:background var(--transition-fast)}
+.drawer-link:hover{background:var(--color-background-secondary)}
+.drawer-link i{font-size:16px;color:var(--color-text-secondary);width:20px;text-align:center}
+.drawer-link.active{background:var(--color-brand-light);color:var(--color-brand)}
+.drawer-link.active i{color:var(--color-brand)}
+.drawer-divider{height:0.5px;background:var(--color-border-tertiary);margin:8px 12px}
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1040}
+.drawer-backdrop.active{display:block}
+@media(max-width:768px){.hamburger{display:flex}.drawer-backdrop.active{display:block}.mobile-drawer{display:flex}}
+@media(min-width:769px){.hamburger{display:none}}
+</style>
+
+<div class="article-wrap">
+  <div class="article-header">
+    <div class="article-meta">
+      <span class="article-cat-badge product">产品更新</span>
+      <span>2026-06-20</span>
+      <span>·</span>
+      <span>InsightHub 团队</span>
+    </div>
+    <h1 class="article-title">InsightHub 平台更新：新增 AI 报告自动生成</h1>
+  </div>
+
+  <div class="article-feature-img">
+    <img src="images/ai-report-automation.svg" alt="InsightHub 平台更新：新增 AI 报告自动生成">
+  </div>
+
+  <div class="article-body">
+    <p>数据洞察的价值最终体现在决策行动上，但从原始数据到一份结构清晰、观点明确的专业分析报告，往往需要数小时甚至数天的整理与撰写工作。为了帮助用户更高效地将数据转化为决策资产，InsightHub 平台正式推出<strong>AI 报告自动生成</strong>功能。</p>
+
+    <h2>什么是 AI 报告自动生成</h2>
+    <p>AI 报告自动生成是 InsightHub 内置的一项智能写作能力，能够基于用户选择的数据集、可视化图表和分析维度，自动生成结构完整的分析报告。与传统的模板填充方案不同，该功能利用大语言模型对数据上下文进行语义理解，生成具有逻辑推理和 insight 提炼能力的报告文本，而非简单的数据罗列。</p>
+    <p>用户只需在 InsightHub 数据面板中选择感兴趣的数据指标，调整时间范围和对比维度，点击"生成报告"按钮，系统即可在数十秒内输出一份包含执行摘要、核心发现、数据可视化解读和策略建议的完整报告草稿，大幅缩短从数据分析到决策汇报的周期。</p>
+
+    <h2>功能亮点</h2>
+    <p>本次发布的 AI 报告自动生成功能具备以下核心能力：</p>
+    <ul>
+      <li><strong>多语言支持</strong>：支持中文、英文、日文三种语言输出，满足跨国团队协作与全球化业务场景需求。</li>
+      <li><strong>图表自动嵌入</strong>：报告自动引用用户当前面板中的可视化图表，并生成对应的文字解读与分析结论，实现图文联动，增强报告的可读性与说服力。</li>
+      <li><strong>可编辑导出</strong>：生成的报告支持在线富文本编辑，亦可一键导出为 PDF、Markdown 或 HTML 格式，方便内部分享、归档或提交客户。</li>
+      <li><strong>数据溯源</strong>：报告中的每一个数据点均附带来源标注与查询参数，点击即可跳转至原始数据集与面板，确保所有结论均可追溯、可验证。</li>
+      <li><strong>风格定制</strong>：支持设定报告的语气（正式/简洁）与详略程度（摘要/标准/深度），灵活适配管理层汇报、团队同步、客户交付等不同受众场景。</li>
+    </ul>
+
+    <h2>如何使用</h2>
+    <p>AI 报告自动生成功能已在 InsightHub 平台全面上线，所有订阅用户均可使用。进入任意数据分析面板后，在右上角工具栏中找到"生成报告"按钮即可开始使用。首次使用的用户可以参考我们的快速入门指南，了解如何选择最佳的数据维度与图表组合来获得高质量的分析报告。</p>
+    <p>企业版用户还享有自定义报告模板、品牌标识嵌入和白标签输出功能，可直接生成面向终端客户的行业分析报告。我们将在后续迭代中持续优化报告质量，并开放更多自定义参数与批量报告生成能力。</p>
+  </div>
+
+  <div class="article-divider"></div>
+
+  <div class="article-cta">
+    <h3>用数据驱动决策</h3>
+    <p>立即注册 InsightHub，获取你需要的商业情报</p>
+    <button class="btn btn-primary" onclick="location.href='../auth.html'">免费注册 →</button>
+  </div>
+
+  <div class="article-related">
+    <h3>相关文章</h3>
+    <div class="related-grid">
+      <div class="related-card" onclick="location.href='../posts/tech-patent-launch.html'">
+        <div class="related-card-title">全新数据包上线：技术专利趋势分析</div>
+        <div class="related-card-date">2026-06-25</div>
+      </div>
+      <div class="related-card" onclick="location.href='../posts/integrate-5min-agent.html'">
+        <div class="related-card-title">如何在 5 分钟内将 InsightHub 接入你的 AI Agent</div>
+        <div class="related-card-date">2026-06-10</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">© 2026 InsightHub Data. All rights reserved.</div>
+    <div class="footer-links">
+      <span onclick="location.href='../blog.html'">博客</span>
+      <span onclick="location.href='../privacy.html'">隐私政策</span>
+      <span onclick="location.href='../terms.html'">服务条款</span>
+      <span onclick="location.href='../status.html'">系统状态</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+.footer-inner{padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-left{font-size:13px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px;font-size:12px;color:var(--color-text-secondary)}
+.footer-links span{cursor:pointer}
+.footer-links span:hover{color:var(--color-text-primary)}
+</style>
+
+</div>
+
+<script>
+// Mobile drawer
+(function(){var btn=document.getElementById('hamburger-btn');var drawer=document.getElementById('mobile-drawer');var backdrop=document.getElementById('drawer-backdrop');var closeBtn=document.getElementById('drawer-close');function openDrawer(){drawer.classList.add('open');backdrop.classList.add('active');btn.setAttribute('aria-expanded','true')}function closeDrawer(){drawer.classList.remove('open');backdrop.classList.remove('active');btn.setAttribute('aria-expanded','false')}if(btn)btn.addEventListener('click',openDrawer);if(backdrop)backdrop.addEventListener('click',closeDrawer);if(closeBtn)closeBtn.addEventListener('click',closeDrawer);document.querySelectorAll('.drawer-link').forEach(function(l){l.addEventListener('click',closeDrawer)})})();
+</script>
+
+</body>
+</html>

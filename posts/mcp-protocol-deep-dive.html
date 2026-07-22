@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP 协议详解：让 AI 模型直接调用你的数据 · InsightHub 博客</title>
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+<script src="../assets/api-client.js"></script>
+<script src="../assets/stub-runtime.js"></script>
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icon-192.svg">
+<script>navigator.serviceWorker?.register("/service-worker.js")</script>
+</head>
+<body>
+<div class="page-shell">
+
+<style>
+/* Article styles */
+.article-nav{padding:12px 32px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.article-nav-inner{display:flex;align-items:center;justify-content:space-between}
+.article-breadcrumb{font-size:12px;color:var(--color-text-secondary)}
+.article-breadcrumb span{cursor:pointer}
+.article-breadcrumb span:hover{color:var(--color-text-primary)}
+.article-breadcrumb .sep{margin:0 8px}
+.article-wrap{max-width:720px;margin:0 auto;padding:40px 32px 48px}
+.article-header{margin-bottom:32px}
+.article-meta{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;font-size:12px;color:var(--color-text-tertiary)}
+.article-cat-badge{font-size:10px;padding:2px 8px;border-radius:999px;background:var(--color-background-secondary);color:var(--color-text-secondary);font-weight:500}
+.article-cat-badge.product{background:var(--color-brand-light);color:var(--color-text-success)}
+.article-cat-badge.insight{background:#E6F1FB;color:#185FA5}
+.article-cat-badge.tutorial{background:#EEEDFE;color:#534AB7}
+.article-cat-badge.case{background:#FAECE7;color:#993C1D}
+.article-title{font-size:26px;font-weight:500;line-height:1.35;margin-bottom:12px}
+.article-author{font-size:12px;color:var(--color-text-secondary)}
+.article-feature-img{width:100%;aspect-ratio:16/9;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);margin-bottom:32px;display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--color-text-tertiary);overflow:hidden}
+.article-body{font-size:14px;line-height:1.85;color:var(--color-text-primary)}
+.article-body p{margin-bottom:18px}
+.article-body h2{font-size:18px;font-weight:500;margin:32px 0 14px}
+.article-body h3{font-size:15px;font-weight:500;margin:24px 0 10px}
+.article-body ul,.article-body ol{padding-left:20px;margin-bottom:18px}
+.article-body li{margin-bottom:6px}
+.article-body blockquote{border-left:3px solid var(--color-brand);padding:12px 16px;margin:18px 0;background:var(--color-background-secondary);border-radius:0 var(--border-radius-sm) var(--border-radius-sm) 0;font-style:normal;color:var(--color-text-secondary)}
+.article-body code{font-family:var(--font-mono);font-size:12px;background:var(--color-background-secondary);padding:2px 6px;border-radius:3px}
+.article-body pre{background:var(--color-background-secondary);padding:16px;border-radius:var(--border-radius-md);overflow-x:auto;margin-bottom:18px;font-size:12px;line-height:1.6;border:0.5px solid var(--color-border-tertiary)}
+.article-body pre code{background:none;padding:0}
+.article-body strong{font-weight:500}
+.article-tags{display:flex;gap:8px;margin-top:32px;flex-wrap:wrap}
+.article-tag{font-size:11px;padding:4px 10px;border-radius:999px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.article-divider{height:0.5px;background:var(--color-border-tertiary);margin:32px 0}
+.article-cta{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:24px;text-align:center;margin-top:24px}
+.article-cta h3{font-size:15px;font-weight:500;margin-bottom:6px}
+.article-cta p{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px}
+.article-related{margin-top:40px}
+.article-related h3{font-size:15px;font-weight:500;margin-bottom:16px}
+.related-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.related-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;cursor:pointer;transition:border-color var(--transition-fast)}
+.related-card:hover{border-color:var(--color-border-primary)}
+.related-card-title{font-size:13px;font-weight:500;margin-bottom:4px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.related-card-date{font-size:11px;color:var(--color-text-tertiary)}
+@media(max-width:768px){.article-wrap{padding:24px 16px 32px}.related-grid{grid-template-columns:1fr}.article-nav{padding:12px 16px}}
+</style>
+
+<nav>
+  <div class="article-nav">
+    <div class="article-nav-inner">
+      <div class="article-breadcrumb">
+        <span onclick="location.href='../index.html'">InsightHub Data</span>
+        <span class="sep">/</span>
+        <span onclick="location.href='../blog.html'">博客</span>
+        <span class="sep">/</span>
+        <span style="color:var(--color-text-primary)">当前文章</span>
+      </div>
+      <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile drawer -->
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-header">
+    <span class="drawer-logo"><div class="logo-dot"></div>InsightHub Data</span>
+    <button class="drawer-close" id="drawer-close" aria-label="关闭菜单"><i class="ti ti-x"></i></button>
+  </div>
+  <a class="drawer-link" href="../marketplace.html"><i class="ti ti-package"></i>数据产品</a>
+  <a class="drawer-link" href="../api-docs.html"><i class="ti ti-file-code"></i>API 文档</a>
+  <a class="drawer-link" href="../pricing.html"><i class="ti ti-currency-yen"></i>定价</a>
+  <a class="drawer-link" href="../solutions.html"><i class="ti ti-briefcase"></i>解决方案</a>
+  <a class="drawer-link" href="../blog.html"><i class="ti ti-news"></i>博客</a>
+  <div class="drawer-divider"></div>
+  <a class="drawer-link" href="../auth.html"><i class="ti ti-user"></i>登录 / 注册</a>
+</div>
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+<style>
+.mobile-drawer{display:none;position:fixed;top:0;right:-280px;width:280px;max-width:80vw;height:100vh;background:var(--color-background-primary);border-left:0.5px solid var(--color-border-tertiary);z-index:1050;flex-direction:column;padding:20px 8px 8px;transition:right .3s;box-shadow:0 4px 24px rgba(0,0,0,0.12);overflow-y:auto}
+.mobile-drawer.open{right:0}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px}
+.drawer-logo{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.drawer-close{width:28px;height:28px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);border-radius:var(--border-radius-sm)}
+.drawer-close:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.drawer-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-primary);text-decoration:none;transition:background var(--transition-fast)}
+.drawer-link:hover{background:var(--color-background-secondary)}
+.drawer-link i{font-size:16px;color:var(--color-text-secondary);width:20px;text-align:center}
+.drawer-link.active{background:var(--color-brand-light);color:var(--color-brand)}
+.drawer-link.active i{color:var(--color-brand)}
+.drawer-divider{height:0.5px;background:var(--color-border-tertiary);margin:8px 12px}
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1040}
+.drawer-backdrop.active{display:block}
+@media(max-width:768px){.hamburger{display:flex}.drawer-backdrop.active{display:block}.mobile-drawer{display:flex}}
+@media(min-width:769px){.hamburger{display:none}}
+</style>
+
+<div class="article-wrap">
+  <div class="article-header">
+    <div class="article-meta">
+      <span class="article-cat-badge tutorial">技术教程</span>
+      <span>2026-05-28</span>
+      <span>·</span>
+      <span>开发者社区</span>
+    </div>
+    <h1 class="article-title">MCP 协议详解：让 AI 模型直接调用你的数据</h1>
+  </div>
+
+  <div class="article-feature-img">
+    <img src="images/mcp-protocol-deep-dive.svg" alt="MCP 协议详解：让 AI 模型直接调用你的数据">
+  </div>
+
+  <div class="article-body">
+    <p>AI 模型的推理能力正在快速提升，但模型在获取实时、私有或高度结构化数据方面仍然存在天然局限。MCP（Model Context Protocol）协议的出现，正是为了填补这一鸿沟——它为 AI 模型与外部数据源之间建立了一个标准化的通信桥梁，让数据像插头一样即插即用。</p>
+
+    <h2>什么是 MCP</h2>
+    <p>MCP 是由 Anthropic 提出并开源的一种开放协议，旨在为 AI 模型提供安全、标准化的上下文数据访问能力。你可以将 MCP 理解为"AI 世界的 USB 接口"——它定义了一套统一的协议规范，让任何支持 MCP 的 AI 工具都能够以一致的方式发现和调用外部数据源提供的工具与资源，而无需为每个数据源编写自定义的集成代码。</p>
+    <p>与传统的 API 集成方式相比，MCP 的核心优势在于它的<strong>动态发现</strong>机制。AI 模型可以自动获取 MCP 服务器提供的工具列表和参数描述，而不需要开发者在代码中硬编码每一个 API 端点和请求格式。这意味着当数据源新增或更新工具时，AI 模型能够立即感知并利用这些新能力。</p>
+
+    <h2>MCP 的核心概念</h2>
+    <p>MCP 协议围绕三个核心抽象构建，它们协同工作，覆盖了 AI 模型与外部数据交互的完整链路：</p>
+    <ul>
+      <li><strong>Tools（工具）</strong>：MCP 服务器对外暴露的可调用函数，每个工具包含名称、描述和输入参数 schema。AI 模型根据任务需要自主选择合适的工具进行调用，类似于让 AI 学会了"使用 API 工具"。</li>
+      <li><strong>Resources（资源）</strong>：结构化的数据对象，类似于 REST API 中的资源实体。AI 模型可以通过资源 URI 直接读取数据内容，适用于静态或半静态数据的获取场景。</li>
+      <li><strong>Prompts（提示模板）</strong>：预定义的对话模板，帮助 AI 模型理解特定场景下的数据使用方式和查询意图，降低提示工程的复杂度，提升数据交互的准确性。</li>
+    </ul>
+    <p>三者协同工作，使 AI 模型能够在一个统一的协议框架内完成"发现数据 → 理解数据 → 调用工具 → 获取结果"的完整闭环，整个过程无需人工介入。</p>
+
+    <h2>InsightHub 的 MCP 实现</h2>
+    <p>InsightHub 是业界首批全面支持 MCP 协议的数据服务平台之一。我们的 MCP 服务器封装了超过 200 个数据查询工具，覆盖市场数据、行业研报、投融资事件、专利信息、社交媒体分析、地理空间数据等核心数据品类。每个工具都包含了详细的中英文描述和参数说明，AI 模型可以通过语义理解自动将用户的自然语言查询匹配到最合适的数据工具。</p>
+    <p>这意味着用户无需记忆复杂的 API 参数和端点 URL，直接用自然语言就能完成数据查询。例如，"帮我看看 2026 年 Q2 中国新能源车市场的融资情况"——AI 模型会自动调用对应的投融资查询工具，精确匹配参数并返回结构化的结果。</p>
+
+    <h2>实战：配置 MCP 连接</h2>
+    <p>InsightHub 的 MCP 服务器配置非常简单。以下是一个完整的配置示例，适用于 Claude Desktop 或其他支持 MCP 的 AI 工具：</p>
+
+    <pre><code>{
+  "mcpServers": {
+    "insighthub": {
+      "command": "npx",
+      "args": ["-y", "@insighthub/mcp-server"],
+      "env": {
+        "INSIGHTHUB_API_KEY": "ih_your_api_key_here"
+      }
+    }
+  }
+}</code></pre>
+
+    <p>将上述配置添加到你的 AI 工具的 MCP 配置文件中（例如 Claude Desktop 的 <code>claude_desktop_config.json</code>），替换 API Key 后重启工具即可生效。配置完成后，AI 模型将自动发现 InsightHub 的全部数据工具并随时待命。</p>
+
+    <blockquote>💡 <strong>提示：</strong>MCP 协议最大的价值在于标准化。一旦你的 AI 工具配置了 MCP 数据源，所有支持 MCP 协议的数据服务都可以通过同一种方式接入——你不需要为每个数据源学习不同的 API 接入方式或编写不同的调用代码。这不仅大幅降低了集成成本，也让 AI 模型能够更灵活地在多个数据源之间自由切换和组合信息，实现真正的多源数据融合分析。</blockquote>
+
+    <p>随着越来越多的数据平台和 AI 工具加入 MCP 生态，我们正在进入一个"AI 原生数据互联"的时代。InsightHub 将持续跟进 MCP 协议的最新演进，为用户提供更加丰富、高效和安全的数据接入体验。</p>
+  </div>
+
+  <div class="article-divider"></div>
+
+  <div class="article-cta">
+    <h3>用数据驱动决策</h3>
+    <p>立即注册 InsightHub，获取你需要的商业情报</p>
+    <button class="btn btn-primary" onclick="location.href='../auth.html'">免费注册 →</button>
+  </div>
+
+  <div class="article-related">
+    <h3>相关文章</h3>
+    <div class="related-grid">
+      <div class="related-card" onclick="location.href='../posts/integrate-5min-agent.html'">
+        <div class="related-card-title">如何在 5 分钟内将 InsightHub 接入你的 AI Agent</div>
+        <div class="related-card-date">2026-06-10</div>
+      </div>
+      <div class="related-card" onclick="location.href='../posts/geo-optimization-guide.html'">
+        <div class="related-card-title">地理空间数据优化指南：提升位置分析精度</div>
+        <div class="related-card-date">2026-05-15</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">© 2026 InsightHub Data. All rights reserved.</div>
+    <div class="footer-links">
+      <span onclick="location.href='../blog.html'">博客</span>
+      <span onclick="location.href='../privacy.html'">隐私政策</span>
+      <span onclick="location.href='../terms.html'">服务条款</span>
+      <span onclick="location.href='../status.html'">系统状态</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+.footer-inner{padding:24px 32px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-left{font-size:13px;color:var(--color-text-secondary)}
+.footer-links{display:flex;gap:20px;font-size:12px;color:var(--color-text-secondary)}
+.footer-links span{cursor:pointer}
+.footer-links span:hover{color:var(--color-text-primary)}
+</style>
+
+</div>
+
+<script>
+// Mobile drawer
+(function(){var btn=document.getElementById('hamburger-btn');var drawer=document.getElementById('mobile-drawer');var backdrop=document.getElementById('drawer-backdrop');var closeBtn=document.getElementById('drawer-close');function openDrawer(){drawer.classList.add('open');backdrop.classList.add('active');btn.setAttribute('aria-expanded','true')}function closeDrawer(){drawer.classList.remove('open');backdrop.classList.remove('active');btn.setAttribute('aria-expanded','false')}if(btn)btn.addEventListener('click',openDrawer);if(backdrop)backdrop.addEventListener('click',closeDrawer);if(closeBtn)closeBtn.addEventListener('click',closeDrawer);document.querySelectorAll('.drawer-link').forEach(function(l){l.addEventListener('click',closeDrawer)})})();
+</script>
+
+</body>
+</html>

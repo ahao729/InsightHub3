@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bg9" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0E6245" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#534AB7" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="blockGrad1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0E6245" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#0E6245" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="blockGrad2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0E6245" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#0E6245" stop-opacity="0.25"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg9)"/>
+  <!-- White card background for building blocks area -->
+  <rect x="295" y="180" width="490" height="200" rx="16" fill="#fff" stroke="#0E6245" stroke-width="1" stroke-opacity="0.15"/>
+  <!-- Building blocks (pyramid style) -->
+  <rect x="320" y="280" width="80" height="80" rx="8" fill="url(#blockGrad2)" stroke="#0E6245" stroke-width="1.2" stroke-opacity="0.3"/>
+  <rect x="410" y="240" width="80" height="80" rx="8" fill="url(#blockGrad1)" stroke="#0E6245" stroke-width="1.2" stroke-opacity="0.4"/>
+  <rect x="500" y="200" width="80" height="80" rx="8" fill="#0E6245" fill-opacity="0.65" stroke="#0E6245" stroke-width="1.5" stroke-opacity="0.5"/>
+  <rect x="590" y="240" width="80" height="80" rx="8" fill="url(#blockGrad2)" stroke="#0E6245" stroke-width="1.2" stroke-opacity="0.4"/>
+  <rect x="680" y="280" width="80" height="80" rx="8" fill="url(#blockGrad1)" stroke="#0E6245" stroke-width="1.2" stroke-opacity="0.3"/>
+  <!-- Central block highlight -->
+  <rect x="500" y="200" width="80" height="80" rx="8" fill="#0E6245" fill-opacity="0.2" stroke="#0E6245" stroke-width="2" stroke-opacity="0.6"/>
+  <text x="540" y="248" font-family="system-ui" font-size="11" fill="#0E6245" text-anchor="middle" font-weight="700" opacity="0.8">DATA</text>
+  <text x="540" y="262" font-family="system-ui" font-size="9" fill="#0E6245" text-anchor="middle" opacity="0.6">PACK</text>
+  <!-- Labels on side blocks -->
+  <text x="360" y="325" font-family="system-ui" font-size="9" fill="#0E6245" text-anchor="middle" opacity="0.55">TRENDS</text>
+  <text x="630" y="285" font-family="system-ui" font-size="9" fill="#0E6245" text-anchor="middle" opacity="0.55">INSIGHTS</text>
+  <text x="720" y="325" font-family="system-ui" font-size="9" fill="#0E6245" text-anchor="middle" opacity="0.55">REPORT</text>
+  <text x="360" y="240" font-family="system-ui" font-size="9" fill="#0E6245" text-anchor="middle" opacity="0.55">MARKET</text>
+  <!-- Arrow going up through blocks -->
+  <path d="M540 360 L540 270" stroke="#0E6245" stroke-width="3" fill="none" opacity="0.55" stroke-linecap="round"/>
+  <path d="M530 285 L540 270 L550 285" stroke="#0E6245" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
+  <!-- Money/time saved -->
+  <text x="540" y="430" font-family="system-ui" font-size="32" fill="#0E6245" text-anchor="middle" opacity="0.8" font-weight="800">80%</text>
+  <text x="540" y="452" font-family="system-ui" font-size="11" fill="#0E6245" text-anchor="middle" opacity="0.65" letter-spacing="1.5">COST &amp; TIME SAVED</text>
+  <!-- Comparison: vs Agency -->
+  <rect x="720" y="400" width="140" height="90" rx="8" fill="#993C1D" opacity="0.07" stroke="#993C1D" stroke-width="1" stroke-opacity="0.2"/>
+  <text x="790" y="428" font-family="system-ui" font-size="11" fill="#993C1D" text-anchor="middle" opacity="0.55" font-weight="600">vs Agency</text>
+  <line x1="740" y1="440" x2="840" y2="440" stroke="#993C1D" stroke-width="1" opacity="0.2"/>
+  <text x="790" y="460" font-family="system-ui" font-size="10" fill="#993C1D" text-anchor="middle" opacity="0.45">$ $ $ $ $</text>
+  <text x="790" y="478" font-family="system-ui" font-size="9" fill="#993C1D" text-anchor="middle" opacity="0.35">8-15 万预算</text>
+  <!-- Data stream dots -->
+  <circle cx="280" cy="220" r="4" fill="#0E6245" opacity="0.4"/>
+  <circle cx="260" cy="245" r="3" fill="#0E6245" opacity="0.3"/>
+  <circle cx="300" cy="240" r="3.5" fill="#0E6245" opacity="0.35"/>
+  <circle cx="270" cy="270" r="2.5" fill="#0E6245" opacity="0.25"/>
+  <!-- Data stream connecting lines -->
+  <path d="M270 220 L260 245 L300 240 L270 270" stroke="#0E6245" stroke-width="1.5" fill="none" opacity="0.2" stroke-linecap="round"/>
+  <!-- Pipeline arrow from data stream to blocks -->
+  <path d="M300 235 L310 235" stroke="#0E6245" stroke-width="2" fill="none" opacity="0.35" stroke-linecap="round"/>
+  <!-- Bottom label -->
+  <text x="600" y="580" font-family="system-ui" font-size="14" fill="#0E6245" text-anchor="middle" opacity="0.7" letter-spacing="3" font-weight="600">STARTUP MVP DATA</text>
+</svg>
