@@ -46,7 +46,7 @@ services:
       - key: DEEPSEEK_API_KEY
         sync: false
       - key: DEEPSEEK_BASE_URL
-        value: "https://api.deepseek.com"
+        value: "https://api.deepseek.com/v1"
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: ZHIPU_API_KEY
@@ -72,11 +72,11 @@ services:
       - key: USER_DAILY_TOKEN_LIMIT
         value: "100000"
 
-      # ── 管理员（在 Render Dashboard 中手动设置）──
+      # ── 管理员（部署后建议在 Dashboard 修改为自定义值）──
       - key: ADMIN_INVITE_CODE
-        sync: false
+        value: "INSIGHTHUB2024"
       - key: ADMIN_DEFAULT_PASSWORD
-        sync: false
+        value: "Admin@InsightHub2024"
 
       # ── LLM Mock Mode（生产环境留空）──
       - key: LLM_MOCK_MODE
