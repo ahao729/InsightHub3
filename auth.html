@@ -707,15 +707,15 @@ function loadOAuthStatus() {
       var loginDiv = document.getElementById('login-divider');
       var regDiv = document.getElementById('register-divider');
 
-      // Google
-      var hasGoogle = status.google && status.google.enabled;
+      // Google — 兼容布尔值和 {enabled:true} 两种格式
+      var hasGoogle = !!(status.google && (status.google.enabled || status.google === true));
       var lgBtn = document.getElementById('login-google-btn');
       var rgBtn = document.getElementById('reg-google-btn');
       if (lgBtn) lgBtn.style.display = hasGoogle ? 'flex' : 'none';
       if (rgBtn) rgBtn.style.display = hasGoogle ? 'flex' : 'none';
 
-      // GitHub
-      var hasGithub = status.github && status.github.enabled;
+      // GitHub — 兼容布尔值和 {enabled:true} 两种格式
+      var hasGithub = !!(status.github && (status.github.enabled || status.github === true));
       var lghBtn = document.getElementById('login-github-btn');
       var rghBtn = document.getElementById('reg-github-btn');
       if (lghBtn) lghBtn.style.display = hasGithub ? 'flex' : 'none';
