@@ -35,6 +35,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const adminRoutes = require('./routes/admin');
 const analyzeRoutes = require('./routes/analyze');
 const contactRoutes = require('./routes/contact');
+const oauthRoutes = require('./routes/oauth');
 
 const app = express();
 const PORT = config.port;
@@ -109,6 +110,7 @@ apiRouter.use('/dashboard', dashboardRoutes);
 apiRouter.use('/admin', adminRoutes);
 apiRouter.use('/analyze', analyzeRoutes);
 apiRouter.use('/contact', contactRoutes);
+apiRouter.use('/auth/oauth', oauthRoutes);
 
 // Mount all API routes under /api/v1
 app.use('/api/v1', apiRouter);

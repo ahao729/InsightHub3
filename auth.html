@@ -302,15 +302,15 @@
 
       <button class="submit-btn" id="login-btn" onclick="handleLogin()">登录 →</button>
 
-      <div class="divider-row">
+      <div class="divider-row" id="login-divider" style="display:none">
         <div class="divider-line"></div>
         <span class="divider-text">或使用以下方式登录</span>
         <div class="divider-line"></div>
       </div>
 
-      <div class="social-grid">
-        <button class="social-btn" aria-label="使用 Google 账号登录"><i class="ti ti-brand-google" aria-hidden="true"></i>Google</button>
-        <button class="social-btn" aria-label="使用 GitHub 账号登录"><i class="ti ti-brand-github" aria-hidden="true"></i>GitHub</button>
+      <div class="social-grid" id="login-social-grid" style="display:none">
+        <button class="social-btn" id="login-google-btn" onclick="handleOAuth('google','login')" aria-label="使用 Google 账号登录"><i class="ti ti-brand-google" aria-hidden="true"></i>Google</button>
+        <button class="social-btn" id="login-github-btn" onclick="handleOAuth('github','login')" aria-label="使用 GitHub 账号登录"><i class="ti ti-brand-github" aria-hidden="true"></i>GitHub</button>
       </div>
 
       <div class="switch-text">还没有账号？<a onclick="switchMode('register')" tabindex="0" role="link" onkeydown="if(event.key==='Enter')switchMode('register')">立即注册</a></div>
@@ -345,15 +345,15 @@
 
       <button class="submit-btn" id="reg-btn" onclick="handleRegister()">免费注册 →</button>
 
-      <div class="divider-row">
+      <div class="divider-row" id="register-divider" style="display:none">
         <div class="divider-line"></div>
         <span class="divider-text">或使用以下方式注册</span>
         <div class="divider-line"></div>
       </div>
 
-      <div class="social-grid">
-        <button class="social-btn" aria-label="使用 Google 账号注册"><i class="ti ti-brand-google" aria-hidden="true"></i>Google</button>
-        <button class="social-btn" aria-label="使用 GitHub 账号注册"><i class="ti ti-brand-github" aria-hidden="true"></i>GitHub</button>
+      <div class="social-grid" id="register-social-grid" style="display:none">
+        <button class="social-btn" id="reg-google-btn" onclick="handleOAuth('google','register')" aria-label="使用 Google 账号注册"><i class="ti ti-brand-google" aria-hidden="true"></i>Google</button>
+        <button class="social-btn" id="reg-github-btn" onclick="handleOAuth('github','register')" aria-label="使用 GitHub 账号注册"><i class="ti ti-brand-github" aria-hidden="true"></i>GitHub</button>
       </div>
 
       <div class="terms-text">注册即表示同意 <a>服务条款</a> 与 <a>隐私政策</a></div>
@@ -427,11 +427,32 @@ function togglePwd(id,btn){
   }
 }
 
-// ---- URL 参数检测：验证邮件 / 重置密码 ----
+// ---- URL 参数检测：OAuth 回调 / 验证邮件 / 重置密码 ----
 (function(){
   var params=new URLSearchParams(location.search);
+  var oauthToken=params.get('oauth_token');
+  var oauthError=params.get('oauth_error');
   var verifyToken=params.get('verify_token');
   var resetToken=params.get('reset_token');
+
+  // OAuth 回调：存储 token 并跳转
+  if(oauthToken){
+    API.auth.setToken(oauthToken);
+    window.location.href = './index.html';
+    return;
+  }
+
+  // OAuth 错误
+  if(oauthError){
+    document.getElementById('auth-tab-row').style.display='none';
+    document.getElementById('form-login').style.display='none';
+    document.getElementById('form-register').style.display='none';
+    document.getElementById('verify-banner').classList.remove('show');
+    document.getElementById('verify-banner').classList.add('show');
+    document.getElementById('verify-text').textContent='第三方登录失败：'+decodeURIComponent(oauthError);
+    document.getElementById('resend-btn').style.display='none';
+    return;
+  }
 
   // 有 verify_token → 自动验证邮箱
   if(verifyToken){
@@ -468,6 +489,9 @@ function togglePwd(id,btn){
 
   // 普通登录/注册页：显示验证横幅（如果刚完成验证后跳回来）
   checkAndShowVerifyBanner();
+
+  // 加载 OAuth 提供商状态
+  loadOAuthStatus();
 })();
 
 function checkAndShowVerifyBanner(){
@@ -662,6 +686,51 @@ function checkStrength(){
     meter.setAttribute('aria-valuenow','1');
     meter.setAttribute('aria-valuetext','弱');
   }
+}
+
+// ---- OAuth 处理 ----
+function handleOAuth(provider, mode) {
+  var redirect = mode === 'register' ? (window.location.origin + '/auth.html?from=register') : '';
+  if (provider === 'google') {
+    location.href = API.oauth.googleUrl(redirect || undefined);
+  } else {
+    location.href = API.oauth.githubUrl(redirect || undefined);
+  }
+}
+
+// 查询 OAuth 配置状态，控制按钮可见性
+function loadOAuthStatus() {
+  API.oauth.status().then(function(status) {
+    if (status) {
+      var loginGrid = document.getElementById('login-social-grid');
+      var regGrid = document.getElementById('register-social-grid');
+      var loginDiv = document.getElementById('login-divider');
+      var regDiv = document.getElementById('register-divider');
+
+      // Google
+      var hasGoogle = status.google && status.google.enabled;
+      var lgBtn = document.getElementById('login-google-btn');
+      var rgBtn = document.getElementById('reg-google-btn');
+      if (lgBtn) lgBtn.style.display = hasGoogle ? 'flex' : 'none';
+      if (rgBtn) rgBtn.style.display = hasGoogle ? 'flex' : 'none';
+
+      // GitHub
+      var hasGithub = status.github && status.github.enabled;
+      var lghBtn = document.getElementById('login-github-btn');
+      var rghBtn = document.getElementById('reg-github-btn');
+      if (lghBtn) lghBtn.style.display = hasGithub ? 'flex' : 'none';
+      if (rghBtn) rghBtn.style.display = hasGithub ? 'flex' : 'none';
+
+      // 如果没有任何社交提供商启用，隐藏整个分隔线和社交区域
+      var hasAny = hasGoogle || hasGithub;
+      if (loginGrid) loginGrid.style.display = hasAny ? 'grid' : 'none';
+      if (loginDiv) loginDiv.style.display = hasAny ? 'flex' : 'none';
+      if (regGrid) regGrid.style.display = hasAny ? 'grid' : 'none';
+      if (regDiv) regDiv.style.display = hasAny ? 'flex' : 'none';
+    }
+  }).catch(function() {
+    // 获取失败时隐藏社交登录（保守策略，它们已经默认隐藏）
+  });
 }
 </script>
 <script>(function(){var e=document.getElementById("hamburger-btn"),t=document.getElementById("mobile-drawer"),n=document.getElementById("drawer-backdrop"),o=document.getElementById("drawer-close");function i(){t.classList.add("open"),n.classList.add("open"),e.setAttribute("aria-expanded","true")}function r(){t.classList.remove("open"),n.classList.remove("open"),e.setAttribute("aria-expanded","false")}e.addEventListener("click",i),n.addEventListener("click",r),o.addEventListener("click",r),document.addEventListener("keydown",function(e){"Escape"===e.key&&r()})})();</script>

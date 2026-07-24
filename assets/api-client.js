@@ -159,6 +159,21 @@
       },
     },
 
+    // === OAuth ===
+    oauth: {
+      status: function () {
+        return request('GET', '/auth/oauth/status').then(function (res) { return res.data; });
+      },
+      googleUrl: function (redirect) {
+        var qs = redirect ? '?redirect=' + encodeURIComponent(redirect) : '';
+        return API_BASE + '/auth/oauth/google' + qs;
+      },
+      githubUrl: function (redirect) {
+        var qs = redirect ? '?redirect=' + encodeURIComponent(redirect) : '';
+        return API_BASE + '/auth/oauth/github' + qs;
+      },
+    },
+
     // === 数据包 ===
     data: {
       stats: function (pkg) {
