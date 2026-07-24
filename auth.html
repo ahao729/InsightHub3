@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>注册登录 · InsightHub Data</title>
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
@@ -47,20 +47,20 @@
 .terms-text a{color:var(--color-brand);cursor:pointer}
 .strength-row{display:flex;gap:4px;margin-top:6px}
 .strength-bar{flex:1;height:3px;border-radius:999px;background:var(--color-border-tertiary)}
-.strength-bar.active-weak{background:#E24B4A}
-.strength-bar.active-mid{background:#EF9F27}
+.strength-bar.active-weak{background:var(--color-error)}
+.strength-bar.active-mid{background:var(--color-warning)}
 .strength-bar.active-strong{background:var(--color-brand)}
 .strength-label{font-size:11px;color:var(--color-text-secondary);margin-top:4px}
 /* ---- Modal Overlay ---- */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000;justify-content:center;align-items:center}
-.modal-overlay.open{display:flex}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000;display:flex;justify-content:center;align-items:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 0.25s ease,visibility 0.25s ease}
+.modal-overlay.open{opacity:1;visibility:visible;pointer-events:auto}
 .modal-box{background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:32px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.12);position:relative}
 .modal-close{position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:18px}
 .modal-close:hover{color:var(--color-text-primary)}
 .modal-title{font-size:16px;font-weight:500;margin-bottom:6px}
 .modal-desc{font-size:12px;color:var(--color-text-secondary);margin-bottom:18px;line-height:1.6}
 .modal-field{margin-bottom:14px}
-.modal-error{display:none;font-size:12px;color:#E24B4A;margin-bottom:12px}
+.modal-error{display:none;font-size:12px;color:var(--color-error);margin-bottom:12px}
 .modal-success{display:none;font-size:12px;color:var(--color-text-success);margin-bottom:12px}
 /* ---- Verification Banner ---- */
 .verify-banner{display:none;background:var(--color-background-secondary);border:0.5px solid var(--color-brand);border-radius:var(--border-radius-md);padding:14px 16px;margin-bottom:16px}
@@ -84,7 +84,7 @@
 .quote-box{background:var(--color-background-primary);border-radius:var(--border-radius-md);padding:14px;border:0.5px solid var(--color-border-tertiary)}
 .quote-text{font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:10px;font-style:italic}
 .quote-author{display:flex;align-items:center;gap:8px}
-.quote-avatar{width:24px;height:24px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:500}
+.quote-avatar{width:24px;height:24px;border-radius:50%;background:var(--color-info-bg);color:var(--color-info);font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:500}
 .quote-name{font-size:11px;font-weight:500}
 .quote-role{font-size:10px;color:var(--color-text-secondary)}
 .form-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:400px;width:100%;margin:0 auto}
@@ -110,12 +110,83 @@
 .drawer-link i{font-size:16px;width:20px;text-align:center;color:var(--color-text-secondary)}
 .drawer-link.active{background:var(--color-brand-light);color:var(--color-brand)}
 .drawer-link.active i{color:var(--color-brand)}
-@media(max-width:768px){.hamburger{display:flex}.drawer-backdrop.open{display:block}.mobile-drawer{display:block}}
+/* ===== 新增：输入框 focus 状态 (WCAG) ===== */
+.text-input:focus{outline:none;border-color:var(--color-brand);box-shadow:0 0 0 3px rgba(29,158,117,0.15)}
+.text-input:focus-visible{outline:none;border-color:var(--color-brand);box-shadow:0 0 0 3px rgba(29,158,117,0.15)}
+
+/* ===== 新增：按钮 focus-visible & active 状态 ===== */
+.submit-btn:focus-visible{outline:2px solid var(--color-brand);outline-offset:2px}
+.submit-btn:active{transform:scale(0.97);box-shadow:inset 0 1px 3px rgba(0,0,0,0.12)}
+.social-btn:focus-visible{outline:2px solid var(--color-brand);outline-offset:2px}
+.social-btn:active{transform:scale(0.97)}
+.pwd-toggle:focus-visible{outline:2px solid var(--color-brand);outline-offset:2px}
+.modal-close:focus-visible{outline:2px solid var(--color-brand);outline-offset:2px}
+.verify-dismiss:focus-visible{outline:2px solid var(--color-brand);outline-offset:2px}
+.verify-btn:focus-visible{outline:2px solid var(--color-brand);outline-offset:2px}
+
+/* ===== 新增：密码图标过渡 ===== */
+.pwd-toggle i{transition:transform 0.2s ease,opacity 0.2s ease;display:inline-flex}
+.pwd-toggle:active i{transform:scale(0.85)}
+
+/* ===== 新增：Modal 动画 ===== */
+.modal-overlay .modal-box{transform:translateY(12px) scale(0.97);transition:transform 0.25s ease,opacity 0.25s ease;opacity:0}
+.modal-overlay.open .modal-box{transform:translateY(0) scale(1);opacity:1}
+
+/* ===== 新增：验证成功弹窗动画 ===== */
+.modal-overlay .modal-box.success-box{transform:translateY(12px) scale(0.97)}
+.modal-overlay.open .modal-box.success-box{transform:translateY(0) scale(1)}
+
+/* ===== 新增：Tab 内容切换动画 ===== */
+.form-panel{animation:none}
+.form-panel.slide-in{animation:formSlideIn 0.28s ease forwards}
+@keyframes formSlideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== 新增：按钮 loading 旋转动画 ===== */
+@keyframes btnSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.btn-loading{display:inline-flex;align-items:center;gap:8px;pointer-events:none}
+.btn-loading::before{content:"";width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:btnSpin 0.6s linear infinite;flex-shrink:0}
+
+/* ===== 新增：实时验证错误样式 ===== */
+.text-input.input-error{border-color:var(--color-error)}
+.text-input.input-error:focus{box-shadow:0 0 0 3px rgba(226,75,74,0.15)}
+.field-error-msg{font-size:var(--font-size-sm);color:var(--color-error);margin-top:4px;display:none;line-height:1.3}
+
+/* ===== 新增：表单错误横幅淡入 ===== */
+.error-fade-in{animation:errorFadeIn 0.3s ease forwards}
+@keyframes errorFadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== 新增：键盘可聚焦的非交互元素 ===== */
+[role="button"],[role="link"]{cursor:pointer}
+[role="button"]:focus-visible,[role="link"]:focus-visible{outline:2px solid var(--color-brand);outline-offset:2px;border-radius:var(--border-radius-sm)}
+
+@media(max-width:768px){.hamburger{display:flex}.drawer-backdrop.open{display:block}.mobile-drawer{display:block}.right{display:none !important}.wrapper{min-height:100vh}.left{width:100% !important}}
+
+/* ===== 内联样式提取：工具类 ===== */
+.u-hidden{display:none}
+.form-msg{display:none;font-size:12px;margin-bottom:12px}
+.form-msg--error{color:var(--color-error)}
+.form-msg--success{color:var(--color-text-success)}
+.modal-box--center{text-align:center}
+.modal-emoji{font-size:40px;margin-bottom:12px}
+.switch-text--offset{margin-top:14px}
+.badge-icon{font-size:12px;margin-right:4px}
+
+/* ===== 无障碍：减弱动效偏好 ===== */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:0.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:0.01ms !important;
+    scroll-behavior:auto !important;
+  }
+  .modal-overlay .modal-box{transform:none !important}
+  .modal-overlay{transition:none !important}
+}
 </style>
 
 <div class="shell">
   <div class="left">
-    <div class="logo-bar" onclick="location.href='index.html'">
+    <div class="logo-bar" onclick="location.href='index.html'" tabindex="0" role="link" onkeydown="if(event.key==='Enter')location.href='index.html'">
       <div class="logo-dot"></div>
       <span class="logo-text">InsightHub Data</span>
       <button class="hamburger" id="hamburger-btn" aria-label="导航菜单" aria-expanded="false">
@@ -151,60 +222,60 @@
     </div>
 
     <!-- 重置密码页面（通过 URL ?reset_token=xxx 显示） -->
-    <div id="form-reset-pwd" style="display:none">
+    <div id="form-reset-pwd" class="u-hidden">
       <div class="form-title">重置密码</div>
       <div class="form-sub">请输入你的新密码</div>
 
       <div class="field-wrap">
-        <div class="field-label">新密码</div>
+        <label class="field-label" for="reset-pwd">新密码</label>
         <div class="pwd-wrap">
-          <input class="text-input" type="password" id="reset-pwd" placeholder="至少 6 位" />
+          <input class="text-input" type="password" id="reset-pwd" placeholder="至少 6 位" autocomplete="new-password" />
           <button class="pwd-toggle" aria-label="显示密码" onclick="togglePwd('reset-pwd',this)"><i class="ti ti-eye" aria-hidden="true"></i></button>
         </div>
       </div>
       <div class="field-wrap">
-        <div class="field-label">确认新密码</div>
+        <label class="field-label" for="reset-pwd2">确认新密码</label>
         <div class="pwd-wrap">
-          <input class="text-input" type="password" id="reset-pwd2" placeholder="再次输入密码" />
+          <input class="text-input" type="password" id="reset-pwd2" placeholder="再次输入密码" autocomplete="new-password" />
           <button class="pwd-toggle" aria-label="显示密码" onclick="togglePwd('reset-pwd2',this)"><i class="ti ti-eye" aria-hidden="true"></i></button>
         </div>
       </div>
-      <div id="reset-error" style="display:none;font-size:12px;color:#E24B4A;margin-bottom:12px"></div>
-      <div id="reset-success" style="display:none;font-size:12px;color:var(--color-text-success);margin-bottom:12px"></div>
+      <div id="reset-error" role="alert" aria-live="assertive" class="form-msg form-msg--error"></div>
+      <div id="reset-success" role="status" aria-live="polite" class="form-msg form-msg--success"></div>
 
       <button class="submit-btn" id="reset-btn" onclick="handleResetPassword()">确认重置 →</button>
-      <div class="switch-text"><a onclick="switchMode('login');location.href='auth.html'">返回登录</a></div>
+      <div class="switch-text"><a onclick="switchMode('login');location.href='auth.html'" tabindex="0" role="link" onkeydown="if(event.key==='Enter'){switchMode('login');location.href='auth.html'}">返回登录</a></div>
     </div>
 
     <!-- 忘记密码弹窗 -->
     <div class="modal-overlay" id="forgot-modal">
-      <div class="modal-box">
-        <button class="modal-close" onclick="closeForgotModal()" aria-label="关闭"><i class="ti ti-x"></i></button>
-        <div class="modal-title">忘记密码？</div>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="forgot-modal-title">
+        <button class="modal-close" onclick="closeForgotModal()" aria-label="关闭"><i class="ti ti-x" aria-hidden="true"></i></button>
+        <div class="modal-title" id="forgot-modal-title">忘记密码？</div>
         <div class="modal-desc">输入你的注册邮箱，我们将发送一封重置密码的邮件。</div>
         <div class="modal-field">
-          <div class="field-label">邮箱</div>
-          <input class="text-input" id="forgot-email" type="text" placeholder="you@example.com" />
+          <label class="field-label" for="forgot-email">邮箱</label>
+          <input class="text-input" id="forgot-email" type="email" autocomplete="email" placeholder="you@example.com" />
         </div>
-        <div class="modal-error" id="forgot-error"></div>
-        <div class="modal-success" id="forgot-success"></div>
+        <div class="modal-error" id="forgot-error" role="alert" aria-live="assertive"></div>
+        <div class="modal-success" id="forgot-success" role="status" aria-live="polite"></div>
         <button class="submit-btn" id="forgot-btn" onclick="handleForgotPassword()">发送重置邮件 →</button>
       </div>
     </div>
 
     <!-- 邮箱验证完成提示弹窗 -->
     <div class="modal-overlay" id="verify-modal">
-      <div class="modal-box" style="text-align:center">
-        <div style="font-size:40px;margin-bottom:12px">✅</div>
-        <div class="modal-title" style="text-align:center">邮箱验证成功</div>
-        <div class="modal-desc" style="text-align:center">你的邮箱已成功验证，现在可以使用全部功能。</div>
+      <div class="modal-box modal-box--center" role="dialog" aria-modal="true" aria-labelledby="verify-modal-title">
+        <div class="modal-emoji" aria-hidden="true">✅</div>
+        <div class="modal-title" id="verify-modal-title">邮箱验证成功</div>
+        <div class="modal-desc">你的邮箱已成功验证，现在可以使用全部功能。</div>
         <button class="submit-btn" onclick="document.getElementById('verify-modal').classList.remove('open');location.href='dashboard.html'">进入控制台 →</button>
       </div>
     </div>
 
-    <div class="tab-row" id="auth-tab-row">
-      <button class="tab-btn active" id="tab-login" onclick="switchMode('login')">登录</button>
-      <button class="tab-btn" id="tab-register" onclick="switchMode('register')">注册</button>
+    <div class="tab-row" id="auth-tab-row" role="tablist" aria-label="登录或注册">
+      <button class="tab-btn active" id="tab-login" role="tab" aria-selected="true" aria-controls="form-login" onclick="switchMode('login')">登录</button>
+      <button class="tab-btn" id="tab-register" role="tab" aria-selected="false" aria-controls="form-register" onclick="switchMode('register')">注册</button>
     </div>
 
     <div id="form-login">
@@ -212,21 +283,21 @@
       <div class="form-sub">登录你的 InsightHub Data 账号</div>
 
       <div class="field-wrap">
-        <div class="field-label">邮箱</div>
-        <input class="text-input" id="login-email" type="text" placeholder="you@example.com" />
+        <label class="field-label" for="login-email">邮箱</label>
+        <input class="text-input" id="login-email" type="email" autocomplete="email" placeholder="you@example.com" />
       </div>
       <div class="field-wrap">
-        <div class="field-label">密码</div>
+        <label class="field-label" for="login-pwd">密码</label>
         <div class="pwd-wrap">
-          <input class="text-input" type="password" id="login-pwd" placeholder="输入密码" />
+          <input class="text-input" type="password" id="login-pwd" autocomplete="current-password" placeholder="输入密码" />
           <button class="pwd-toggle" aria-label="显示密码" onclick="togglePwd('login-pwd',this)"><i class="ti ti-eye" aria-hidden="true"></i></button>
         </div>
       </div>
-      <div id="login-error" style="display:none;font-size:12px;color:#E24B4A;margin-bottom:12px"></div>
+      <div id="login-error" role="alert" aria-live="assertive" class="form-msg form-msg--error"></div>
 
       <div class="row-between">
-        <label class="remember-row"><input type="checkbox" />记住我</label>
-        <span class="forgot-link" onclick="openForgotModal()">忘记密码？</span>
+        <label class="remember-row" for="remember-me"><input type="checkbox" id="remember-me" />记住我</label>
+        <span class="forgot-link" onclick="openForgotModal()" tabindex="0" role="button" onkeydown="if(event.key==='Enter')openForgotModal()">忘记密码？</span>
       </div>
 
       <button class="submit-btn" id="login-btn" onclick="handleLogin()">登录 →</button>
@@ -238,39 +309,39 @@
       </div>
 
       <div class="social-grid">
-        <button class="social-btn"><i class="ti ti-brand-google" aria-hidden="true"></i>Google</button>
-        <button class="social-btn"><i class="ti ti-brand-github" aria-hidden="true"></i>GitHub</button>
+        <button class="social-btn" aria-label="使用 Google 账号登录"><i class="ti ti-brand-google" aria-hidden="true"></i>Google</button>
+        <button class="social-btn" aria-label="使用 GitHub 账号登录"><i class="ti ti-brand-github" aria-hidden="true"></i>GitHub</button>
       </div>
 
-      <div class="switch-text">还没有账号？<a onclick="switchMode('register')">立即注册</a></div>
+      <div class="switch-text">还没有账号？<a onclick="switchMode('register')" tabindex="0" role="link" onkeydown="if(event.key==='Enter')switchMode('register')">立即注册</a></div>
     </div>
 
-    <div id="form-register" style="display:none">
+    <div id="form-register" class="u-hidden">
       <div class="form-title">创建账号</div>
       <div class="form-sub">免费注册，立即体验创业商业情报数据包</div>
 
       <div class="field-wrap">
-        <div class="field-label">姓名</div>
-        <input class="text-input" id="reg-name" type="text" placeholder="你的姓名" />
+        <label class="field-label" for="reg-name">用户名</label>
+        <input class="text-input" id="reg-name" type="text" autocomplete="name" placeholder="你的名字或公司名" />
       </div>
       <div class="field-wrap">
-        <div class="field-label">邮箱</div>
-        <input class="text-input" id="reg-email" type="text" placeholder="you@example.com" />
+        <label class="field-label" for="reg-email">邮箱</label>
+        <input class="text-input" id="reg-email" type="email" autocomplete="email" placeholder="you@example.com" />
       </div>
       <div class="field-wrap">
-        <div class="field-label">密码</div>
+        <label class="field-label" for="reg-pwd">密码</label>
         <div class="pwd-wrap">
-           <input class="text-input" type="password" id="reg-pwd" placeholder="至少 8 位，含大写、小写和数字" oninput="checkStrength()" />
+          <input class="text-input" type="password" id="reg-pwd" autocomplete="new-password" placeholder="至少 8 位，含大小写字母和数字" oninput="checkStrength()" />
           <button class="pwd-toggle" aria-label="显示密码" onclick="togglePwd('reg-pwd',this)"><i class="ti ti-eye" aria-hidden="true"></i></button>
         </div>
-        <div class="strength-row" id="strength-row">
+        <div class="strength-row" id="strength-row" role="meter" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-valuetext="未输入" aria-label="密码强度">
           <div class="strength-bar" id="sb1"></div>
           <div class="strength-bar" id="sb2"></div>
           <div class="strength-bar" id="sb3"></div>
         </div>
-        <div class="strength-label" id="strength-label">密码强度：未输入</div>
+        <div class="strength-label" id="strength-label" aria-hidden="true">密码强度：未输入</div>
       </div>
-      <div id="reg-error" style="display:none;font-size:12px;color:#E24B4A;margin-bottom:12px"></div>
+      <div id="reg-error" role="alert" aria-live="assertive" class="form-msg form-msg--error"></div>
 
       <button class="submit-btn" id="reg-btn" onclick="handleRegister()">免费注册 →</button>
 
@@ -281,19 +352,19 @@
       </div>
 
       <div class="social-grid">
-        <button class="social-btn"><i class="ti ti-brand-google" aria-hidden="true"></i>Google</button>
-        <button class="social-btn"><i class="ti ti-brand-github" aria-hidden="true"></i>GitHub</button>
+        <button class="social-btn" aria-label="使用 Google 账号注册"><i class="ti ti-brand-google" aria-hidden="true"></i>Google</button>
+        <button class="social-btn" aria-label="使用 GitHub 账号注册"><i class="ti ti-brand-github" aria-hidden="true"></i>GitHub</button>
       </div>
 
       <div class="terms-text">注册即表示同意 <a>服务条款</a> 与 <a>隐私政策</a></div>
 
-      <div class="switch-text" style="margin-top:14px">已有账号？<a onclick="switchMode('login')">立即登录</a></div>
+      <div class="switch-text switch-text--offset">已有账号？<a onclick="switchMode('login')" tabindex="0" role="link" onkeydown="if(event.key==='Enter')switchMode('login')">立即登录</a></div>
     </div>
     </div><!-- /form-wrap -->
   </div>
 
   <div class="right">
-    <div class="right-badge"><i class="ti ti-sparkles" style="font-size:12px;margin-right:4px" aria-hidden="true"></i>免费版无需信用卡</div>
+    <div class="right-badge"><i class="ti ti-sparkles badge-icon" aria-hidden="true"></i>免费版无需信用卡</div>
     <div class="right-title">为创业者和企业提供可调用、可分析的 AI 数据能力</div>
 
     <div class="feat-list">
@@ -330,8 +401,16 @@ function switchMode(mode){
   var isLogin=mode==='login';
   document.getElementById('tab-login').classList.toggle('active',isLogin);
   document.getElementById('tab-register').classList.toggle('active',!isLogin);
-  document.getElementById('form-login').style.display=isLogin?'block':'none';
-  document.getElementById('form-register').style.display=isLogin?'none':'block';
+  document.getElementById('tab-login').setAttribute('aria-selected',isLogin?'true':'false');
+  document.getElementById('tab-register').setAttribute('aria-selected',isLogin?'false':'true');
+  var loginForm=document.getElementById('form-login');
+  var regForm=document.getElementById('form-register');
+  loginForm.style.display=isLogin?'block':'none';
+  regForm.style.display=isLogin?'none':'block';
+  loginForm.setAttribute('role','tabpanel');
+  regForm.setAttribute('role','tabpanel');
+  loginForm.setAttribute('aria-labelledby','tab-login');
+  regForm.setAttribute('aria-labelledby','tab-register');
 }
 
 function togglePwd(id,btn){
@@ -340,9 +419,11 @@ function togglePwd(id,btn){
   if(input.type==='password'){
     input.type='text';
     icon.className='ti ti-eye-off';
+    btn.setAttribute('aria-label','隐藏密码');
   } else {
     input.type='password';
     icon.className='ti ti-eye';
+    btn.setAttribute('aria-label','显示密码');
   }
 }
 
@@ -407,7 +488,7 @@ function handleLogin(){
   var btn=document.getElementById('login-btn');
   if(!email||!pwd){errEl.style.display='block';errEl.textContent='请填写邮箱和密码';return}
   errEl.style.display='none';
-  btn.disabled=true;btn.textContent='登录中...';
+  btn.disabled=true;btn.setAttribute('aria-busy','true');btn.textContent='登录中...';
   API.auth.login(email,pwd).then(function(){
     // 检查是否需要验证邮箱
     return API.auth.me();
@@ -419,7 +500,7 @@ function handleLogin(){
       location.href=getRedirectTarget();
     }
   }).catch(function(e){
-    errEl.style.display='block';errEl.textContent=e.message||'登录失败，请重试';btn.disabled=false;btn.textContent='登录 →';
+    errEl.style.display='block';errEl.textContent=e.message||'登录失败，请重试';btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent='登录 →';
   });
 }
 
@@ -434,33 +515,54 @@ function handleRegister(){
   if(pwd.length<8){errEl.style.display='block';errEl.textContent='密码至少 8 位';return}
   if(!/[A-Z]/.test(pwd)||!/[a-z]/.test(pwd)||!/[0-9]/.test(pwd)){errEl.style.display='block';errEl.textContent='密码必须包含大写字母、小写字母和数字';return}
   errEl.style.display='none';
-  btn.disabled=true;btn.textContent='注册中...';
+  btn.disabled=true;btn.setAttribute('aria-busy','true');btn.textContent='注册中...';
   API.auth.register(email,pwd,name).then(function(){
     // 注册成功 → 提示用户查收验证邮件
     document.getElementById('form-register').style.display='none';
     document.getElementById('form-login').style.display='block';
     document.getElementById('tab-login').classList.add('active');
     document.getElementById('tab-register').classList.remove('active');
+    document.getElementById('tab-login').setAttribute('aria-selected','true');
+    document.getElementById('tab-register').setAttribute('aria-selected','false');
     var errEl=document.getElementById('login-error');
     errEl.style.display='block';
     errEl.style.color='var(--color-text-success)';
     errEl.textContent='注册成功！请查收验证邮件完成邮箱验证。';
-    btn.disabled=false;btn.textContent='免费注册 →';
+    btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent='免费注册 →';
   }).catch(function(e){
-    errEl.style.display='block';errEl.textContent=e.message||'注册失败，请重试';btn.disabled=false;btn.textContent='免费注册 →';
+    errEl.style.display='block';errEl.textContent=e.message||'注册失败，请重试';btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent='免费注册 →';
   });
 }
 
 // ---- 忘记密码 ----
+var _forgotTrigger=null;
 function openForgotModal(){
+  _forgotTrigger=document.activeElement;
   document.getElementById('forgot-modal').classList.add('open');
   document.getElementById('forgot-email').value='';
   document.getElementById('forgot-error').style.display='none';
   document.getElementById('forgot-success').style.display='none';
+  document.getElementById('forgot-email').focus();
 }
 function closeForgotModal(){
   document.getElementById('forgot-modal').classList.remove('open');
+  if(_forgotTrigger){_forgotTrigger.focus();_forgotTrigger=null;}
 }
+document.addEventListener('keydown',function(e){
+  var modal=document.getElementById('forgot-modal');
+  if(!modal.classList.contains('open')) return;
+  if(e.key==='Escape'){
+    closeForgotModal();
+    return;
+  }
+  if(e.key==='Tab'){
+    var focusable=modal.querySelectorAll('input,button:not([disabled]),[tabindex]:not([tabindex="-1"])');
+    if(focusable.length===0) return;
+    var first=focusable[0], last=focusable[focusable.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+});
 function handleForgotPassword(){
   var email=document.getElementById('forgot-email').value.trim();
   var errEl=document.getElementById('forgot-error');
@@ -468,14 +570,14 @@ function handleForgotPassword(){
   var btn=document.getElementById('forgot-btn');
   if(!email){errEl.style.display='block';errEl.textContent='请输入邮箱地址';sucEl.style.display='none';return}
   errEl.style.display='none';sucEl.style.display='none';
-  btn.disabled=true;btn.textContent='发送中...';
+  btn.disabled=true;btn.setAttribute('aria-busy','true');btn.textContent='发送中...';
   API.auth.forgotPassword(email).then(function(){
     sucEl.style.display='block';
     sucEl.textContent='重置邮件已发送，请查收邮箱（如未收到请检查垃圾邮件）';
-    btn.disabled=false;btn.textContent='发送重置邮件 →';
+    btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent='发送重置邮件 →';
   }).catch(function(e){
     errEl.style.display='block';errEl.textContent=e.message||'发送失败，请稍后重试';
-    btn.disabled=false;btn.textContent='发送重置邮件 →';
+    btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent='发送重置邮件 →';
   });
 }
 
@@ -529,10 +631,13 @@ function getRedirectTarget(){
 function checkStrength(){
   var val=document.getElementById('reg-pwd').value;
   var bars=[document.getElementById('sb1'),document.getElementById('sb2'),document.getElementById('sb3')];
+  var meter=document.getElementById('strength-row');
   bars.forEach(function(b){b.className='strength-bar'});
 
   if(val.length===0){
     document.getElementById('strength-label').textContent='密码强度：未输入';
+    meter.setAttribute('aria-valuenow','0');
+    meter.setAttribute('aria-valuetext','未输入');
     return;
   }
 
@@ -549,9 +654,13 @@ function checkStrength(){
       bars[i].className='strength-bar '+cls[level];
     }
     document.getElementById('strength-label').textContent='密码强度：'+labels[level];
+    meter.setAttribute('aria-valuenow',String(level+1));
+    meter.setAttribute('aria-valuetext',labels[level]);
   } else {
     document.getElementById('strength-label').textContent='密码强度：弱';
     bars[0].className='strength-bar active-weak';
+    meter.setAttribute('aria-valuenow','1');
+    meter.setAttribute('aria-valuetext','弱');
   }
 }
 </script>
