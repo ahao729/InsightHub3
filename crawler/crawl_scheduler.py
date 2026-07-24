@@ -158,6 +158,10 @@ AVAILABLE_SPIDERS = [
     "arxiv_papers",
     "public_company",
     "uncomtrade_crossborder",
+    "coingecko_web3",
+    "opencorporates_risk",
+    "policy_regulations",
+    "unesco_education",
 ]
 
 # Default args for each spider
@@ -184,6 +188,23 @@ SPIDER_DEFAULT_ARGS = {
         "partner": "842",
         "max_pages": 5,
         "query": "跨境电商 OR 跨境贸易",
+    },
+    "coingecko_web3": {
+        "top_n": 100,
+        "vs_currency": "usd",
+    },
+    "opencorporates_risk": {
+        "query": "technology",
+        "jurisdiction": "us",
+        "max_pages": 3,
+    },
+    "policy_regulations": {
+        "keyword": "artificial intelligence",
+        "max_records": 50,
+    },
+    "unesco_education": {
+        "country": "",
+        "max_records": 200,
     },
 }
 

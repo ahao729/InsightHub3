@@ -71,6 +71,26 @@ AVAILABLE_SPIDERS = {
         "class": "UncomtradeCrossborderSpider",
         "description": "跨境电商市场、物流、合规与平台运营数据",
     },
+    "coingecko_web3": {
+        "module": "crawler.spiders.coingecko_web3",
+        "class": "CoinGeckoWeb3Spider",
+        "description": "CoinGecko Web3/Crypto — 币种行情与链上数据",
+    },
+    "opencorporates_risk": {
+        "module": "crawler.spiders.opencorporates_risk",
+        "class": "OpenCorporatesRiskSpider",
+        "description": "OpenCorporates — 企业工商信息与风险画像",
+    },
+    "policy_regulations": {
+        "module": "crawler.spiders.policy_regulations",
+        "class": "PolicyRegulationsSpider",
+        "description": "US Federal Regulations — 政策法规文档",
+    },
+    "unesco_education": {
+        "module": "crawler.spiders.unesco_education",
+        "class": "UNESCOEducationSpider",
+        "description": "UNESCO UIS — 全球高等教育机构数据",
+    },
 }
 
 
